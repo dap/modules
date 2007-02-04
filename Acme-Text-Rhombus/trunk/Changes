@@ -1,0 +1,23 @@
+Revision history for Perl extension Acme::Text::Rhombus.
+
+0.16 Sun Oct 23 17:00:22 CEST 2005
+
+ - Relocated the package to the Acme:: namespace.
+ 
+ - Made INSTALL a part of the distribution.
+
+0.15 2005/02/23
+
+ - Example output has been added to the docs.
+
+0.1 2004/02/01
+
+ - Minor additions and indentations changes.
+
+0.03 2004/01/15
+
+ - Added example.
+
+0.01 2004/01/15
+
+ - Initial version.

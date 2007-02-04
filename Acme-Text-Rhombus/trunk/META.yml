@@ -1,0 +1,24 @@
+---
+name: Acme-Text-Rhombus
+version: 0.17
+author:
+  - 'Steven Schubiger <schubiger@cpan.org>'
+abstract: Draw an alphanumerical rhombus
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
+requires:
+  Exporter: 0
+build_requires:
+  Test::More: 0
+recommends:
+  Test::Pod: 1.14
+  Test::Pod::Coverage: 1.04
+provides:
+  Acme::Text::Rhombus:
+    file: lib/Acme/Text/Rhombus.pm
+    version: 0.17
+generated_by: Module::Build version 0.2709
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
