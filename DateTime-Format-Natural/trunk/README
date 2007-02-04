@@ -1,0 +1,60 @@
+NAME
+    DateTime::Format::Natural - Create machine readable date/time with
+    natural parsing logic
+
+SYNOPSIS
+     use DateTime::Format::Natural;
+
+     $parse = DateTime::Format::Natural->new;
+
+     $dt = $parse->parse_datetime($date_string);
+
+DESCRIPTION
+    "DateTime::Format::Natural" consists of a method, "parse_datetime",
+    which takes a string with a human readable date/time and creates a
+    machine readable one by applying natural parsing logic.
+
+FUNCTIONS
+  new
+    Creates a new DateTime::Format::Natural object.
+
+     $parse = DateTime::Format::Natural->new(lang => '[en|de]');
+
+    "lang" contains the language selected, currently limited to "en"
+    (english) & "de" (german).
+
+  parse_datetime
+    Creates a "DateTime" object from a human readable date/time string.
+
+     $dt = $parse->parse_datetime($date_string);
+
+     $dt = $parse->parse_datetime(string => $date_string, debug => 1);
+
+    The options may contain the keys "string" & "debug". "string" may
+    consist of the datestring, whereas "debug" holds the boolean value for
+    the debugging option. If debugging is enabled, each token that is
+    analysed will be output to STDOUT with a trailing newline appended.
+
+    The "string" parameter is required.
+
+    Returns a "DateTime" object.
+
+  format_datetime
+    Not implemented yet.
+
+EXAMPLES
+    See the modules "DateTime::Format::Natural::Lang::*" for a overview of
+    valid input.
+
+SEE ALSO
+    DateTime, Date::Calc, <http://datetime.perl.org>
+
+AUTHOR
+    Steven Schubiger <schubiger@cpan.org>
+
+LICENSE
+    This program is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See <http://www.perl.com/perl/misc/Artistic.html>
+

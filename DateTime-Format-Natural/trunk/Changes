@@ -1,0 +1,164 @@
+Revision history for Perl extension DateTime::Format::Natural.
+
+0.24 Wed Jan 17 22:51:51 CET 2007
+
+ - Introduced a warning handler to silence the warnings about
+   undefined values when pattern matching, subtracting and
+   performing string comparisons in Natural/Base.pm.
+
+ - Merged the "frontend" scripts to a single one taking
+   optionally a language argument indicating the country
+   code among other arguments.
+
+ - Made 01-parse_en.t's & 02-parse_de.t's code more readable
+   by adding some more separating lines.
+
+ - Moved 'our' declarations in DE.pm & EN.pm towards the top.
+
+0.23 Tue Jan 16 19:51:50 CET 2007
+
+ - The language metadata classes have an AUTOLOAD handler & __new
+   constructor automatically exported to their namespaces. Because
+   some local fiddling with AUTOLOAD and dynamic variable lookup is
+   done, a bunch of symbolic references are created on-the-fly.
+
+0.22 Tue Jan 16 02:58:15 CET 2007
+
+ - Previously four digits were occasionally interpreted as year
+   and as well as time based upon context. Disambiguated usage
+   as year (applies to all Lang:: classes) and fixed all test
+   cases were bogus return values from parse_datetime() have
+   been expected in order to have no tests fail.
+
+ - Bound the temporary disablement of strictness for references
+   to a tighter scope (applies to all Lang:: classes).
+
+0.21 Tue Nov 28 09:31:20 CET 2006
+
+ - Corrected the classes names provided to use_ok() in 00-load.t.
+   [SEKIMURA sekimura@gmail.com]
+
+0.20 Tue Nov 28 01:44:46 CET 2006
+
+ - Optimised the regular expressions used in the AUTOLOAD routine
+   in the language classes.
+
+0.19 Mon Nov 27 20:06:17 CET 2006
+
+ - Added to DE.pm & EN.pm an AUTOLOAD handler for each of them.
+   The subroutine called prefixed with two underscores will be 
+   translated to an according variable name without underscores.
+   The parameter to the subroutine will function as variable
+   lookup key.
+
+0.18 Sun Nov 26 17:35:17 CET 2006
+
+ - Fixed all occurences of the global weekday hash by adding the
+   missing key "{data}" to the variable lookup.
+
+0.17 Sun Nov 26 16:50:14 CET 2006
+
+ - Encapsulated the metadata within the language packages in an
+   object which class gets subclassed from Natural.pm.
+   [Tatsuhiko Miyagawa <miyagawa@gmail.com>]
+
+0.16 Sat Nov 25 18:09:48 CET 2006
+
+ - Added missing '1;' to the documentation of Authoring.pod.
+
+ - Changed strings in Authoring.pod to be italic.
+
+ - The testsuite now contains a german aquivalent of the english
+   parsing test.
+
+0.15 Sam Nov 25 16:49:22 CET 2006
+
+ - Added DateTime::Format::Natural::Lang::Authoring documentation.
+
+0.14 Sat Nov 25 14:34:33 CET 2006
+
+ - Corrected broken package definition.
+
+0.13 Sat Nov 25 04:14:54 CET 2006
+
+ - Separated data from logic by keeping all regular expressions in
+   separate packages.
+
+ - Language support for german has been included.
+
+0.12 Fri Nov 24 20:36:37 CET 2006
+
+ - Added some basic tests to the testsuite which exercice
+   converting natural format strings to an according datetime object.
+
+ - Enhanced the collection of valid strings that are translated.
+
+0.11 Fri Nov 24 02:15:30 CET 2006
+
+ - Refactored the code where duplicated chunks were available.
+
+ - Evaluated whether the current listed expressions pass the parsing.
+
+0.10 Thu Nov 23 01:14:44 CET 2006
+
+ - Substituted additions/subtractions where possible with the
+   appropriate DateTime method calls.
+
+ - An Exception is thrown if no valid input has been given.
+   [Tatsuhiko Miyagawa <miyagawa@gmail.com>]
+
+0.09 Sun Nov 19 14:38:24 CET 2006
+
+ - Date strings with slashes are now being split and assigned
+   to the appropriate variables.
+
+ - Moved the initialization of object data into a sub.
+   Same procedure for the code chunk returning a datetime object.
+
+0.08 Sun Nov 19 12:30:24 CET 2006
+
+ - Code is now object-oriented.
+
+0.07 Sat Oct 28 17:16:53 CEST 2006
+
+ - Replaced all tabs in EN.pm with regular spaces (4).
+
+0.06 Wed Oct 25 20:24:38 CEST 2006
+
+ - Substituted exporting functions with an object-oriented constructor.
+   parse_datetime() is now called as a method.
+   [Dave Rolsky <urth@autarch.org>]
+
+ - parse_datetime() takes either a datestring or an options hash.
+   [Dave Rolsky <urth@autarch.org>]
+
+0.05 Wed Oct 25 11:27:26 CEST 2006
+
+ - Moved from namespace DateTime::Natural::Parse to DateTime::From::Natural::EN
+   [Dave Rolsky <urth@autarch.org>]
+
+ - Renamed natural_parse() to parse_datestring().
+
+0.04 Wed Oct 25 00:17:01 CEST 2006
+
+ - Updated the code to process some "complex" input.
+
+ - Actualized the documentation accordingly.
+
+0.03 Tue Oct 24 01:25:03 CEST 2006
+ 
+ - Appended the i(ncasesensitive) Modifier to a few regular expressions.
+
+ - Fixed the broken newlines for the example documentation.
+
+0.02 Mon Oct 23 23:22:41 CEST 2006
+
+ - DateTime has been added to the dependencies list.
+ 
+ - natural_parse() returns a DateTime object [Clayton L. Scott <clscott@cpan.org>]
+ 
+ - Extended documentation to include some example human readable time strings.
+
+0.01 Sun Oct 22 22:15:54 CEST 2006
+
+ - Initial version.
