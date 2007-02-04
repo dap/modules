@@ -1,0 +1,90 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Module::Build::Convert;
+
+my $params = parse_switches() if @ARGV;
+convert($params);
+
+sub parse_switches {
+    use Getopt::Long qw(:config no_ignore_case);
+    my %opts;
+    GetOptions(\%opts,'d','e','h','l=i','n','rc','v','vv','V') or usage();
+    # debugging happens while parsing takes place
+    if ($opts{d} && $opts{x}) {
+        print "Can't debug while in executing Makefile.PL mode\n";
+        usage();
+    }
+    if ($opts{v} && $opts{vv}) {
+        print "Can't use both -v and -vv switches\n";
+        usage();
+    }
+    usage()   if $opts{h};
+    version() if $opts{V};
+    return { Path             => $ARGV[0],
+             Debug            => $opts{d},
+             Exec_Makefile    => $opts{e}, 
+             Len_Indent       => $opts{l},
+             Use_native_order => $opts{n},
+             Create_RC        => $opts{rc},
+             Verbose          => $opts{v} ? 1 : $opts{vv} ? 2 : undef };
+}
+
+sub usage {
+    print <<USAGE;
+Usage: $0 [switches] [path-to-distribution]
+  -d           debug the parsing process
+  -e           execute Makefile.PL
+  -h           help screen
+  -l length    indentation length
+  -n           native ordering of build arguments
+  -rc          create RC-file in homedir
+  -v(v)        verbosity level
+  -V           print version
+USAGE
+    exit;
+}
+
+sub version {
+    print "  Module::Build::Convert $Module::Build::Convert::VERSION\n";
+    exit;
+}
+
+sub convert {
+    my $make = Module::Build::Convert->new(%{$_[0]});
+    $make->convert;
+}
+
+=head1 NAME
+
+make2build - frontend to Module::Build::Convert
+
+=head1 SYNOPSIS
+
+ make2build         # In the root directory of an
+                    # ExtUtils::MakeMaker based distribution
+
+ Usage: /usr/local/bin/make2build [switches] [path-to-distribution]
+   -d           debug the parsing process
+   -e           execute Makefile.PL
+   -h           help screen
+   -l length    indentation length
+   -n           native ordering of build arguments
+   -rc          create RC-file in homedir
+   -v(v)        verbosity level
+   -V           version
+
+=head1 AUTHOR
+
+Steven Schubiger <schubiger@cpan.org>
+
+=head1 LICENSE
+
+This program is free software; you may redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See L<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut
