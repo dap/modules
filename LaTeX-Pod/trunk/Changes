@@ -1,0 +1,73 @@
+Revision history for Perl extension LaTeX::Pod.
+
+0.09_01 Sun Jan 28 01:25:29 CET 2007
+
+ - Added call of _process_spec_chars() to _process_text_verbatim().
+
+ - Some minor, but nonetheless important, code reformatting.
+
+0.09 Fri Jan 12 00:26:37 CET 2007
+
+ - The item's text has now proper intendation (speak none)
+   and leading/trailing newlines are attached.
+
+ - Fixed minor spelling nit within Pod.pm.
+ 
+ - Added some implementation details to the documentation.
+
+0.08 Thu Jan 11 01:18:38 CET 2007
+
+ - Introduction of dispatch handler broke the handling of the
+   "simulated" else clause; furthermore, skipping the evaluation
+   of node types when successfully matched against current node,
+   had the same effect.
+
+ - \item directives are now handled bare (\item) as well as with
+   surrounding brackets (\item[]).
+
+ - Commented piece of code out that automatically adds the
+   author to the document title. Will maybe make it an option
+   to latex2pod in a future release.
+
+ - latex2pod, a commandline frontend to LaTeX::Pod, has been
+   added to the distribution's scripts directory.
+
+0.07 Wed Jan 10 20:37.02 CET 2007
+
+ - Replaced previous text/command conditional branches in convert()
+   with calls to dispatch handler.
+
+ - The ending POD =cut directive will be added to generated output.
+
+0.06 Tue Jan  9 21:02:19 CET 2007
+
+ - Beautified code within Pod.pm, i.e. removed
+   parentheses from method calls without arguments.
+
+0.05 Sun Dec 31 03:29:24 CET 2006
+
+ - Added accessors to get/set the internal POD data.
+
+ - Fixed the indentation for LaTeX' verbatim blocks.
+
+0.04 Die Dec 26 01:46:39 CET 2006
+
+ - Forgot to include code for processing code & italic font tags.
+
+0.03 Die Dec 26 00:20:08 CET 2006
+
+ - Fixed umlauts.
+ 
+ - Improved documentation.
+
+0.02 Mon Dec 25 14:34:14 CET 2006
+
+ - Unknown directives are skipped.
+
+ - LaTeX Umlauts definitions are converted.
+
+ - More than two following newlines will be reduced to two.
+
+0.01 Mon Dec 25 05:59:08 CET 2006
+
+ - Initial version.
