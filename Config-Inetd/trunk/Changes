@@ -1,0 +1,57 @@
+Revision history for Perl extension Config::Inetd.
+
+0.25 Sun Mar 19 22:49:56 CET 2006
+
+ - Added INSTALL containing install instructions.
+
+0.23 Wed Mar 15 22:51:54 CET 2006
+
+ - Added func.t to the test suite. Checks against a local 
+   copy of inetd.conf whether $inetd->dump_enabled() & $inetd->
+   dump_disabled() return the expected amount of services.
+   Furthermore, evaluates whether $inetd->disable() & $inetd->
+   enable() trigger the according changes correctly; the state 
+   of $inetd->is_enabled() is checked against an enabled service.
+   All services are checked via a custom regular expression to
+   ensure that instance data access functions.
+
+0.22 Wed Mar 15 16:51:11 CET 2006
+
+ - Lines read in from inetd.conf preserve their newlines as
+   specified via the Tie::File option autochomp.
+ 
+ - Inetd.pm (formerly known as Entity.pm) is warnings-free 
+   (previously emitted warnings while splitting the service/protocol 
+   from the inetd.conf and for 1 inner reference that existed
+   for the tied Tie::File object).
+   
+ - Suitable Build.PL added.
+
+0.21 2005/02/23
+
+ - Namespace changed from previously Net::Inetd to Config::Inetd 
+   as proposed by others.
+
+0.11 2004/01/28
+
+ - Deadlock in flock() abandoned.
+
+0.09 2004/01/27
+
+ - Some inefficiency cleaned up.
+
+0.07 2004/01/25
+
+ - inetd.conf is locked.
+
+0.03 2004/01/21
+
+ - bin/inetd.pl added.
+
+0.02 2004/01/20
+
+ - Methods for dumping enabled/disabled services.
+
+0.01 2004/01/19
+
+ - Initial version.
