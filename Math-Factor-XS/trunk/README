@@ -1,0 +1,68 @@
+NAME
+    Math::Factor::XS - Factorise numbers and calculate matching
+    multiplications
+
+SYNOPSIS
+     use Math::Factor::XS ':all';
+
+     $number = 30107;
+
+     @factors = factors($number);
+     @matches = matches($number, @factors);
+
+     print "$factors[1]\n";
+     print "$number == $matches[0][0] * $matches[0][1]\n";
+
+DESCRIPTION
+    Math::Factor::XS factorises numbers by applying modulo operator
+    divisons.
+
+FUNCTIONS
+  factors
+    Factorises numbers.
+
+     @factors = factors($number);
+
+    $number will be entirely factorised and its factors will be saved within
+    the array @factors.
+
+  matches
+    Evaluates matching multiplications.
+
+     @matches = matches($number, @factors);
+
+    The factors within @factors will be multplicated against each other and
+    results that equal the number itself, will be saved to the
+    two-multidimensional array @matches. The matches are accessible through
+    the indexes, for example, the first two numbers that matched the number,
+    may be accessed by $matches[0][0] and $matches[0][1], the second ones by
+    $matches[1][0] and $matches[1][1], and so on.
+
+    If $Math::Factor::XS::Skip_multiple is set to a true value, matching
+    multiplications that contain multiplicated (small) factors will be
+    dropped.
+
+    Example:
+
+     # accepted 
+     30107 == 11 * 2737  
+
+     # dropped
+     30107 == 77 * 391
+
+EXPORT
+  Functions
+    "factors(), matches()" are exportable.
+
+  Tags
+    ":all - *()"
+
+AUTHOR
+    Steven Schubiger <schubiger@cpan.org>
+
+LICENSE
+    This program is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See http://www.perl.com/perl/misc/Artistic.html
+

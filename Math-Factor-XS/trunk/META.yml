@@ -1,0 +1,25 @@
+---
+name: Math-Factor-XS
+version: 0.33
+author:
+  - 'Steven Schubiger <schubiger@cpan.org>'
+abstract: Factorise numbers and calculate matching multiplications
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
+requires:
+  Exporter: 0
+  XSLoader: 0
+build_requires:
+  Test::More: 0
+recommends:
+  Test::Pod: 1.14
+  Test::Pod::Coverage: 1.04
+provides:
+  Math::Factor::XS:
+    file: lib/Math/Factor/XS.pm
+    version: 0.33
+generated_by: Module::Build version 0.2709
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

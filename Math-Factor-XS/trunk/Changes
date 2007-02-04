@@ -1,0 +1,67 @@
+Revision history for Perl extension Math::Factor::XS.
+
+0.33 Sat Apr  1 16:47:21 CEST 2006
+
+ - Changed Build.PL argument create_makefile_pl from 'passtrough'
+   to 'traditional' for the sake of compatibility.
+
+0.30 Fri Nov  4 20:52:13 CET 2005
+
+ - Converted Math::Factor over to XS.
+
+0.29 2005/09/21
+
+ - factors() takes a single number and returns now a flat array 
+   of factors. matches() likewise. [Ricardo Signes, <rjbs@cpan.org>]
+   
+ - Removed each_factor() & each_match() due to data that 
+   is no longer preserved in multidimensional hash structures 
+   and therefore doesn't require these accessors.
+   
+0.19 2004/01/19
+
+ - Formats are not evaled in loops.
+
+0.17 2004/01/18
+
+ - Matching multiplications that contain smaller factors may 
+   be skipped.
+
+0.16 2004/01/17
+
+ - factor.pl revisioned.
+
+0.12 2004/01/13
+
+ - Hashes are returned as refs.
+
+0.1 2004/01/12
+
+ - Minor additions.
+
+0.09 2004/01/12
+
+ - Evaluation of ranges implemented.
+
+0.07 2004/01/10
+
+ - show_factor() & show_match() have been moved out of the 
+   package to bin/factor.pl.
+
+0.05 2004/01/07
+
+ - Iteration over factors and multiplication matches by 
+   each_factor() & each_match().
+
+0.03 2004/01/06
+
+ - Heredocs mostly replaced with format in show_factor() 
+   & show_match().
+
+0.02 2004/01/06
+
+ - Documentation covers functionality.
+
+0.01 2004/01/06
+
+ - Initial version.
