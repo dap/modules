@@ -1,0 +1,9 @@
+Revision history for Perl extension Hook::Output::File.
+
+0.2 Wed Jan 31 23:45:51 CET 2007
+
+ - Replaced STDIN with STDERR in description.
+
+0.1 Thu Wed Jan 31 11:03:00 CET 2007
+
+ - Initial version.
