@@ -1,0 +1,21 @@
+Revision history for Perl extension Safe::Caller.
+
+0.03 Tue Jun 20 10:59:59 CEST 2006
+
+ - Moved redundant occurences of new() and foo() out
+   of two packages into one Base package.
+
+0.02 Sat Jun 17 20:46:09 CEST 2006
+
+ - Fixed both $self->{line}->() and called_from_line()
+   in called_from.t from previous erroneous values.
+
+0.01 Tue May  9 21:31:10 CEST 2006
+ 
+ - called_from.t - which checks whether the closures 
+   and called_from_(?:pkg|file|line|sub) subs work as 
+   expected - has been included in the test-suite.
+   
+ - Added suitable documentation.
+ 
+ - Initial version.
