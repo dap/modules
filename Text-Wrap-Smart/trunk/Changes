@@ -1,0 +1,19 @@
+Revision history for Perl extension Text::Wrap::Smart.
+
+0.3 Sun Dec 17 21:48:49 CET 2006
+
+ - Fixed broken splitting of lines.
+
+ - In case the input string doesn't consist of whitespaces,
+   revert to splitting without taking care of blanks.
+
+0.2 Sun Dec 17 03:44:11 CET 2006
+
+ - Added "smart" breaking up of text strings into
+   according chunks.
+
+ - Documented wrap_smart()'s options hash.
+
+0.1 Thu Dec 14 20:23:20 CET 2006
+
+ - Initial version.
