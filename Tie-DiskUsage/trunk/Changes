@@ -1,0 +1,42 @@
+Revision history for Perl extension Tie::DiskUsage.
+
+0.18 Don Dec 14 02:17:28 CET 2006
+
+ - Extended the "SEE ALSO" section to include links
+   to similar minded distributions. [belg4mit@mit.edu]
+
+0.17 Tue Dec 12 09:58:58 CET 2006
+
+ - Instead of populating an array with the output of
+   du, iterating through each element will take place.
+
+0.16 Mon Dec 11 22:07:09 CET 2006
+
+ - Applied bugfix to allow file-/pathnames to
+   contain whitespaces [John Stoffel, john.stoffel@taec.toshiba.com]
+
+ - Cleaned whitespace up in DiskUsage.pm
+
+0.15 Tue May  2 20:52:27 CEST 2006
+
+ - The function _locate_du() croaks in case the du
+   binary can't be found with the du basename prefixed.
+
+0.14 Mon May  1 16:30:27 CEST 2006
+
+ - Symbol is now part of the prerequisite set.
+
+ - A suitable Build.PL has been added.
+
+ - Made the INSTALL file a part of the distribution.
+
+ - The test-suite has been extended to include module
+   loading & pod tests.
+
+0.03 2004/01/27
+
+ - bin/du.pl has been added.
+
+0.01 2004/01/26
+
+ - Initial version.
