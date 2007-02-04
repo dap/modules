@@ -11,9 +11,9 @@ my $build = Module::Build->new
    module_name => 'Module::Build::Convert',
    dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/Module/Build/Convert.pm',
-   requires => { 
+   requires => {
                  'Carp' => 0,
-                 'Cwd' => 0, 
+                 'Cwd' => 0,
                  'Data::Dumper' => 0,
                  'ExtUtils::MakeMaker' => 0,
                  'File::Basename' => 0,
@@ -22,6 +22,7 @@ my $build = Module::Build->new
                  'File::Spec' => 0,
                  'Getopt::Long' => 0,
                  'IO::File' => 0,
+                 'IO::Prompt' => 0,
                },
    build_requires => { 'Test::More' => 0 },
    recommends => {

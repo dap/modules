@@ -13,8 +13,9 @@ use File::HomeDir ();
 use File::Slurp ();
 use File::Spec ();
 use IO::File ();
+use IO::Prompt ();
 
-our $VERSION = '0.47_01';
+our $VERSION = '0.47_02';
 
 use constant LEADCHAR => '* ';
 
@@ -46,7 +47,7 @@ sub new {
 sub convert {
     my $self = shift;
 
-    unless ($self->{Config}{reinit} || defined @{$self->{dirs}}) {
+    unless ($self->{Config}{reinit} || @{$self->{dirs}||[]}) {
         if ($self->{Config}{Path}) {
             if (-f $self->{Config}{Path}) {
                 my ($basename, $dirname)     = File::Basename::fileparse($self->{Config}{Path});
@@ -127,10 +128,10 @@ sub _exists_overwrite {
         print 'A Build.PL exists already';
 
         if ($self->{Config}{Dont_Overwrite_Auto}) {
-            print ".\nShall I overwrite it? [y/n] ";
-            chomp(my $input = <STDIN>);
+            print ".\n";
+            my $input_ok = IO::Prompt::prompt -yn, 'Shall I overwrite it? ';
 
-            if ($input !~ /^y$/i) {
+            if (!$input_ok) {
                 print "Skipped...\n";
                 print "\n" if $self->{Config}{Verbose};
                 push @{$self->{summary}{skipped}}, $self->{current_dir};
@@ -156,7 +157,7 @@ sub _create_rcfile {
     } else {
         my $data = $self->_parse_data('create_rc');
         my $fh = IO::File->new($rcfile, '>') or die "Can't open $rcfile: $!\n";
-        print $fh $data;
+        print {$fh} $data;
         $fh->close;
         print LEADCHAR."Created $rcfile\n";
         exit;
@@ -791,7 +792,7 @@ sub _write_args {
         if ($chunk =~ /=> [\{\[]/) {
 
             # Remove redundant parentheses
-            $chunk =~ s/^\{.*?\n(.*(?{eval $regex ? '\}' : '\]'}))\s+\}\s+$/$1/os;
+            $chunk =~ s/^\{.*?\n(.*(?{ $regex ? '\}' : '\]' }))\s+\}\s+$/$1/os;
             Carp::croak $@ if $@;
 
             # One element per each line
@@ -890,7 +891,7 @@ sub _add_to_manifest {
 
         $fh = IO::File->new($self->{Config}{MANIFEST}, '>')
           or die "Can't open $self->{Config}{MANIFEST}: $!\n";
-        print $fh sort @manifest;
+        print {$fh} sort @manifest;
         $fh->close;
 
         $self->_do_verbose(LEADCHAR."Added to $self->{Config}{MANIFEST}: $self->{Config}{Build_PL}\n");
@@ -911,7 +912,8 @@ sub _show_summary {
     local $" = "\n";
 
     foreach my $item (@summary) {
-        next unless defined @{$self->{summary}{$item->[1]}};
+        next unless @{$self->{summary}{$item->[1]}||[]};
+
         $self->_do_verbose("$item->[0]\n");
         $self->_do_verbose('-' x length($item->[0]), "\n");
         $self->_do_verbose("@{$self->{summary}{$item->[1]}}\n\n");
