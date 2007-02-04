@@ -1,0 +1,13 @@
+Revision history for Perl extension LaTeX::TOM.
+
+0.5 Son Dec 31 01:47:36 CET 2006
+
+ - Percents (%) and braces ({}) within verbatim blocks
+   are now taken care of while parsing.
+
+ - Replaced all occurences of tabs within the code with
+   literal whitespace.
+
+0.3 Sun Dec 24 11:37:21 CET 2006 
+
+ - Initial CPAN version.
