@@ -1,5 +1,29 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.5_01 Mon Feb  5 08:47:05 CET 2007
+
+ - Resolved accidentally swapped $prev/$next pointers in assignment
+   in LaTeX::TOM::Node's listify(), resulting in misbehaviour of
+   getNextGroupNode(), getPreviousSibling() and the like.
+
+ - Added fully qualified package declaration to LaTeX::TOM::Parser,
+   LaTeX::TOM::Node & LaTeX::TOM::Tree. Removed class specification
+   from sub declarations likewise.
+
+ - LaTeX::TOM's constructor, new() reblesses a LaTeX::TOM::Parser
+   object with the references to the global variables defined within
+   LaTeX::TOM. @_ is passed unaltered to LaTeX::TOM::Parser new().
+
+ - LaTeX::TOM establishes an ISA relationship with LaTeX::TOM::Parser
+   and LaTeX::TOM::Parser with LaTeX::TOM::Node/LaTeX::TOM::Tree.
+
+ - LaTeX::TOM::Tree's constructor, new() now returns a blessed hash
+   reference instead of previously a blessed array reference, because
+   we're basically reblessing the $parser object.
+
+ - Extracted the TODO part from LaTeX::TOM and put it in a separate
+   file named TODO in the root of the distribution.
+
 0.5 Son Dec 31 01:47:36 CET 2006
 
  - Percents (%) and braces ({}) within verbatim blocks
@@ -11,3 +35,22 @@ Revision history for Perl extension LaTeX::TOM.
 0.3 Sun Dec 24 11:37:21 CET 2006 
 
  - Initial CPAN version.
+
+02c ???
+
+ - Bug fixes: Handling of newlines and whitespace between commands 
+   and parameters and groups, handling of \w+\d+ commands (thanks 
+   Leo Tenenblat for both of these), documentation bugfix: "parseFile",
+   not "parsefile".
+
+02b ???
+
+ - License included (BSD), some minor code indenting cleanups.
+
+02 ???
+
+ - This is the first release version.
+
+01 ???
+
+ - Non-OOP version of the current functionality. Not released.

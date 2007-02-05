@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.5
+# Version 0.05_01
 #
 # ----------------------------------------------------------------------------
 #
@@ -15,79 +15,24 @@
 #
 # ----------------------------------------------------------------------------
 #
-# This module provides some decent semantic handling of LaTeX documents.  It is
+# This module provides some decent semantic handling of LaTeX documents. It is
 # inspired by XML::DOM, so users of that module should be able to acclimate
 # themselves to this one quickly.  Basically the subroutines in this package
 # allow you to parse a LaTeX document into its logical structure, including
 # groupings, commands, environments, and comments.  These all go into a tree
-# which is built as arrays of Perl hashes.  
-#
-# TODO:
-# 
-# - Only apply LAST definition of a particular mapping.  This could be 
-#   determined by keeping track of positions of mapping declarations as in
-#   a preorder traversal, done in stage 3 of parsing.
-#
-# - Somehow we need to speed up the application of mappings. Instead of 
-#   recurring through the entire tree, can't we just make USED_COMMANDS contain
-#   at each entry a "postings list" of where in the tree the command occurs?
-#
-#   CAVEAT: if we do this, we'd have to also update these postings lists each
-#   time a mapping is applied, because we're making new subtrees with new 
-#   commands being exercised.
-#
-#   On the bright side, if this is properly executed, we could get massive
-#   speedups on applying the mappings (for n mappings, we'd remove n full tree
-#   traversals!)
-#
-# - Normalize TEXT nodes on all splits (adjacent TEXT nodes should be combined)
-#
-# - Have linked-list stuff maintained as the parsing proceeds.
-#
-# - Add interface to brace matching in parser (and make sure it works).
-#
-# - Add environment boundary matching, with interface.
-#
-# - Perhaps remove array-based tree representation entirely.
-#
-# - Add file names to parser errors, so we know which included files are being
-#   complained about.
-#
-# - Add another parsing stage to pull group nodes that are part of multi-group
-#   commands into a single "parameter" list.  This would be kind of analogous 
-#   to the "attributes" list of an XML node.
-#
-#   This will require information about all built-in commands (though we might
-#   be able to get away with grabbing all GROUPs until we hit non-whitespace 
-#   TEXT nodes.)
-#
-# - Parse all commands into COMMAND nodes, not just ones that have groups as
-#   children.  This is more for consistency than structural usefulness.
-#
-#   This would fairly radically effect later parsing stages.
-#
-#   Note that currently some commands will appear in the results of getting all
-#   TEXT nodes.  This doesn't really make sense; the semantics of unrecognized
-#   commands is not that they are plain text.
-#
-# - In a group, embedded commands go from the embedded location to the end of
-#   the group boundary.  So for each embedded command we should really be 
-#   splitting the text of the group, and making the right half a child of the
-#   command, and the left half a previous sibling.   Currently the parser just
-#   makes the entire group a child of the command, which is wrong (but not 
-#   likely to be encountered due to convention).
-#
-# - Should we be treating square-braces ([]) as groups, analogously to what we
-#   do for curly braces?  Read up on the full semantics of the square braces.
+# which is built as arrays of Perl hashes.
 #
 ###############################################################################
 
 package LaTeX::TOM;
 
-our $VERSION = '0.5';
+our $VERSION = '0.5_01';
 
 use strict;
-use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS %BRACELESS %TEXTENVS $PARSE_ERRORS_FATAL};
+use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
+            %BRACELESS %TEXTENVS $PARSE_ERRORS_FATAL};
+
+use base qw(LaTeX::TOM::Parser);
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -127,15 +72,15 @@ use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS %BRACELESS %TEXTENV
 %MATHENVS = (
   'align' => 1,
   'equation' => 1, 
-	'eqnarray' => 1, 
-	'displaymath' => 1, 
-	'ensuremath' => 1,
-	'math' => 1,
+  'eqnarray' => 1, 
+  'displaymath' => 1, 
+  'ensuremath' => 1,
+  'math' => 1,
   '$$' => 1, 
-	'$' => 1, 
-	'\[' => 1,
-	'\(' => 1,
-	);
+  '$' => 1, 
+  '\[' => 1,
+  '\(' => 1,
+  );
 
 # these commands/environments put their children in text (non-math) mode
 #
@@ -240,9 +185,19 @@ $PARSE_ERRORS_FATAL = 0;
 
 # END CONFIG SECTION ##########################################################
 
-use LaTeX::TOM::Node;
-use LaTeX::TOM::Tree;
-use LaTeX::TOM::Parser;
+sub new {
+    my $self = shift;
+    my $obj  = LaTeX::TOM::Parser->new(@_);
+
+    $obj->{config}{BRACELESS}          = \%BRACELESS;
+    $obj->{config}{INNERCMDS}          = \%INNERCMDS;
+    $obj->{config}{MATHENVS}           = \%MATHENVS;
+    $obj->{config}{MATHBRACKETS}       = \%MATHBRACKETS;
+    $obj->{config}{PARSE_ERRORS_FATAL} = $PARSE_ERRORS_FATAL;
+    $obj->{config}{TEXTENVS}           = \%TEXTENVS;
+
+    return $obj;
+}
 
 1;
 
@@ -254,12 +209,12 @@ LaTeX::TOM - A module for parsing, analyzing, and manipulating LaTeX documents.
 
   use LaTeX::TOM;
 
-  my $parser = new Parser;
+  my $parser = LaTeX::TOM->new;
 
   my $document = $parser->parseFile('mypaper.tex');
 
   my $latex = $document->toLaTeX;
-	
+
   my $specialnodes = $document->getNodesByCondition(
     '$node->getNodeType eq \'TEXT\' && 
      $node->getNodeText =~ /magic string/');
@@ -271,16 +226,16 @@ LaTeX::TOM - A module for parsing, analyzing, and manipulating LaTeX documents.
   my $indexme = $document->getIndexableText;
 
   $document->print;
-	
+
 =head1 DESCRIPTION
 
 This module provides a parser which parses and interprets (though not fully)
-LaTeX documents and returns a tree-based representation of what it finds.  
-This tree is a LaTeX::TOM::Tree.  The tree contains LaTeX::TOM:Node nodes.  
+LaTeX documents and returns a tree-based representation of what it finds.
+This tree is a LaTeX::TOM::Tree.  The tree contains LaTeX::TOM:Node nodes.
 
 This module should be especially useful to anyone who wants to do processing
-of LaTeX documents that requires extraction of plain-text information, or 
-altering of the plain-text components (or alternatively, the math-text 
+of LaTeX documents that requires extraction of plain-text information, or
+altering of the plain-text components (or alternatively, the math-text
 components).
 
 =head1 COMPONENTS
@@ -293,13 +248,13 @@ The parser recognizes 3 parameters upon creation.  The parameters, in order, are
 
 =item parse error handling (= B<0> || 1 || 2)
 
-Determines what happens when a parse error is encountered.  0 results in a 
+Determines what happens when a parse error is encountered.  0 results in a
 warning.  1 results in a die.  2 results in silence.  Note that particular
-groupings in LaTeX (i.e. newcommands and the like) contain invalid TeX or 
+groupings in LaTeX (i.e. newcommands and the like) contain invalid TeX or
 LaTeX, so you nearly always need this parameter to be 0 or 2 to completely
 parse the document.
 
-=item read inputs flag (= 0 || B<1>) 
+=item read inputs flag (= 0 || B<1>)
 
 This flag determines whether a scan for \input and \input-like commands is
 performed, and the resulting called files parsed and added to the parent
@@ -318,7 +273,7 @@ option off.
 
 =back
 
-The parser returns a LaTeX::TOM:Tree ($document in the SYNOPSIS).  
+The parser returns a LaTeX::TOM::Tree ($document in the SYNOPSIS).
 
 =head2 LaTeX::TOM::Node
 
@@ -342,7 +297,7 @@ example of a command is
   \textbf{blah}
 
 This would parse into a COMMAND node for I<textbf>, which would have a subtree
-containing the TEXT node with text ``blah.''  
+containing the TEXT node with text ``blah.''
 
 =item ENVIRONMENT
 
@@ -351,7 +306,7 @@ about the environment, along with a subtree representing what is contained in
 the environment.  For example,
 
   \begin{equation}
-    r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} 
+    r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
   \end{equation}
 
 Would parse into an ENVIRONMENT node of the class ``equation'' with a child 
@@ -361,14 +316,14 @@ tree containing the result of parsing ``r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}.'
 
 A GROUP is like an anonymous COMMAND.  Since you can put whatever you want in
 curly-braces ({}) in TeX in order to make semantically isolated regions, this
-separation is preserved by the parser.  A GROUP is just the subtree of the 
+separation is preserved by the parser.  A GROUP is just the subtree of the
 parsed contents of plain curly-braces.
 
-It is important to note that currently only the first GROUP in a series of 
+It is important to note that currently only the first GROUP in a series of
 GROUPs following a LaTeX command will actually be parsed into a COMMAND node.
-The reason is that, for the initial purposes of this module, it was not 
-necessary to recognize additional GROUPs as additional parameters to the 
-COMMAND.  However, this is something that this module really should do 
+The reason is that, for the initial purposes of this module, it was not
+necessary to recognize additional GROUPs as additional parameters to the
+COMMAND.  However, this is something that this module really should do
 eventually.  Currently if you want all the parameters to a multi-parametered
 command, you'll need to pick out all the following GROUP nodes yourself.
 
@@ -387,12 +342,12 @@ portion of a line that has ``%'' at some internal point.
 
 =head2 LaTeX::TOM::Trees
 
-As mentioned before, the Tree is the return result of a parse. 
+As mentioned before, the Tree is the return result of a parse.
 
 The tree is nothing more than an arrayref of Nodes, some of which may contain
 their own trees.  This is useful knowledge at this point, since the user isn't
 provided with a full suite of convenient tree-modification methods.  However,
-Trees do already have some very convenient methods, described in the next 
+Trees do already have some very convenient methods, described in the next
 section.
 
 =head1 METHODS
@@ -428,18 +383,18 @@ Duplicate a tree into new memory.
 
 =item print
 
-A debug print of the structure of the tree.  
+A debug print of the structure of the tree.
 
 =item plainText
 
-Returns an arrayref which is a list of strings representing the text of all 
+Returns an arrayref which is a list of strings representing the text of all
 getNodePlainTextFlag = 1 TEXT nodes, in an inorder traversal.
 
 =item indexableText
 
-A method like the above but which goes one step further; it cleans all of the 
+A method like the above but which goes one step further; it cleans all of the
 returned text and concatenates it into a single string which one could consider
-having all of the standard information retrieval value for the document, 
+having all of the standard information retrieval value for the document,
 making it useful for indexing.
 
 =item toLaTeX
@@ -449,7 +404,7 @@ useful to get a normal document again, after modifying nodes of the tree.
 
 =item getTopLevelNodes
 
-Return an arrayref which is a list of LaTeX::TOM::Nodes at the top level of 
+Return an arrayref which is a list of LaTeX::TOM::Nodes at the top level of
 the Tree.
 
 =item getAllNodes
@@ -458,7 +413,7 @@ Return an arrayref with B<all> nodes of the tree.  This "flattens" the tree.
 
 =item getCommandNodesByName (name)
 
-Return an arrayref with all COMMAND nodes in the tree which have a name 
+Return an arrayref with all COMMAND nodes in the tree which have a name
 matching I<name>.
 
 =item getEnvironmentsByName (name)
@@ -468,7 +423,7 @@ matching I<name>.
 
 =item getNodesByCondition (expression)
 
-This is a catch-all search method which can be used to pull out nodes that 
+This is a catch-all search method which can be used to pull out nodes that
 match pretty much any perl expression, without manually having to traverse the
 tree.  I<expression> is a valid perl expression which makes reference to the
 perl variable B<$node> when testing something about the currently scrutinized
@@ -496,8 +451,8 @@ Set the node text, also for TEXT and COMMENT nodes.
 
 =item getNodeStartingPosition
 
-Get the starting character position in the document of this node.  For TEXT 
-and COMMENT nodes, this will be where the text begins.  For ENVIRONMENT, 
+Get the starting character position in the document of this node.  For TEXT
+and COMMENT nodes, this will be where the text begins.  For ENVIRONMENT,
 COMMAND, or GROUP nodes, this will be the position of the I<last> character of
 the opening identifier.
 
@@ -541,12 +496,12 @@ This applies only to COMMAND nodes.  Returns the name of the command (the X in
 
 =item getChildTree
 
-This applies only to COMMAND, ENVIRONMENT, and GROUP nodes: it returns the 
+This applies only to COMMAND, ENVIRONMENT, and GROUP nodes: it returns the
 LaTeX::TOM::Tree which is ``under'' the calling node.
 
 =item getFirstChild
 
-This applies only to COMMAND, ENVIRONMENT, and GROUP nodes: it returns the 
+This applies only to COMMAND, ENVIRONMENT, and GROUP nodes: it returns the
 first node from the first level of the child subtree.
 
 =item getLastChild
@@ -574,7 +529,7 @@ node which doesn't match /^\s*$/, or a COMMAND node.
 
 This is useful for finding all GROUPed parameters after a COMMAND node (see
 comments for 'GROUP' in the 'COMPONENTS' / 'LaTeX::TOM::Node' section).  You
-can just have a while loop that calls this method until it gets 'undef', and 
+can just have a while loop that calls this method until it gets 'undef', and
 you'll know you've found all the parameters to a command.
 
 Note: this may be bad, but TEXT Nodes matching /^\s*\[[0-9]+\]$/ (optional
@@ -584,13 +539,14 @@ parameter groups) are treated as if they were 'blank'.
 
 =head1 CAVEATS
 
-Due to the lack of tree-modification methods, currently this module is 
+Due to the lack of tree-modification methods, currently this module is
 mostly useful for minor modifications to the parsed document, for instance,
-altering the text of TEXT nodes but not deleting the nodes.  Of course, the 
+altering the text of TEXT nodes but not deleting the nodes.  Of course, the
 user can still do this by breaking abstraction and directly modifying the Tree.
 
 Also note that the parsing is not complete.  This module was not written with
-the intention of being able to produce output documents the way ``latex'' does. The intent was instead to be able to analyze and modify the document on a 
+the intention of being able to produce output documents the way ``latex'' does.
+The intent was instead to be able to analyze and modify the document on a 
 logical level with regards to the content; it doesn't care about the document
 formatting and outputting side of TeX/LaTeX.
 
@@ -598,8 +554,8 @@ There is much work still to be done.  See the TODO list in the TOM.pm source.
 
 =head1 BUGS
 
-Probably plenty.  However, this module has performed fairly well on a set of 
-~1000 research publications from the Computing Research Repository, so I 
+Probably plenty.  However, this module has performed fairly well on a set of
+~1000 research publications from the Computing Research Repository, so I
 deemed it ``good enough'' to use for purposes similar to mine.
 
 Please let me know of parser errors if you discover any.
@@ -613,27 +569,5 @@ Maintained by Steven Schubiger <schubiger@cpan.org>
 =head1 WEB SITE
 
 Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this module's home on the WWW.
-
-=head1 HISTORY
-
-=over 2
-
-=item .02c
-
-Bug fixes: Handling of newlines and whitespace between commands and parameters and groups, handling of \w+\d+ commands (thanks Leo Tenenblat for both of these), documentation bugfix: "parseFile", not "parsefile".
-
-=item .02b
-
-License included (BSD), some minor code indenting cleanups.
-
-=item .02
-
-This is the first release version.
-
-=item .01
-
-Non-OOP version of the current functionality.  Not released.
-
-=back
 
 =cut

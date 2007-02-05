@@ -6,29 +6,35 @@
 #
 ###############################################################################
 
-package LaTeX::TOM;
+package LaTeX::TOM::Tree;
 
 use strict;
-use vars qw{%MATHBRACKETS};
 
 # "constructor"
 #
-sub Tree::new {
-    my $class = shift;
+sub new {
+    my $class  = shift;
+    my $nodes  = shift || []; # empty array for tree structure
+    my $parser = shift;
 
-    my $self = shift || []; # empty array for tree structure
+    my $opts = $parser->{config}{MATHBRACKETS};
 
-    return bless $self, $class;
+    my $self = {
+       config => { MATHBRACKETS => $opts },
+       nodes  => $nodes,
+    };
+
+    return bless $self, ref($class) || $class;
 }
 
 # make a copy of a tree, recursively
 #
-sub Tree::copy {
+sub copy {
     my $tree = shift; # input tree
 
     my @output; # output array (to become tree)
 
-    foreach my $node (@$tree) {
+    foreach my $node (@{$tree->{nodes}}) {
 
         # make a copy of the node's hash definition
         #
@@ -51,11 +57,11 @@ sub Tree::copy {
 
 # Print out the LaTeX "TOM" tree. Good for debugging our parser.
 #
-sub Tree::print {
+sub print {
     my $tree = shift;
     my $level = shift || 0;
 
-    foreach my $node (@$tree) {
+    foreach my $node (@{$tree->{nodes}}) {
         my $spacer = ' ' x ($level*2);
 
         print $spacer;
@@ -105,12 +111,12 @@ sub Tree::print {
 
 # pull out the plain text (non-math) TEXT nodes. returns an array of strings.
 #
-sub Tree::plainText {
+sub plainText {
     my $tree = shift;
 
     my $stringlist = [];
 
-    foreach my $node (@$tree) {
+    foreach my $node (@{$tree->{nodes}}) {
 
         if ($node->{type} eq 'TEXT' && $node->{plaintext}) {
             push @$stringlist, $node->{content};
@@ -127,7 +133,7 @@ sub Tree::plainText {
 # Get the plaintext of a LaTeX DOM and whittle it down into a word list
 # suitable for indexing.
 #
-sub Tree::indexableText {
+sub indexableText {
     my $tree = shift;
 
     my $pt = $tree->plainText();
@@ -160,13 +166,13 @@ sub Tree::indexableText {
 # document, something is amiss (we don't, however, guarantee that the output
 # TeX will be identical to the input, due to certain normalizations.)
 #
-sub Tree::toLaTeX {
+sub toLaTeX {
     my $tree = shift;
     my $parent = shift;
 
     my $str = "";
 
-    foreach my $node (@$tree) {
+    foreach my $node (@{$tree->{nodes}}) {
 
         if ($node->{type} eq 'TEXT' ||
                 $node->{type} eq 'COMMENT') {
@@ -198,9 +204,9 @@ sub Tree::toLaTeX {
 
         elsif ($node->{type} eq 'ENVIRONMENT') {
             # handle special math mode envs
-            if (defined $MATHBRACKETS{$node->{class}}) {
+            if (defined $tree->{config}{MATHBRACKETS}->{$node->{class}}) {
                 # print with left and lookup right brace.
-                $str .= $node->{class} . $node->{children}->toLaTeX($node) . $MATHBRACKETS{$node->{class}};
+                $str .= $node->{class} . $node->{children}->toLaTeX($node) . $tree->{config}{MATHBRACKETS}->{$node->{class}};
             }
 
             # standard \begin/\end envs
@@ -219,25 +225,25 @@ sub Tree::toLaTeX {
 #
 # Note that child pointers are already taken care of.
 #
-sub Tree::listify {
+sub listify {
     my $tree = shift;
     my $parent = shift;
 
-    for (my $i = 0; $i < scalar @$tree; $i++) {
+    for (my $i = 0; $i < scalar @{$tree->{nodes}}; $i++) {
 
         my $prev = undef;
         my $next = undef;
 
-        $next = $tree->[$i - 1] if ($i > 0);
-        $prev = $tree->[$i + 1] if ($i + 1 < scalar @$tree);
+        $prev = $tree->{nodes}[$i - 1] if ($i > 0);
+        $next = $tree->{nodes}[$i + 1] if ($i + 1 < scalar @{$tree->{nodes}});
 
-        $tree->[$i]->{'prev'} = $prev;
-        $tree->[$i]->{'next'} = $next;
-        $tree->[$i]->{'parent'} = $parent;
+        $tree->{nodes}[$i]->{'prev'} = $prev;
+        $tree->{nodes}[$i]->{'next'} = $next;
+        $tree->{nodes}[$i]->{'parent'} = $parent;
 
         # recur, with parent info
-        if ($tree->[$i]->{children}) {
-            $tree->[$i]->{children}->listify($tree->[$i]);
+        if ($tree->{nodes}[$i]->{children}) {
+            $tree->{nodes}[$i]->{children}->listify($tree->{nodes}[$i]);
         }
     }
 }
@@ -246,18 +252,18 @@ sub Tree::listify {
 # "Tree walking" methods.
 #
 
-sub Tree::getTopLevelNodes {
+sub getTopLevelNodes {
     my $tree = shift;
 
-    return @$tree;
+    return @{$tree->{nodes}};
 }
 
-sub Tree::getAllNodes {
+sub getAllNodes {
     my $tree = shift;
 
     my @nodelist;
 
-    foreach my $node (@$tree) {
+    foreach my $node (@{$tree->{nodes}}) {
 
         push @nodelist, $node;
 
@@ -269,13 +275,13 @@ sub Tree::getAllNodes {
     return [@nodelist];
 }
 
-sub Tree::getNodesByCondition {
+sub getNodesByCondition {
     my $tree = shift;
     my $condition = shift;
 
     my @nodelist;
 
-    foreach my $node (@$tree) {
+    foreach my $node (@{$tree->{nodes}}) {
 
         # evaluate the perl code condition and if the result evaluates to true,
         # push this node
@@ -292,14 +298,14 @@ sub Tree::getNodesByCondition {
     return [@nodelist];
 }
 
-sub Tree::getCommandNodesByName {
+sub getCommandNodesByName {
     my $tree = shift;
     my $name = shift;
 
     return $tree->getNodesByCondition("\$node->{type} eq 'COMMAND' && \$node->{command} eq '$name'");
 }
 
-sub Tree::getEnvironmentsByName {
+sub getEnvironmentsByName {
     my $tree = shift;
     my $name = shift;
 

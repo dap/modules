@@ -7,22 +7,22 @@
 #
 ###############################################################################
 
-package LaTeX::TOM;
+package LaTeX::TOM::Node;
 
 use strict;
 
 # Make a new Node: turn input hash into object.
 #
-sub Node::new {
-    my $class = shift; 
-    my $node = shift || {};
+sub new {
+    my $class = shift;
+    my $node  = shift || {};
 
-    return bless $node, $class;
+    return bless $node, ref($class) || $class;
 }
 
 # "copy constructor"
 #
-sub Node::copy {
+sub copy {
     my $node = shift;
 
     my $copynode = {%$node}; # copy the memory contents and get a pointer
@@ -40,7 +40,7 @@ sub Node::copy {
 # Note2: a and b are not jointly constrained. You can split after location x
 # without losing any characters by setting a = x + 1 and b = x.
 #
-sub Node::split {
+sub split {
     my $node = shift;
     my $a = shift;
     my $b = shift;
@@ -50,13 +50,13 @@ sub Node::split {
     my $lefttext = substr $node->{content}, 0, $a;
     my $righttext = substr $node->{content}, $b + 1, length($node->{content}) - $b;
 
-    my $leftnode = Node->new(
+    my $leftnode = LaTeX::TOM::Node->new(
         {type => 'TEXT',
          start => $node->{start},
          end => $node->{start} + $a -1,
          content => $lefttext});
 
-    my $rightnode = Node->new(
+    my $rightnode = LaTeX::TOM::Node->new(
         {type => 'TEXT',
          start => $node->{start} + $b + 1,
          end => $node->{start} + length($node->{content}),
@@ -69,68 +69,68 @@ sub Node::split {
 # accessor methods
 #
 
-sub Node::getNodeType {
+sub getNodeType {
     my $node = shift;
 
     return $node->{type};
 }
 
-sub Node::getNodeText {
+sub getNodeText {
     my $node = shift;
 
     return $node->{content};
 }
 
-sub Node::setNodeText {
+sub setNodeText {
     my $node = shift;
     my $text = shift;
 
     $node->{content} = $text;
 }
 
-sub Node::getNodeStartingPosition {
+sub getNodeStartingPosition {
     my $node = shift;
 
     return $node->{start};
 }
 
-sub Node::getNodeEndingPosition {
+sub getNodeEndingPosition {
     my $node = shift;
 
     return $node->{end};
 }
 
-sub Node::getNodeMathFlag {
+sub getNodeMathFlag {
     my $node = shift;
 
     return $node->{math} ? 1 : 0;
 }
 
-sub Node::getNodePlainTextFlag {
+sub getNodePlainTextFlag {
     my $node = shift;
 
     return $node->{plaintext} ? 1 : 0;
 }
 
-sub Node::getNodeOuterStartingPosition {
+sub getNodeOuterStartingPosition {
     my $node = shift;
 
     return (defined $node->{ostart} ? $node->{ostart} : $node->{start});
 }
 
-sub Node::getNodeOuterEndingPosition {
+sub getNodeOuterEndingPosition {
     my $node = shift;
 
     return (defined $node->{oend} ? $node->{oend} : $node->{end});
 }
 
-sub Node::getEnvironmentClass {
+sub getEnvironmentClass {
     my $node = shift;
 
     return $node->{class};
 }
 
-sub Node::getCommandName {
+sub getCommandName {
     my $node = shift;
 
     return $node->{command};
@@ -140,13 +140,13 @@ sub Node::getCommandName {
 # linked-list accessors
 #
 
-sub Node::getChildTree {
+sub getChildTree {
     my $node = shift;
 
     return $node->{children};
 }
 
-sub Node::getFirstChild {
+sub getFirstChild {
     my $node = shift;
 
     if ($node->{children}) {
@@ -156,7 +156,7 @@ sub Node::getFirstChild {
     return undef;
 }
 
-sub Node::getLastChild {
+sub getLastChild {
     my $node = shift;
 
     if ($node->{children}) {
@@ -166,19 +166,19 @@ sub Node::getLastChild {
     return undef;
 }
 
-sub Node::getPreviousSibling {
+sub getPreviousSibling {
     my $node = shift;
 
     return $node->{prev};
 }
 
-sub Node::getNextSibling {
+sub getNextSibling {
     my $node = shift;
 
     return $node->{'next'};
 }
 
-sub Node::getParent {
+sub getParent {
     my $node = shift;
 
     return $node->{parent};
@@ -195,7 +195,7 @@ sub Node::getParent {
 # Note: this may be bad, but TEXT Nodes matching /^\s*\[[0-9]+\]$/ (optional
 # parameter groups) are treated as if they were whitespace.
 #
-sub Node::getNextGroupNode {
+sub getNextGroupNode {
     my $node = shift;
 
     my $next = $node;
