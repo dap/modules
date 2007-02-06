@@ -12,7 +12,7 @@ Revision history for Perl extension LaTeX::TOM.
 
  - LaTeX::TOM's constructor, new() reblesses a LaTeX::TOM::Parser
    object with the references to the global variables defined within
-   LaTeX::TOM. @_ is passed unaltered to LaTeX::TOM::Parser new().
+   LaTeX::TOM. @_ is passed unaltered to LaTeX::TOM::Parser's new().
 
  - LaTeX::TOM establishes an ISA relationship with LaTeX::TOM::Parser
    and LaTeX::TOM::Parser with LaTeX::TOM::Node/LaTeX::TOM::Tree.
