@@ -22,14 +22,14 @@ sub new {
 
     bless $self, ref($class) || $class;
 
-    $self->init(@_);
+    $self->_init(@_);
 
     return $self;
 }
 
 # Set/reset "globals"
 #
-sub init {
+sub _init {
     my $parser = $_[0];
 
     my $parse_errors_fatal = (defined $_[1] ? $_[1] : $parser->{config}{PARSE_ERRORS_FATAL});
@@ -70,7 +70,7 @@ sub parseFile {
 
     # read in text from file
     #
-    my $text = readFile($filename);
+    my $text = _readFile($filename);
 
     # do the parse or bomb out
     #
@@ -92,40 +92,40 @@ sub parse {
 
     # first half of parsing (goes up to finding commands, reading inputs)
     #
-    my ($tree, $bracehash) = $parser->parseA($text);
+    my ($tree, $bracehash) = $parser->_parseA($text);
 
-    #print "done with parseA\n";
+    #print "done with _parseA\n";
     #$tree->print();
 
     # handle mappings
     #
-    $parser->applyMappings($tree) if $parser->{applymappings};
+    $parser->_applyMappings($tree) if $parser->{applymappings};
 
-    #print "done with applyMappings\n";
+    #print "done with _applyMappings\n";
     #$tree->print();
 
     # second half of parsing (environments)
     #
-    $parser->parseB($tree);
+    $parser->_parseB($tree);
 
-    #print "done with parseB\n";
+    #print "done with _parseB\n";
     #$tree->print();
 
     # once all the above is done we can propegate math/plaintext modes down
     #
-    $parser->propegateModes($tree, 0, 0);   # math = 0, plaintext = 0
+    $parser->_propegateModes($tree, 0, 0);   # math = 0, plaintext = 0
 
-    #print "done with propegateModes\n";
+    #print "done with _propegateModes\n";
     #$tree->print();
 
     # handle kooky \[ \] math mode
     #
     if (not exists $parser->{MAPPEDCMDS}->{'\\['}) {
         # math mode (\[ \], \( \))
-        $parser->stage5($tree, {'\\[' => '\\]', '\\(' => '\\)'}, 1);
-        $parser->propegateModes($tree, 0, 0);     # have to do this again of course
-        $parser->{MATHBRACKETS}->{'\\['} = '\\]'; # put back in brackets list for
-        $parser->{MATHBRACKETS}->{'\\('} = '\\)'; # printing purposes.
+        $parser->_stage5($tree, {'\\[' => '\\]', '\\(' => '\\)'}, 1);
+        $parser->_propegateModes($tree, 0, 0);     # have to do this again of course
+        $parser->{MATHBRACKETS}->{'\\['} = '\\]';  # put back in brackets list for
+        $parser->{MATHBRACKETS}->{'\\('} = '\\)';  # printing purposes.
     }
 
     #$tree->print();
@@ -137,17 +137,17 @@ sub parse {
 
 # Parsing with no mappings and no externally accessible parser object.
 #
-sub basicparse {
+sub _basicparse {
     my $parser = shift; # @_ would break code
     my $text   = shift;
 
     my $parse_errors_fatal = (defined $_[0] ? $_[0] : $parser->{config}{PARSE_ERRORS_FATAL});
     my $readinputs = (defined $_[1] ? $_[1] : 1);
 
-    my $parser = LaTeX::TOM::Parser->new($parse_errors_fatal, $readinputs);
-    my ($tree, $bracehash) = $parser->parseA($text); 
+    $parser = LaTeX::TOM::Parser->new($parse_errors_fatal, $readinputs);
+    my ($tree, $bracehash) = $parser->_parseA($text); 
 
-    $parser->parseB($tree);
+    $parser->_parseB($tree);
 
     $tree->listify; # add linked-list stuff
 
@@ -156,11 +156,11 @@ sub basicparse {
 
 # start the tree. separate out comment and text nodes.
 #
-sub stage1 {
+sub _stage1 {
     my $parser = shift;
     my $text = shift;
 
-    my @nodes = getTextAndCommentNodes($text, 0, length($text));
+    my @nodes = _getTextAndCommentNodes($text, 0, length($text));
 
     return LaTeX::TOM::Tree->new([@nodes], $parser);
 }
@@ -168,7 +168,7 @@ sub stage1 {
 # this stage parses the braces ({}) and adds the corresponding structure to
 # the tree.
 #
-sub stage2 {
+sub _stage2 {
     my $parser = shift;
 
     my $tree = shift;
@@ -197,7 +197,7 @@ sub stage2 {
         if ($node->{type} eq 'TEXT') {
 
          #warn "parseStage2: looking at text node: [$node->{content}]";
-         my ($nextpos, $brace) = findbrace($node->{content}, $pos);
+         my ($nextpos, $brace) = _findbrace($node->{content}, $pos);
          while ($nextpos != -1) {
 
             $pos = $nextpos + 1; # update position pointer
@@ -245,7 +245,7 @@ sub stage2 {
                         $bracehash->{$groupnode->{end}} = $groupnode->{start};
 
                         # recur into new child node
-                        $parser->stage2($groupnode->{children}, $bracehash);
+                        $parser->_stage2($groupnode->{children}, $bracehash);
 
                         $i++; # skip to textnode3 for further processing
                     }
@@ -287,7 +287,7 @@ sub stage2 {
                         $bracehash->{$groupnode->{end}} = $groupnode->{start};
 
                         # recur into new child nodes
-                        $parser->stage2($groupnode->{children}, $bracehash);
+                        $parser->_stage2($groupnode->{children}, $bracehash);
 
                         # step back to textnode4 on this level for further processing
                         $i -= scalar @removed;
@@ -311,7 +311,7 @@ sub stage2 {
                 }
             } # right brace
 
-            ($nextpos, $brace) = findbrace($node->{content}, $pos);
+            ($nextpos, $brace) = _findbrace($node->{content}, $pos);
 
          } # while (braces left)
 
@@ -329,7 +329,7 @@ sub stage2 {
             warn "parse error: unmatched '{' at ".($spos+$leftpos).".";
         }
         # try to continue on, after the offending brace
-        $parser->stage2($tree, $bracehash, $leftidx, $leftpos + 1);
+        $parser->_stage2($tree, $bracehash, $leftidx, $leftpos + 1);
     }
 
     return $bracehash;
@@ -338,7 +338,7 @@ sub stage2 {
 # this stage finds LaTeX commands and accordingly turns GROUP nodes into
 # command nodes, labeled with the command
 #
-sub stage3 {
+sub _stage3 {
     my $parser = shift;
 
     my $tree = shift;
@@ -486,7 +486,7 @@ sub stage3 {
         if ($node->{type} eq 'GROUP' ||
             $node->{type} eq 'COMMAND') {
 
-            $parser->stage3($node->{children}, $node);
+            $parser->_stage3($node->{children}, $node);
         }
     }
 }
@@ -503,7 +503,7 @@ sub stage3 {
 # "oend" is the ending } on the "end" tag, and
 # and "class" is the "x" from above.
 #
-sub stage4 {
+sub _stage4 {
     my $parser = shift;
     my $tree = shift;
 
@@ -579,13 +579,13 @@ sub stage4 {
                 $i -= scalar @newarray;
 
                 # recur into the children
-                $parser->stage4($envnode->{children});	
+                $parser->_stage4($envnode->{children});	
             }
         }
 
         # recur in general
         elsif ($node->{children}) {
-            $parser->stage4($node->{children});
+            $parser->_stage4($node->{children});
         }
     }
 
@@ -606,7 +606,7 @@ sub stage4 {
 # having this top level to go over all the bracket types prevents some pretty
 # bad combinatorial explosion
 #
-sub stage5 {
+sub _stage5 {
     my $parser = shift;
 
     my $tree = shift;
@@ -618,13 +618,13 @@ sub stage5 {
     foreach my $left (sort {length($b) <=> length($a)} keys %$brackets) {
         my $right = $brackets->{$left};
 
-        $parser->stage5_r($tree, $left, $right, $caremath);
+        $parser->_stage5_r($tree, $left, $right, $caremath);
     }
 }
 
 # recursive meat of above
 #
-sub stage5_r {
+sub _stage5_r {
     my $parser = shift;
 
     my $tree = shift;
@@ -647,7 +647,7 @@ sub stage5_r {
 
                 # search for left brace if we haven't started a pair yet
                 if ($leftidx == -1) {
-                    $leftpos = findsymbol($node->{content}, $left, $pos);
+                    $leftpos = _findsymbol($node->{content}, $left, $pos);
 
                     if ($leftpos != -1) {
                         #print "found (left) $left in [$node->{content}]\n";
@@ -658,7 +658,7 @@ sub stage5_r {
 
                 # search for a right brace
                 if ($leftpos != -1) {
-                    my $rightpos = findsymbol($node->{content}, $right, $pos);
+                    my $rightpos = _findsymbol($node->{content}, $right, $pos);
 
                     # found
                     if ($rightpos != -1) {
@@ -735,7 +735,7 @@ sub stage5_r {
                 } # left brace 
                 else {
 
-                    my $rightpos = findsymbol($node->{content}, $right, $pos);
+                    my $rightpos = _findsymbol($node->{content}, $right, $pos);
 
                     if ($rightpos != -1) {
                         my $startpos = $node->{start}; # get text start position 
@@ -760,7 +760,7 @@ sub stage5_r {
                 #print "$node->{class}" if ($node->{type} eq 'ENVIRONMENT');
                 #print "\n";
 
-                $parser->stage5_r($node->{children}, $left, $right, $caremath);
+                $parser->_stage5_r($node->{children}, $left, $right, $caremath);
             }
 
         } # loop over text blocks
@@ -781,7 +781,7 @@ sub stage5_r {
 # the plaintext flag should be printed.	math nodes will have the "math" flag,
 # and also plantext = 0.
 #
-sub propegateModes {
+sub _propegateModes {
     my $parser = shift;
 
     my $tree = shift;
@@ -834,7 +834,7 @@ sub propegateModes {
             }
 
             # recur
-            $parser->propegateModes($node->{children}, $mathflag, $plaintextflag);
+            $parser->_propegateModes($node->{children}, $mathflag, $plaintextflag);
         }
     }
 }
@@ -858,7 +858,7 @@ sub propegateModes {
 # same as above, except type is "environment" and there are two templates,
 # btemplate and etemplate.
 #
-sub applyMapping {
+sub _applyMapping {
     my $parser = shift;
 
     my $tree = shift;
@@ -900,7 +900,7 @@ sub applyMapping {
             next if $remain;
 
             # otherwise make new subtree
-            my $applied = applyParamsToTemplate($mapping->{btemplate}, @params);
+            my $applied = _applyParamsToTemplate($mapping->{btemplate}, @params);
 
             # splice in the result
             splice @{$tree->{nodes}}, $i, $j, @$applied;
@@ -958,7 +958,7 @@ sub applyMapping {
             next if ($remain > 0);
 
             # apply the params to the template
-            my $applied = applyParamsToTemplate($mapping->{template}, @params);
+            my $applied = _applyParamsToTemplate($mapping->{template}, @params);
 
             # splice in the result
             splice @{$tree->{nodes}}, $i, $j, @$applied;
@@ -1008,7 +1008,7 @@ sub applyMapping {
         # recur
         elsif ($node->{children}) {
 
-            $applications += $parser->applyMapping($node->{children}, $mapping);
+            $applications += $parser->_applyMapping($node->{children}, $mapping);
         }
     }
 
@@ -1019,7 +1019,7 @@ sub applyMapping {
 # a mapping applies to the entire tree and subtree consisting of nodes AFTER
 # itself in the level array.
 #
-sub applyMappings {
+sub _applyMappings {
     my $parser = shift;
 
     my $tree = shift;
@@ -1033,7 +1033,7 @@ sub applyMappings {
         if ($node->{type} eq 'COMMAND' &&
                 $node->{command} =~ /^(re)?newcommand$/) {
 
-            my $mapping = makeMapping($tree, $i); 
+            my $mapping = _makeMapping($tree, $i); 
             next if (!$mapping->{name}); # skip fragged commands
 
             if ($parser->{USED_COMMANDS}->{$mapping->{name}}) {
@@ -1054,7 +1054,7 @@ sub applyMappings {
             splice @{$tree->{nodes}}, $i, $mapping->{skip} + 1;
 
             # apply the mapping
-            my $count = $parser->applyMapping($tree, $mapping, $i);
+            my $count = $parser->_applyMapping($tree, $mapping, $i);
 
             #if ($count > 0) {
             #   print "printing altered subtree\n";
@@ -1070,7 +1070,7 @@ sub applyMappings {
 
             # make a mapping hash
             #
-            my $mapping = $parser->makeEnvMapping($tree, $i);
+            my $mapping = $parser->_makeEnvMapping($tree, $i);
             next if (!$mapping->{name}); # skip fragged commands.
 
             #print "applying (ne) mapping $mapping->{name}\n";
@@ -1081,7 +1081,7 @@ sub applyMappings {
 
             # apply the mapping
             #
-            my $count = $parser->applyMapping($tree, $mapping, $i);
+            my $count = $parser->_applyMapping($tree, $mapping, $i);
         }
 
         # handle "\def" stype commands.
@@ -1121,7 +1121,7 @@ sub applyMappings {
              splice @{$tree->{nodes}}, $i, 1;
 
              # apply the mapping
-             my $count = $parser->applyMapping($tree, $mapping, $i);
+             my $count = $parser->_applyMapping($tree, $mapping, $i);
 
              $i--; # check this index again
         }
@@ -1129,7 +1129,7 @@ sub applyMappings {
         # recur
         elsif ($node->{children}) {
 
-            $parser->applyMappings($node->{children});
+            $parser->_applyMappings($node->{children});
         }
     }
 }
@@ -1138,7 +1138,7 @@ sub applyMappings {
 #
 # also include bibliographies
 #
-sub addInputs {
+sub _addInputs {
     my $parser = shift;
 
     my $tree = shift;
@@ -1156,10 +1156,10 @@ sub addInputs {
             #print "reading input file $file\n";
 
             # read in contents of file
-            my $contents = readFile($file);
+            my $contents = _readFile($file);
             if ($contents eq '' && not $file =~ /\.tex$/) {
                 $file = "$file.tex";
-                $contents = readFile($file); 
+                $contents = _readFile($file); 
             }
 
             # dump Psfig/TeX files, they aren't useful to us and have
@@ -1174,7 +1174,7 @@ sub addInputs {
             #
             if ($contents) {
                 # parse into a tree
-                my ($subtree,) = $parser->basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
+                my ($subtree,) = $parser->_basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
 
                 # replace \input command node with subtree
                 splice @{$tree->{nodes}}, $i, 1, @$subtree;
@@ -1192,11 +1192,11 @@ sub addInputs {
              foreach my $file (@FILES) {
                  if ($file =~ /\.bbl$/) {
 
-                     my $contents = readFile($file);
+                     my $contents = _readFile($file);
 
                      if ($contents) {
 
-                         my ($subtree,) = $parser->basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
+                         my ($subtree,) = $parser->_basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
                          splice @{$tree->{nodes}}, $i, 1, @$subtree;
                          $i--;
                      }
@@ -1206,38 +1206,38 @@ sub addInputs {
 
         # recur
         if ($node->{children}) {
-            $parser->addInputs($node->{children});
+            $parser->_addInputs($node->{children});
         }
     }
 }
 
 # do pre-mapping parsing
 #
-sub parseA {
+sub _parseA {
     my $parser = shift;
     my $text = shift;
 
-    my $tree = $parser->stage1($text);
-    my $bracehash = $parser->stage2($tree);
+    my $tree = $parser->_stage1($text);
+    my $bracehash = $parser->_stage2($tree);
 
-    $parser->stage3($tree);
+    $parser->_stage3($tree);
 
-    $parser->addInputs($tree) if $parser->{readinputs};
+    $parser->_addInputs($tree) if $parser->{readinputs};
 
     return ($tree, $bracehash);
 }
 
 # do post-mapping parsing (make environments)
 #
-sub parseB {
+sub _parseB {
     my $parser = shift;
     my $tree = shift;
 
-    $parser->stage4($tree);
+    $parser->_stage4($tree);
 
     #print "done with parseStage4\n";
 
-    $parser->stage5($tree, 0);
+    $parser->_stage5($tree, 0);
 
     #print "done with parseStage5\n";
 }
@@ -1250,7 +1250,7 @@ sub parseB {
 
 # find next unescaped char in some text
 #
-sub uindex {
+sub _uindex {
     my $text = shift;
     my $char = shift;
     my $pos = shift;
@@ -1279,7 +1279,7 @@ sub uindex {
 # support function: find the next occurrence of some symbol which is 
 # not escaped.
 #
-sub findsymbol {
+sub _findsymbol {
     my $text = shift;
     my $symbol = shift;
     my $pos = shift;
@@ -1313,7 +1313,7 @@ sub findsymbol {
 
 # support function: find the earliest next brace in some (flat) text
 #
-sub findbrace {
+sub _findbrace {
     my $text = shift;
     my $pos = shift;
 
@@ -1385,7 +1385,7 @@ sub findbrace {
 # skip "blank nodes" in a tree, starting at some position. will finish 
 # at the first non-blank node. (ie, not a comment or whitespace TEXT node.
 #
-sub skipBlankNodes {
+sub _skipBlankNodes {
     my $tree = shift;
     my $i = shift;
 
@@ -1402,7 +1402,7 @@ sub skipBlankNodes {
 # is the passed-in node a valid parameter node? for this to be true, it must
 # either be a GROUP or a position = inner command.
 #
-sub validParamNode {
+sub _validParamNode {
     my $node = shift;
 
     return 1 if ($node->{type} eq 'GROUP' || 
@@ -1414,7 +1414,7 @@ sub validParamNode {
 # duplicate a valid param node.	This means for a group, copy the child tree.
 # for a command, make a new tree with just the command node and its child tree.
 #
-sub duplicateParam {
+sub _duplicateParam {
     my $parser = shift;
     my $node = shift;
 
@@ -1440,7 +1440,7 @@ sub duplicateParam {
 #
 # \newenvironment{name}[nparams]?{beginTeX}{endTeX}
 #
-sub makeEnvMapping {
+sub _makeEnvMapping {
     my $parser = shift;
     my $tree   = shift;
     my $i      = shift;
@@ -1471,23 +1471,23 @@ sub makeEnvMapping {
 
     # default templates-- just repeat the declarations
     #
-    my ($btemplate) = $parser->basicparse("\\begin{$command}", 2, 0);
-    my ($etemplate) = $parser->basicparse("\\end{$command}", 2, 0);
+    my ($btemplate) = $parser->_basicparse("\\begin{$command}", 2, 0);
+    my ($etemplate) = $parser->_basicparse("\\end{$command}", 2, 0);
 
     my $endpos = $next;
 
     # get two group subtrees... one for the begin and one for the end 
     # templates. we only ignore whitespace TEXT nodes and comments
     #
-    $next = skipBlankNodes($tree, $next);
-    if (validParamNode($tree->{nodes}[$next])) {
-        $btemplate = $parser->duplicateParam($tree->{nodes}[$next]);
+    $next = _skipBlankNodes($tree, $next);
+    if (_validParamNode($tree->{nodes}[$next])) {
+        $btemplate = $parser->_duplicateParam($tree->{nodes}[$next]);
         $next++;
 
-        $next = skipBlankNodes($tree, $next);
+        $next = _skipBlankNodes($tree, $next);
 
-        if (validParamNode($tree->{nodes}[$next])) {
-            $etemplate = $parser->duplicateParam($tree->{nodes}[$next]);
+        if (_validParamNode($tree->{nodes}[$next])) {
+            $etemplate = $parser->_duplicateParam($tree->{nodes}[$next]);
             $endpos = $next;
         }
     }
@@ -1509,7 +1509,7 @@ sub makeEnvMapping {
 #
 # \newcommand{\name}[nparams]?{anyTeX}
 #
-sub makeMapping {
+sub _makeMapping {
     my $tree = shift;
     my $i = shift;
 
@@ -1560,7 +1560,7 @@ sub makeMapping {
 # newly allocated, should be plopped back into the original tree where the
 # parameters (along with the initial command invocation)
 #
-sub applyParamsToTemplate {
+sub _applyParamsToTemplate {
     my $template = shift;
     my @params = @_;
 
@@ -1570,14 +1570,14 @@ sub applyParamsToTemplate {
 
     # now recursively apply the params.
     #
-    applyParamsToTemplate_r($applied, @params);
+    _applyParamsToTemplate_r($applied, @params);
 
     return $applied;
 }
 
 # recursive helper for above
 #
-sub applyParamsToTemplate_r {
+sub _applyParamsToTemplate_r {
     my $template = shift;
     my @params = @_;
 
@@ -1622,7 +1622,7 @@ sub applyParamsToTemplate_r {
         # recur
         elsif (defined $node->{children}) {
 
-            applyParamsToTemplate_r($node->{children}, @params);
+            _applyParamsToTemplate_r($node->{children}, @params);
         }
     }
 }
@@ -1632,7 +1632,7 @@ sub applyParamsToTemplate_r {
 # it into a list of TEXT nodes and COMMENT nodes, as we would expect from 
 # '%' prefixed LaTeX comment lines
 #
-sub getTextAndCommentNodes {
+sub _getTextAndCommentNodes {
     my $text = shift;
     my $begins = shift;
     my $ends = shift;
@@ -1709,7 +1709,7 @@ sub getTextAndCommentNodes {
 
 # Read in the contents of a text file on disk. Return in string scalar.
 #
-sub readFile {
+sub _readFile {
     my $file = shift || '/dev/stdin';
 
     my $contents = "";
