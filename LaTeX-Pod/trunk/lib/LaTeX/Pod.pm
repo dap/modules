@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.09_01';
+our $VERSION = '0.10';
 
 sub new {
     my ($self, $file) = @_;
@@ -52,17 +52,15 @@ sub convert {
         }
     }
 
-    $self->_pod_finalize;
-
-    return $self->_pod_get;
+    return $self->_pod_finalize;
 }
 
 sub _init_self {
-    my $opts = shift;
+    my $args = shift;
 
     my %opts;
 
-    $opts{file}      = $opts->{file};
+    $opts{file}      = $args->{file};
     $opts{title_inc} = 1;
 
     @{$opts{dispatch_text}} = (
@@ -93,28 +91,32 @@ sub _init_tom {
     my $self = shift;
 
     # silently discard warnings about unparseable latex
-    my $parser = LaTeX::TOM->new(2);
+    my $parser   = LaTeX::TOM->new(2);
     my $document = $parser->parseFile($self->{file});
-    my $nodes = $document->getAllNodes;
+    my $nodes    = $document->getAllNodes;
 
     return $nodes;
 }
 
 sub _process_directives {
     my $self = shift;
-
-    if ($self->_is_set_node('directive')) {
-        $self->_unregister_node('directive');
-        return 1;
-    } elsif ($self->_is_set_node('doctitle')) {
-        $self->_unregister_node('doctitle');
-        $self->_pod_add("=head1 ".$self->{current_node}->getNodeText);
-        $self->{title_inc}++;
-        return 1;
-    } elsif ($self->_is_set_node('docauthor')) {
-        $self->_unregister_node('docauthor');
-        return 1;
+    
+    foreach my $node qw(directive docauthor) {
+        if ($self->_is_set_node($node)) {
+            $self->_unregister_node($node);
+	    
+	    return 1;
+	}
     }
+
+    if ($self->_is_set_node('doctitle')) {
+        $self->_unregister_node('doctitle');
+	
+        $self->_pod_add('=head1 '.$self->{current_node}->getNodeText);
+        $self->{title_inc}++;
+	
+        return 1;
+    } 
 
     return 0;
 }
@@ -123,14 +125,14 @@ sub _process_text_title {
     my $self = shift;
 
     if ($self->_is_set_previous('item')) {
-        $self->_pod_add("=back\n\n");
+        $self->_pod_add('=back');
     }
 
     my $text = $self->{current_node}->getNodeText;
 
     $self->_process_spec_chars(\$text);
 
-    $self->_pod_add("$text\n");
+    $self->_pod_append($text);
 
     $self->_unregister_node('title');
     $self->_register_previous('title');
@@ -140,28 +142,32 @@ sub _process_text_verbatim {
     my $self = shift;
 
     my $text = $self->{current_node}->getNodeText;
-
-    unless ($self->_is_set_previous('verbatim')) {
-        $text =~ s/^\n//s;
-        $text =~ s/\n$//s if $text =~ /\n{2,}$/;
+    
+    my $len;
+    while ($text =~ /^(\ *?)\w/gm) {
+        $len = length $1;
+	last if $len >= 0;
     }
-
-    unless ($self->_is_set_previous([qw(verbatim item text)])) {
-        $text .= "\n";
-    }
-
+    
     if ($self->_is_set_previous('text')) {
-        $text =~ s/^(.*)$/\ $1/gm;
+	$self->_pod_scrub_whitespaces(\$text);
+	
+	if ($len) {
+	    $text = ' ' x $len . $text;
+	} else {
+	    $text =~ s/^(.*)$/\ $1/gm;
+	}
     } else {
-        $text =~ s/(.*)/\n$1/;
+        $self->_pod_scrub_newlines(\$text);
     }
-
+    
     $self->_process_spec_chars(\$text);
-
-    $self->_pod_add("$text\n");
+   
+    $self->_pod_add($text);
 
     $self->_unregister_node('verbatim');
     $self->_unregister_previous('title');
+    $self->_unregister_previous('text');
     $self->_register_previous('verbatim');
 }
 
@@ -169,21 +175,20 @@ sub _process_text_item {
     my $self = shift;
 
     unless ($self->_is_set_previous('item')) {
-        $self->_pod_add("\n\n=over 4\n\n");
+        $self->_pod_add('=over 4');
     }
 
     my $text = $self->{current_node}->getNodeText;
 
-    if ($text =~ /\\item\s*\[.*?\]/) {
-        $text =~ s/\\item\s*\[(.*?)\](.*)/\=item $1\n$2/g;
+    if ($text =~ /\\item\s*\[(.*?)\]/) {
+	$self->_pod_add("=item $1");
     } else {
-        $text =~ s/\\item\s*(.*)/\=item \n\n$1/g;
+	$self->_pod_add('=item');
     }
-
-    $text =~ s/^(?:\n)|(?:\n)$//g;
-
+    
+    $self->_pod_scrub_newlines(\$text);
     $self->_process_spec_chars(\$text);
-    $self->_pod_add($text);
+
     $self->_register_previous('item');
 }
 
@@ -193,7 +198,10 @@ sub _process_text {
     my $text = $self->{current_node}->getNodeText;
 
     $self->_process_spec_chars(\$text);
+    
+    $self->_pod_scrub_newlines(\$text);
     $self->_pod_add($text);
+    
     $self->_register_previous('text');
 }
 
@@ -212,10 +220,9 @@ sub _process_item {
 
     unless ($self->{current_node}->getCommandName eq 'mbox') {
         if ($self->_is_set_previous('item')) {
-            $self->_pod_add("\n=back\n");
+            $self->_pod_add('=back');
         }
 
-        $self->_pod_add("\n");
         $self->_unregister_previous('item');
     }
 }
@@ -223,25 +230,16 @@ sub _process_item {
 sub _process_chapter {
     my $self = shift;
 
-    if ($self->_is_set_previous('title')) {
-        $self->_unregister_previous('title');
-    }
-
     $self->{title_inc}++;
 
-    $self->_pod_add("\n\n=head1 ");
+    $self->_pod_add('=head1 ');
     $self->_register_node('title');
 }
 
 sub _process_section {
     my $self = shift;
 
-    if ($self->_is_set_previous([qw(title item text)])) {
-        $self->_pod_add("\n\n");
-        $self->_unregister_previous([qw(title item text)]);
-    }
-
-    $self->_pod_add("\n\n=head".$self->{title_inc}.' ');
+    $self->_pod_add('=head'.$self->{title_inc}.' ');
     $self->_register_node('title');
 }
 
@@ -255,12 +253,7 @@ sub _process_subsection {
         $sub_often++;
     }
 
-    if ($self->_is_set_previous([qw(title text verbatim)])) {
-        $self->_pod_add("\n");
-        $self->_unregister_previous([qw(title text verbatim)]);
-    }
-
-    $self->_pod_add("\n\n=head".($self->{title_inc} + $sub_often).' ');
+    $self->_pod_add('=head'.($self->{title_inc} + $sub_often).' ');
     $self->_register_node('title');
 }
 
@@ -294,13 +287,47 @@ sub _process_tags {
                 textsf => 'C',
                 emph   => 'I');
 
-    $self->_pod_add("$tags{$tag}<$text>");
+    $self->{append_following} = 1;
+    
+    $self->_pod_append("$tags{$tag}<$text>");
     $self->_unregister_node($tag);
 }
 
 sub _pod_add {
     my ($self, $content) = @_;
-    $self->{pod} .= $content;
+
+    if (!$self->{append_following}) {
+        push @{$self->{pod}}, $content;
+    } else {
+        $self->_pod_append($content);
+	$self->{append_following} = 0;
+    }
+}
+
+sub _pod_append {
+    my ($self, $content) = @_;
+    
+    $self->{pod}->[-1] .= $content;
+}
+
+sub _pod_scrub_newlines {
+    my ($self, $text) = @_;
+    
+    $$text =~ s/^\n*//;
+    $$text =~ s/\n*$//;
+}
+
+sub _pod_scrub_whitespaces {
+    my ($self, $text) = @_;
+    
+    $$text =~ s/^\s*//;
+    $$text =~ s/\s*$//;
+}
+
+sub _pod_get {
+    my $self = shift;
+    
+    return $self->{pod};
 }
 
 sub _pod_finalize {
@@ -308,55 +335,52 @@ sub _pod_finalize {
 
     $self->_pod_add('=cut');
 
-    my $pod = $self->_pod_get;
-    $pod =~ s/\n{2,}/\n\n/g;
-    $self->_pod_set($pod);
-}
-
-sub _pod_get {
-    my $self = shift;
-    return $self->{pod};
-}
-
-sub _pod_set {
-    my ($self, $pod) = @_;
-    $self->{pod} = $pod;
+    return join "\n\n", @{$self->_pod_get};
 }
 
 sub _register_node {
     my ($self, $item) = @_;
+    
     $self->{node}{$item} = 1;
 }
 
 sub _is_set_node {
     my ($self, $item) = @_;
+    
     return $self->{node}{$item} ? 1 : 0;
 }
 
 sub _unregister_node {
     my ($self, $item) = @_;
+    
     delete $self->{node}{$item};
 }
 
 sub _register_previous {
     my ($self, $item) = @_;
+    
     $self->{previous}{$item} = 1;
 }
 
 sub _is_set_previous {
     my ($self, $item) = @_;
+
     my @items = ref($item) eq 'ARRAY' ? @$item : ($item);
+    
     foreach my $item_single (@items) {
         if ($self->{previous}{$item_single}) {
             return 1;
         }
     }
+    
     return 0;
 }
 
 sub _unregister_previous {
     my ($self, $item) = @_;
+    
     my @items = ref($item) eq 'ARRAY' ? @$item : ($item);
+    
     foreach my $item_single (@items) {
         if ($self->{previous}{$item_single}) {
             delete $self->{previous}{$item_single};
@@ -429,19 +453,18 @@ The current implementation is a bit I<flaky> because C<LaTeX::TOM>, the framewor
 being used for parsing the LaTeX nodes, makes a clear distinction between various
 types of nodes. As example, an \item directive has quite often a separate text which
 is associated with former one. And they can't be detected without some kind of
-sophisticated "lookahead".
+sophisticated "lookbehind", which is what is done.
 
-I tried to implement a I<context-sensitive> awareness for C<LaTeX::Pod>. I did so
-by setting which node has been seen before the current one in order to be able to
-call the appropriate routine for a LaTeX directive with two or more nodes.
+The author tried to implement a I<context-sensitive> awareness for C<LaTeX::Pod>. He 
+did so by setting which node has been seen before the current one in order to be able 
+to call the appropriate routine for a LaTeX directive with two or more nodes.
 Furthermore, C<LaTeX::Pod> registers which node it has previously encountered
 and unregisters this information when it made use of it.
 
 Considering that the POD language has a limited subset of commands, the overhead
-of keeping track of node occurences seems almost bearable. The POD generated 
-may consist of too many newlines (because we can't always predict the unpredictable?)
-before undergoing the final scrubbing where more than two subsequent newlines
-will be truncated.
+of keeping track of node occurences seems almost bearable. The POD processed
+may consist of too many newlines before undergoing the scrubbing where leading and
+trailing newlines will be truncated.
 
 =head1 SEE ALSO
 

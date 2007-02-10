@@ -1,5 +1,13 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.10 Sat Feb 10 01:07:01 CET 2007
+
+ - Instead of appending generated Pod to a string while proceeding,
+   every "push" (directive & text) takes up one member in an 
+   encapsulated array. The array is flattened when a string 
+   representation is requested (usually when convert() returns) 
+   and a pair of newlines between each member is added.
+
 0.09_01 Sun Jan 28 01:25:29 CET 2007
 
  - Added call of _process_spec_chars() to _process_text_verbatim().
