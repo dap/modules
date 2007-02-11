@@ -1,0 +1,14 @@
+Build.PL
+Changes
+INSTALL
+lib/Number/Continuation.pm
+Makefile.PL
+MANIFEST			This list of files
+META.yml
+README
+scripts/contin.pl
+t/00-load.t
+t/list.t
+t/pod-coverage.t
+t/pod.t
+t/scalar.t
