@@ -19,6 +19,7 @@ WriteMakefile
                            'Carp' => 0,
                            'Test::More' => 0,
                            'File::Basename' => 0,
+                           'IO::Prompt' => 0,
                            'File::Slurp' => 0,
                            'Cwd' => 0
                          }

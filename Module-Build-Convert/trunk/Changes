@@ -1,5 +1,21 @@
 Revision history for Perl extension Module::Build::Convert.
 
+0.47_03 Sun Feb 11 03:15:40 CET 2007
+
+ - Moved large parts of the Makefile parser to external subroutines.
+
+ - Deprecated use of inserting unknown Makefile chunks to the data
+   structure and hence to the Build.PL generated. The according 
+   subroutines haven't been removed, solely uncommented.
+
+ - "Re-executing" the parser when processing multiple directories
+   unleashed some malfunctionality: the current directory, that
+   should be reprocessed was silently skipped, because we were
+   shifting the directory array and didn't unshift but push the
+   directory, which worked for a single directory, but not for
+   multiples. Furthermore, re-displaying the list with pending
+   items was surpressed in order to not confuse the user.
+
 0.47_02 Sun Feb  4 18:04:04 CET 2007
 
  - Replaced deprecated defined() behaviour on dereferenced array

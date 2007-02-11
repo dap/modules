@@ -15,7 +15,7 @@ use File::Spec ();
 use IO::File ();
 use IO::Prompt ();
 
-our $VERSION = '0.47_02';
+our $VERSION = '0.47_03';
 
 use constant LEADCHAR => '* ';
 
@@ -73,19 +73,21 @@ sub convert {
     my $Build_PL    = File::Basename::basename($self->{Config}{Build_PL});
     my $MANIFEST    = File::Basename::basename($self->{Config}{MANIFEST});
 
-    push @{$self->{dirs}}, $self->{current_dir} 
-      if @{$self->{dirs}} == 0 and $self->{Config}{reinit};
+    unshift @{$self->{dirs}}, $self->{current_dir} if $self->{Config}{reinit};
 
     $self->{show_summary} = 1 if @{$self->{dirs}} > 1;
 
-    while (my $dir = shift @{$self->{dirs}} ) {
+    while (my $dir = shift @{$self->{dirs}}) {
         $self->{current_dir} = $dir;
 
-        unless ($self->{have_single_dir}) { 
+        %{$self->{make_args}} = ();
+
+        unless ($self->{have_single_dir}) {
             local $" = "\n";
-            $self->_do_verbose(<<TITLE) if @{$self->{dirs}};
+            $self->_do_verbose(<<TITLE) if !$self->{Config}{reinit};
 Remaining dists:
 ----------------
+$dir
 @{$self->{dirs}}
 
 TITLE
@@ -101,13 +103,21 @@ TITLE
 
             $self->_do_verbose(LEADCHAR."Converting $self->{Config}{Makefile_PL} -> $self->{Config}{Build_PL}\n");
 
+            my $skip_msg  = LEADCHAR."Skipping $self->{Config}{Path}\n";
+               $skip_msg .= "\n" if @{$self->{dirs}};
+
             $self->_create_rcfile if $self->{Config}{Create_RC};
-            next if !$self->_exists_overwrite;
-            next if !$self->_makefile_ok;
+
+            if (!$self->_exists_overwrite || !$self->_makefile_ok) {
+                $self->_do_verbose($skip_msg);
+                next;
+            }
+
             $self->_get_data;
         }
 
         $self->_extract_args;
+        $self->_register_summary;
         $self->_convert;
         $self->_dump;
         $self->_write;
@@ -192,7 +202,7 @@ sub _makefile_ok {
     }
 
     if (!$failed && $makefile =~ /WriteMakefile\(\s*%\w+.*\s*\)/s && !$self->{Config}{Exec_Makefile}) {
-        print LEADCHAR."Indirect arguments to WriteMakefile() via hash detected, setting executing mode\n";
+        $self->_do_verbose(LEADCHAR."Indirect arguments to WriteMakefile() via hash detected, setting executing mode\n");
         $self->{Config}{Exec_Makefile} = 1;
     }
 
@@ -283,19 +293,24 @@ sub _parse_data {
 sub _extract_args {
     my $self = shift;
 
-    push @{$self->{summary}{succeeded}}, $self->{current_dir};
-
-    push @{$self->{summary}{$self->{Config}{Exec_Makefile} ? 'method_execute' : 'method_parse'}},
-           $self->{current_dir};
-
     if ($self->{Config}{Exec_Makefile}) {
-        $self->_do_verbose(LEADCHAR."Executing $self->{Config}{Makefile_PL}\n"); 
+        $self->_do_verbose(LEADCHAR."Executing $self->{Config}{Makefile_PL}\n");
         $self->_run_makefile;
     } else {
         $self->_parse_makefile;
     }
+}
 
-    $self->{Config}{Exec_Makefile} = $self->{Config}{reinit} = 0;
+sub _register_summary {
+    my $self = shift;
+
+    push @{$self->{summary}->{succeeded}}, $self->{current_dir};
+
+    push @{$self->{summary}{$self->{Config}{Exec_Makefile} ? 'method_execute' : 'method_parse'}},
+           $self->{current_dir};
+
+    $self->{Config}{Exec_Makefile} =
+           $self->{Config}{reinit} = 0;
 }
 
 sub _run_makefile {
@@ -341,7 +356,55 @@ sub _restore_globals {
 
 sub _parse_makefile {
     my $self = shift;
-    my (@histargs, %makeargs, $makefile, %trapped_loop);
+
+    $self->_parse_init;
+
+    ($self->{parse}{makefile}, $self->{make_code}{begin}, $self->{make_code}{end}) = $self->_read_makefile;
+    my ($found_string, $found_array, $found_hash) = $self->_parse_regexps;
+
+    $self->_debug(LEADCHAR."Entering parse\n\n", 'no_wait');
+
+    while ($self->{parse}{makefile}) {
+        # process string
+        if ($self->{parse}{makefile} =~ s/$found_string//) {
+            $self->_parse_process_string($1,$2,$3);
+            $self->_parse_register_comment;
+            $self->_debug($self->_debug_string_text);
+        # process array
+        } elsif ($self->{parse}{makefile} =~ s/$found_array//s) {
+            $self->_parse_process_array($1,$2,$3);
+            $self->_parse_register_comment;
+            $self->_debug($self->_debug_array_text);
+        # process hash
+        } elsif ($self->{parse}{makefile} =~ s/$found_hash//s) {
+            $self->_parse_process_hash($1,$2,$3);
+            $self->_parse_register_comment;
+            $self->_debug($self->_debug_hash_text);
+        # process everything else
+        # XXX experimental & disfunctional for now
+        } else {
+            $self->_parse_process_code;
+            $self->_parse_catch_trapped_loop;
+            #$self->_parse_substitute_makeargs;
+            #$self->_parse_append_makecode;
+            #$self->_debug($self->_debug_code_text);
+        }
+    }
+
+    $self->_debug(LEADCHAR."Leaving parse\n\n", 'no_wait');
+
+    %{$self->{make_args}} = %{$self->{parse}{makeargs}};
+}
+
+sub _parse_init {
+    my $self = shift;
+
+    @{$self->{parse}{histargs}} = ();
+    %{$self->{parse}{makeargs}} = ();
+}
+
+sub _parse_regexps {
+    my $self = shift;
 
     my $found_string = qr/^
                             \s* 
@@ -365,135 +428,199 @@ sub _parse_makefile {
                             (?: ,? \n? | ,? (\s+ \# \s+ \w+ .*?) \n)
                        /sx;
 
-    ($makefile, $self->{make_code}{begin}, $self->{make_code}{end}) = $self->_read_makefile;
-    $self->_debug(LEADCHAR."Entering parse\n\n", 'no_wait');
+    return ($found_string, $found_array, $found_hash);
+}
 
-    while ($makefile) {
-        if ($makefile =~ s/$found_string//) {
-            my ($arg, $value, $comment) = ($1,$2,$3);
-            $comment ||= '';
-            $value =~ tr/['"]//d;
-            $makeargs{$arg} = $value;
-            push @histargs, $arg;
+sub _parse_process_string {
+    my ($self, $arg, $value, $comment) = @_;
 
-            if (defined($comment) && defined($self->{Data}{table}{$arg})) {
-                $self->{make_comments}{$self->{Data}{table}{$arg}} = $comment;
-            }
+    $comment ||= '';
+    $value =~ tr/['"]//d;
 
-            $self->_debug(<<DEBUG);
-Found string ''
-+++++++++++++++
-\$arg: $arg
-\$value: $value
-\$comment: $comment
-\$remaining args:
-$makefile
+    $self->{parse}{makeargs}{$arg} = $value;
+    push @{$self->{parse}{histargs}}, $arg;
 
-DEBUG
-        } elsif ($makefile =~ s/$found_array//s) {
-            my ($arg, $values, $comment) = ($1,$2,$3);
-            $comment ||= '';
-            $makeargs{$arg} = [ map { tr/['",]//d; $_ } split /,\s*/, $values ];
-            push @histargs, $arg;
+    $self->{parse}{arg}     = $arg;
+    $self->{parse}{value}   = $value;
+    $self->{parse}{comment} = $comment;
+}
 
-            if (defined($comment) && defined($self->{Data}{table}{$arg})) {
-                $self->{make_comments}{$self->{Data}{table}{$arg}} = $comment;
-            }
+sub _parse_process_array {
+    my ($self, $arg, $values, $comment) = @_;
 
-            $self->_debug(<<DEBUG);
-Found array []
-++++++++++++++
-\$arg: $arg
-\$values: $values
-\$comment: $comment
-\$remaining args:
-$makefile
+    $comment ||= '';
 
-DEBUG
-        } elsif ($makefile =~ s/$found_hash//s) {
-            my ($arg, $values, $comment) = ($1,$2,$3);
-            $comment ||= '';
-            my @values_debug = split /,\s*/, $values;
-            my @values;
+    $self->{parse}{makeargs}{$arg} = [ map { tr/['",]//d; $_ } split /,\s*/, $values ];
+    push @{$self->{parse}{histargs}}, $arg;
 
-            foreach my $value (@values_debug) {
-                push @values, map { tr/['",]//d; $_ } split /\s*=>\s*/, $value;
-            }
+    $self->{parse}{arg}     = $arg;
+    $self->{parse}{values}  = $values,
+    $self->{parse}{comment} = $comment;
+}
 
-            @values_debug = map { "$_\n        " } @values_debug;
-            $makeargs{$arg} = { @values };
-            push @histargs, $arg;
+sub _parse_process_hash {
+    my ($self, $arg, $values, $comment) = @_;
 
-            if (defined($comment) && defined($self->{Data}{table}{$arg})) {
-                $self->{make_comments}{$self->{Data}{table}{$arg}} = $comment;
-            }
-            $self->_debug(<<DEBUG);
-Found hash {}
-+++++++++++++
-\$key: $arg
-\$values: @values_debug
-\$comment: $comment
-\$remaining args:
-$makefile
+    $comment ||= '';
 
-DEBUG
-        } else {
-            my ($debug_desc, $makecode);
+    my @values_debug = split /,\s*/, $values;
+    my @values;
 
-            if ($makefile =~ s/^\s*(\#.*\s*(?:=>\s*['"]?\w*['"]?))?,?\n//s) {
-                $debug_desc = 'comment';
-                $makecode = $1;
-            } elsif ($makefile =~ s/^\s*(['"]?\w+['"]?\s*=>\s*<<['"]?(.*?)['"]?,.*\2)//s) {
-                $debug_desc = 'here-doc';
-                $makecode = $1;
-            } elsif ($makefile =~ s/^\s*(\(?.*\?.*\:(.*?\),|.*['"],))\s*//s) {
-                $debug_desc = 'ternary operator';
-                $makecode = $1;
-            } elsif ($makefile =~ s/^\s*([\Q$@%\E]\w+)\s*//) {
-                $debug_desc = 'variable';
-                $makecode = $1;
-            } else {
-                $makefile =~ s/^\s*(.*?)\s*//;
-                $debug_desc = 'unknown';
-                $makecode = $1;
-            }
-
-            no warnings 'uninitialized';
-            $trapped_loop{$makecode}++ if $makecode eq $self->{makefile_prev};
-
-            if ($trapped_loop{$makecode} >= 1) {
-                $self->{Config}{Exec_Makefile} = 1;
-                $self->{Config}{reinit} = 1;
-                $self->convert;
-                exit;
-            }
-
-            $self->{makefile_prev} = $makecode;
-            $self->_debug(<<DEBUG);
-Found code &
-++++++++++++
-$debug_desc: $makecode
-remaining args:
-$makefile
-
-DEBUG
-            SUBST: foreach my $make (keys %{$self->{Data}{table}}) {
-                if ($makecode =~ /\b$make\b/s) {
-                    $makecode =~ s/$make/$self->{Data}{table}{$make}/;
-                    last SUBST;
-                }
-            }
-
-            if (@histargs) {
-                pop @histargs until $self->{Data}{table}{$histargs[-1]};
-                push @{$self->{make_code}{$self->{Data}{table}{$histargs[-1]}}}, $makecode;
-            }
-        }
+    foreach my $value (@values_debug) {
+        push @values, map { tr/['",]//d; $_ } split /\s*=>\s*/, $value;
     }
 
-    $self->_debug(LEADCHAR."Leaving parse\n\n", 'no_wait');
-    %{$self->{make_args}} = %makeargs;
+    @values_debug = map { "$_\n        " } @values_debug;
+
+    $self->{parse}{makeargs}{$arg} = { @values };
+    push @{$self->{parse}{histargs}}, $arg;
+
+    $self->{parse}{arg}     = $arg;
+    $self->{parse}{values}  = \@values_debug,
+    $self->{parse}{comment} = $comment;
 }
+
+sub _parse_process_code {
+    my $self = shift;
+
+    my ($debug_desc, $makecode);
+
+    if ($self->{parse}{makefile} =~ s/^\s*(\#.*\s*(?:=>\s*['"]?\w*['"]?))?,?\n//s) {
+        $debug_desc = 'comment';
+        $makecode = $1;
+    } elsif ($self->{parse}{makefile} =~ s/^\s*(['"]?\w+['"]?\s*=>\s*<<['"]?(.*?)['"]?,.*\2)//s) {
+        $debug_desc = 'here-doc';
+        $makecode = $1;
+    } elsif ($self->{parse}{makefile} =~ s/^\s*(\(?.*\?.*\:(.*?\),|.*['"],))\s*//s) {
+        $debug_desc = 'ternary operator';
+        $makecode = $1;
+    } elsif ($self->{parse}{makefile} =~ s/^\s*([\Q$@%\E]\w+)\s*//) {
+        $debug_desc = 'variable';
+        $makecode = $1;
+    } else {
+        $self->{parse}{makefile} =~ s/^\s*(.*?)\s*//;
+        $debug_desc = 'unknown';
+        $makecode = $1;
+    }
+
+    $self->{parse}{debug_desc} = $debug_desc;
+    $self->{parse}{makecode}   = $makecode;
+}
+
+sub _parse_catch_trapped_loop {
+    my $self = shift;
+
+    no warnings 'uninitialized';
+
+   $self->{parse}{trapped_loop}{$self->{parse}{makecode}}++
+     if $self->{parse}{makecode} eq $self->{makecode_prev};
+
+   if ($self->{parse}{trapped_loop}{$self->{parse}{makecode}} >= 1) {
+       $self->{Config}{Exec_Makefile} = 1;
+       $self->{Config}{reinit}        = 1;
+       $self->convert;
+       exit;
+   }
+
+   $self->{makecode_prev} = $self->{parse}{makecode};
+}
+
+#sub _parse_substitute_makeargs {
+#    my $self = shift;
+#
+#    $self->{parse}{makecode} ||= '';
+#
+#    SUBST: foreach my $make (keys %{$self->{Data}{table}}) {
+#        if ($self->{parse}{makecode} =~ /\b$make\b/s) {
+#            $self->{parse}{makecode} =~ s/$make/$self->{Data}{table}{$make}/;
+#            last SUBST;
+#       }
+#    }
+#}
+
+#sub _parse_append_makecode {
+#    my $self = shift;
+#
+#    if (@{$self->{parse}{histargs}}) {
+#        pop @{$self->{parse}{histargs}} 
+#         until $self->{Data}{table}{$self->{parse}{histargs}->[-1]};
+#
+#        push @{$self->{make_code}{$self->{Data}{table}{$self->{parse}{histargs}->[-1]}}}, 
+#              $self->{parse}{makecode};
+#    }
+#}
+
+sub _parse_register_comment {
+    my $self = shift;
+
+    my $arg     = $self->{parse}{arg};
+    my $comment = $self->{parse}{comment};
+
+    if (defined($comment) && defined($self->{Data}{table}{$arg})) {
+        $self->{make_comments}{$self->{Data}{table}{$arg}} = $comment;
+    }
+}
+
+sub _debug_string_text {
+    my $self = shift;
+
+    my $output = <<EOT;
+Found string ''
++++++++++++++++
+\$arg: $self->{parse}{arg}
+\$value: $self->{parse}{value}
+\$comment: $self->{parse}{comment}
+\$remaining args:
+$self->{parse}{makefile}
+
+EOT
+    return $output;
+}
+
+sub _debug_array_text {
+    my $self = shift;
+
+    my $output = <<EOT;
+Found array []
+++++++++++++++
+\$arg: $self->{parse}{arg}
+\$values: $self->{parse}{values}
+\$comment: $self->{parse}{comment}
+\$remaining args:
+$self->{parse}{makefile}
+
+EOT
+    return $output;
+}
+
+sub _debug_hash_text {
+    my $self = shift;
+
+    my $output = <<EOT;
+Found hash {}
++++++++++++++
+\$key: $self->{parse}{arg}
+\$values: @{$self->{parse}{values}}
+\$comment: $self->{parse}{comment}
+\$remaining args:
+$self->{parse}{makefile}
+EOT
+    return $output;
+}
+
+#sub _debug_code_text {
+#    my $self = shift;
+#
+#    my $output = <<EOT;
+#Found code &
+#++++++++++++
+#$self->{parse}{debug_desc}: $self->{parse}{makecode}
+#remaining args:
+#$self->{parse}{makefile}
+#
+#EOT
+#    return $output;
+#}
 
 sub _read_makefile {
     my $self = shift;
@@ -719,6 +846,7 @@ sub _compose_header {
 
     if (defined $self->{make_code}{begin}) {
         $self->_do_verbose(LEADCHAR."Removing ExtUtils::MakeMaker as dependency\n");
+
         $self->{make_code}{begin} =~ s/[ \t]*(?:use|require)\s+ExtUtils::MakeMaker\s*;//;
 
         if ($self->{make_code}{begin} =~ /(?:prompt|Verbose)\s*\(/s) {
@@ -747,6 +875,7 @@ sub _compose_header {
             $self->{make_code}{begin} =~ s/^\n?(.*?;)//s;
             $code_header .= "$1\n";
         }
+
         $self->_do_verbose(LEADCHAR."Adding use strict & use warnings pragmas\n");
 
         if ($code_header =~ /(?:use|require)\s+\d\.[\d_]*\s*;/) { 
@@ -918,6 +1047,10 @@ sub _show_summary {
         $self->_do_verbose('-' x length($item->[0]), "\n");
         $self->_do_verbose("@{$self->{summary}{$item->[1]}}\n\n");
     }
+
+    my $howmany = @{$self->{summary}->{succeeded}};
+
+    print "Processed $howmany directories\n";
 }
 
 sub _do_verbose {
