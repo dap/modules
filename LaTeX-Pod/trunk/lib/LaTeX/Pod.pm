@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.10';
+our $VERSION = '0.10_01';
 
 sub new {
     my ($self, $file) = @_;
@@ -100,23 +100,23 @@ sub _init_tom {
 
 sub _process_directives {
     my $self = shift;
-    
+
     foreach my $node qw(directive docauthor) {
         if ($self->_is_set_node($node)) {
             $self->_unregister_node($node);
-	    
-	    return 1;
-	}
+
+            return 1;
+        }
     }
 
     if ($self->_is_set_node('doctitle')) {
         $self->_unregister_node('doctitle');
-	
+
         $self->_pod_add('=head1 '.$self->{current_node}->getNodeText);
         $self->{title_inc}++;
-	
+
         return 1;
-    } 
+    }
 
     return 0;
 }
@@ -142,27 +142,27 @@ sub _process_text_verbatim {
     my $self = shift;
 
     my $text = $self->{current_node}->getNodeText;
-    
+
     my $len;
     while ($text =~ /^(\ *?)\w/gm) {
         $len = length $1;
-	last if $len >= 0;
+        last if $len >= 0;
     }
-    
+
     if ($self->_is_set_previous('text')) {
-	$self->_pod_scrub_whitespaces(\$text);
-	
-	if ($len) {
-	    $text = ' ' x $len . $text;
-	} else {
-	    $text =~ s/^(.*)$/\ $1/gm;
-	}
+        $self->_pod_scrub_whitespaces(\$text);
+
+        if ($len) {
+            $text = ' ' x $len . $text;
+        } else {
+            $text =~ s/^(.*)$/\ $1/gm;
+        }
     } else {
         $self->_pod_scrub_newlines(\$text);
     }
-    
+
     $self->_process_spec_chars(\$text);
-   
+
     $self->_pod_add($text);
 
     $self->_unregister_node('verbatim');
@@ -181,11 +181,11 @@ sub _process_text_item {
     my $text = $self->{current_node}->getNodeText;
 
     if ($text =~ /\\item\s*\[(.*?)\]/) {
-	$self->_pod_add("=item $1");
+        $self->_pod_add("=item $1");
     } else {
-	$self->_pod_add('=item');
+        $self->_pod_add('=item');
     }
-    
+
     $self->_pod_scrub_newlines(\$text);
     $self->_process_spec_chars(\$text);
 
@@ -198,10 +198,10 @@ sub _process_text {
     my $text = $self->{current_node}->getNodeText;
 
     $self->_process_spec_chars(\$text);
-    
+
     $self->_pod_scrub_newlines(\$text);
     $self->_pod_add($text);
-    
+
     $self->_register_previous('text');
 }
 
@@ -288,7 +288,7 @@ sub _process_tags {
                 emph   => 'I');
 
     $self->{append_following} = 1;
-    
+
     $self->_pod_append("$tags{$tag}<$text>");
     $self->_unregister_node($tag);
 }
@@ -300,33 +300,33 @@ sub _pod_add {
         push @{$self->{pod}}, $content;
     } else {
         $self->_pod_append($content);
-	$self->{append_following} = 0;
+        $self->{append_following} = 0;
     }
 }
 
 sub _pod_append {
     my ($self, $content) = @_;
-    
+
     $self->{pod}->[-1] .= $content;
 }
 
 sub _pod_scrub_newlines {
     my ($self, $text) = @_;
-    
+
     $$text =~ s/^\n*//;
     $$text =~ s/\n*$//;
 }
 
 sub _pod_scrub_whitespaces {
     my ($self, $text) = @_;
-    
+
     $$text =~ s/^\s*//;
     $$text =~ s/\s*$//;
 }
 
 sub _pod_get {
     my $self = shift;
-    
+
     return $self->{pod};
 }
 
@@ -340,25 +340,25 @@ sub _pod_finalize {
 
 sub _register_node {
     my ($self, $item) = @_;
-    
+
     $self->{node}{$item} = 1;
 }
 
 sub _is_set_node {
     my ($self, $item) = @_;
-    
+
     return $self->{node}{$item} ? 1 : 0;
 }
 
 sub _unregister_node {
     my ($self, $item) = @_;
-    
+
     delete $self->{node}{$item};
 }
 
 sub _register_previous {
     my ($self, $item) = @_;
-    
+
     $self->{previous}{$item} = 1;
 }
 
@@ -366,21 +366,21 @@ sub _is_set_previous {
     my ($self, $item) = @_;
 
     my @items = ref($item) eq 'ARRAY' ? @$item : ($item);
-    
+
     foreach my $item_single (@items) {
         if ($self->{previous}{$item_single}) {
             return 1;
         }
     }
-    
+
     return 0;
 }
 
 sub _unregister_previous {
     my ($self, $item) = @_;
-    
+
     my @items = ref($item) eq 'ARRAY' ? @$item : ($item);
-    
+
     foreach my $item_single (@items) {
         if ($self->{previous}{$item_single}) {
             delete $self->{previous}{$item_single};

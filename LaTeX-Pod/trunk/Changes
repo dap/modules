@@ -1,5 +1,12 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.10_01 Sun Feb 11 08:16:40 CET 2007
+
+ - Added 'script_files' parameter consisting of latex2pod's path
+   within the distribution to Build.PL.
+
+ - Fixed some indentation by converting some tabs to literal spaces.
+
 0.10 Sat Feb 10 01:07:01 CET 2007
 
  - Instead of appending generated Pod to a string while proceeding,

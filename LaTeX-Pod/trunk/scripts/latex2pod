@@ -43,7 +43,7 @@ sub convert {
 
 =head1 SYNOPSIS
 
- Usage: /usr/local/bin/latex2pod [switches] file
+ Usage: latex2pod [switches] file
    -h           help screen
    -V           version
 
