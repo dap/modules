@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.05_01
+# Version 0.05_02
 #
 # ----------------------------------------------------------------------------
 #
@@ -26,13 +26,13 @@
 
 package LaTeX::TOM;
 
-our $VERSION = '0.5_01';
-
 use strict;
 use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
             %BRACELESS %TEXTENVS $PARSE_ERRORS_FATAL};
 
 use base qw(LaTeX::TOM::Parser);
+
+our $VERSION = '0.5_02';
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -352,6 +352,16 @@ section.
 
 =head1 METHODS
 
+=head2 LaTeX::TOM
+
+=over 4
+
+=item new
+
+Instantiate a new parser object.
+
+=back
+
 In this section all of the methods for each of the components are listed and
 described.
 
@@ -439,11 +449,13 @@ This section contains the methods for nodes of the parsed Trees.
 
 =item getNodeType
 
-Returns the type, one of 'TEXT', 'COMMAND', 'ENVIRONMENT', 'GROUP', or 'COMMENT', as described above.
+Returns the type, one of 'TEXT', 'COMMAND', 'ENVIRONMENT', 'GROUP', or 'COMMENT', 
+as described above.
 
 =item getNodeText
 
-Applicable for TEXT or COMMENT nodes; this returns the document text they contain.  This is undef for other node types.
+Applicable for TEXT or COMMENT nodes; this returns the document text they contain.  
+This is undef for other node types.
 
 =item setNodeText
 
@@ -480,7 +492,7 @@ can be assumed to be the actual mathematics contained in the document.
 =item getNodePlainTextFlag
 
 This applies only to TEXT nodes.  It is 1 if the node is non-math B<and> is
-visible (in other words, will end up being a part of the output document).  One
+visible (in other words, will end up being a part of the output document). One
 would only want to index TEXT nodes with this property, for information 
 retrieval purposes.
 
@@ -568,6 +580,7 @@ Maintained by Steven Schubiger <schubiger@cpan.org>
 
 =head1 WEB SITE
 
-Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this module's home on the WWW.
+Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this 
+module's home on the WWW.
 
 =cut

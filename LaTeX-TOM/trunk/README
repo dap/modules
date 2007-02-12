@@ -5,12 +5,12 @@ NAME
 SYNOPSIS
       use LaTeX::TOM;
 
-      my $parser = new Parser;
+      my $parser = LaTeX::TOM->new;
 
       my $document = $parser->parseFile('mypaper.tex');
 
       my $latex = $document->toLaTeX;
-        
+
       my $specialnodes = $document->getNodesByCondition(
         '$node->getNodeType eq \'TEXT\' && 
          $node->getNodeText =~ /magic string/');
@@ -22,7 +22,7 @@ SYNOPSIS
       my $indexme = $document->getIndexableText;
 
       $document->print;
-        
+
 DESCRIPTION
     This module provides a parser which parses and interprets (though not
     fully) LaTeX documents and returns a tree-based representation of what
@@ -61,7 +61,7 @@ COMPONENTS
         and LaTeX commands, not ad hoc user macros. So, for instance, do not
         expect plain-text extraction to work properly with this option off.
 
-    The parser returns a LaTeX::TOM:Tree ($document in the SYNOPSIS).
+    The parser returns a LaTeX::TOM::Tree ($document in the SYNOPSIS).
 
   LaTeX::TOM::Node
     Nodes may be of the following types:
@@ -89,7 +89,7 @@ COMPONENTS
         what is contained in the environment. For example,
 
           \begin{equation}
-            r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} 
+            r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
           \end{equation}
 
         Would parse into an ENVIRONMENT node of the class ``equation'' with
@@ -133,6 +133,9 @@ COMPONENTS
     convenient methods, described in the next section.
 
 METHODS
+  LaTeX::TOM
+    new Instantiate a new parser object.
+
     In this section all of the methods for each of the components are listed
     and described.
 
@@ -317,20 +320,4 @@ AUTHOR
 WEB SITE
     Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this
     module's home on the WWW.
-
-HISTORY
-    .02c
-      Bug fixes: Handling of newlines and whitespace between commands and
-      parameters and groups, handling of \w+\d+ commands (thanks Leo
-      Tenenblat for both of these), documentation bugfix: "parseFile", not
-      "parsefile".
-
-    .02b
-      License included (BSD), some minor code indenting cleanups.
-
-    .02
-      This is the first release version.
-
-    .01
-      Non-OOP version of the current functionality. Not released.
 

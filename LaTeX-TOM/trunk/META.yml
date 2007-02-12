@@ -1,19 +1,25 @@
 ---
 name: LaTeX-TOM
-version: 0.5
+version: 0.5_02
 author:
   - 'Aaron Krowne <akrowne@vt.edu.org>'
-abstract: A module for parsing, analyzing, and manipulating LaTeX documents.
+abstract: 'A module for parsing, analyzing, and manipulating LaTeX documents.'
 license: perl
+resources:
+  license: http://dev.perl.org/licenses/
 build_requires:
   Test::More: 0
+provides:
+  LaTeX::TOM:
+    file: lib/LaTeX/TOM.pm
+    version: 0.5_02
+  LaTeX::TOM::Node:
+    file: lib/LaTeX/TOM/Node.pm
+  LaTeX::TOM::Parser:
+    file: lib/LaTeX/TOM/Parser.pm
+  LaTeX::TOM::Tree:
+    file: lib/LaTeX/TOM/Tree.pm
 generated_by: Module::Build version 0.2805
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2
-provides:
-  LaTeX::TOM:
-    file: lib/LaTeX/TOM.pm
-    version: 0.5
-resources:
-  license: http://dev.perl.org/licenses/
