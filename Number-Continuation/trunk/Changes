@@ -1,5 +1,12 @@
 Revision history for Perl extension Number::Continuation.
 
+0.03 Tue Feb 13 18:02:07 CET 2007
+
+ - Avoiding expensive copy of @_ to an array with more readable
+   name when entering continuation(). When processing a large
+   array with continuation() this change should allow for a 
+   remarkable speed increase (untested).
+
 0.02 Mon Feb 12 01:47:24 CET 2007
 
  - The Pod explaining the syntax of continuation() contained

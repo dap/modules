@@ -9,21 +9,19 @@ use Scalar::Util qw(refaddr);
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 @EXPORT_OK = qw(continuation);
 
 sub continuation {
-    my @args = @_;
+    my $opts = pop if ref $_[-1] eq 'HASH';
 
-    my $opts = pop @args if ref $args[-1] eq 'HASH';
-
-    my $input = ref $args[0] eq 'ARRAY'
-      ? join ' ', @{$args[0]}
-      : @args > 1
-        ? join ' ', @args
-        : !refaddr $args[0]
-          ? $args[0]
+    my $input = ref $_[0] eq 'ARRAY'
+      ? join ' ', @{$_[0]}
+      : @_ > 1
+        ? join ' ', @_
+        : !refaddr $_[0]
+          ? $_[0]
           : croak "continuation(\$set | \@set | \\\@set [, { options } ])\n";
 
     my $wantarray = wantarray;
