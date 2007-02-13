@@ -1,5 +1,10 @@
 Revision history for Perl extension Number::Continuation.
 
+0.02 Mon Feb 12 01:47:24 CET 2007
+
+ - The Pod explaining the syntax of continuation() contained
+   too many escaping backslashes which I didn't spot initially.
+
 0.01 Sun Feb 11 20:09:30 CET 2007
 
  - Initial version.

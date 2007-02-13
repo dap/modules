@@ -1,6 +1,6 @@
 ---
 name: Number-Continuation
-version: 0.01
+version: 0.02
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Create number continuations
@@ -19,7 +19,7 @@ recommends:
 provides:
   Number::Continuation:
     file: lib/Number/Continuation.pm
-    version: 0.01
+    version: 0.02
 generated_by: Module::Build version 0.2805
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

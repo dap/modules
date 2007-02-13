@@ -26,7 +26,7 @@ SYNOPSIS
 
 DESCRIPTION
   continuation
-     continuation(\$set | \@set | \\\@set [, { options } ])
+     continuation($set | @set | \@set [, { options } ])
 
     Returns in scalar context a stringified representation of a number
     continuation. In list context a two-dimensional array is returned where

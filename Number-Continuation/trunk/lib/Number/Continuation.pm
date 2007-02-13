@@ -9,7 +9,7 @@ use Scalar::Util qw(refaddr);
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 @EXPORT_OK = qw(continuation);
 
@@ -166,7 +166,7 @@ Number::Continuation - Create number continuations
 
 =head2 continuation
 
- continuation(\$set | \@set | \\\@set [, { options } ])
+ continuation($set | @set | \@set [, { options } ])
 
 Returns in scalar context a stringified representation of a number continuation.
 In list context a two-dimensional array is returned where each member represents
