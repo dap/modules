@@ -15,7 +15,7 @@ use File::Spec ();
 use IO::File ();
 use IO::Prompt ();
 
-our $VERSION = '0.47_03';
+our $VERSION = '0.47_04';
 
 use constant LEADCHAR => '* ';
 
@@ -454,7 +454,7 @@ sub _parse_process_array {
     push @{$self->{parse}{histargs}}, $arg;
 
     $self->{parse}{arg}     = $arg;
-    $self->{parse}{values}  = $values,
+    $self->{parse}{values}  = $self->{parse}{makeargs}{$arg},
     $self->{parse}{comment} = $comment;
 }
 

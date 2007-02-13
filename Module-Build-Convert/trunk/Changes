@@ -1,5 +1,10 @@
 Revision history for Perl extension Module::Build::Convert.
 
+0.47_04 Wed Feb 14 00:28:41 CET 2007
+
+ - In _debug_array_text() an attempt was made to dereference a non-
+   reference. Changed variable content to reflect actual array reference.
+
 0.47_03 Sun Feb 11 03:15:40 CET 2007
 
  - Moved large parts of the Makefile parser to external subroutines.
