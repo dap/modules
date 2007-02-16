@@ -1,10 +1,15 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.5_03 Fri Feb 16 02:00:52 CET 2007
+
+ - Fixed wrong spelling of $self->{node} to $self->{nodes} within
+   LaTeX::TOM::Parser.
+
 0.5_02 Mon Feb 12 03:37:11 CET 2007
 
- - Added suitable (albeit slightly modified) pod.t & pod-coverage.t 
+ - Added suitable (albeit slightly modified) pod.t & pod-coverage.t
    to the test directory.
- 
+
  - Documented LaTeX::TOM's constructor new().
 
 0.5_01 Mon Feb  5 08:47:05 CET 2007
