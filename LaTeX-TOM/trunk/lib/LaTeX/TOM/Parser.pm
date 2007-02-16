@@ -766,8 +766,7 @@ sub _stage5_r {
         } # loop over text blocks
 
         if ($leftpos != -1) {
-            my $startpos = $tree->{nodes:if expand("%") == ""|browse confirm w|else|confirm w|endif
-            }[$leftidx]->{start};   # get text start position
+            my $startpos = $tree->{nodes}[$leftidx]->{start};   # get text start position
             if ($parser->{PARSE_ERRORS_FATAL} == 1) {
                 die "parse error: unmatched '$left' at ".($startpos+$leftpos).".";
             } elsif ($parser->{PARSE_ERRORS_FATAL} == 0) {
