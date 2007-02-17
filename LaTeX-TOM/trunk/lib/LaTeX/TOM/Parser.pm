@@ -517,7 +517,7 @@ sub _stage4 {
         # see if this is a "\begin" command node
         if ($node->{type} eq 'COMMAND' && $node->{command} eq 'begin') {
 
-            #warn "parseStage4: found a begin COMMAND node, ".$node->{children}->[0]->{content}." @ $node->{start}";
+            #warn "parseStage4: found a begin COMMAND node, ".$node->{children}->{nodes}[0]->{content}." @ $node->{start}";
 
             # start a new "stack"
             if ($bcount == 0) {
@@ -875,7 +875,7 @@ sub _applyMapping {
         #
         if ($node->{type} eq 'COMMAND' &&
                 $node->{command} eq 'begin' &&
-                $node->{children}->[0]->{content} eq $mapping->{name}) {
+                $node->{children}->[0]->{nodes}{content} eq $mapping->{name}) {
 
             # grab the nparams next group nodes as parameters
             #
@@ -913,7 +913,7 @@ sub _applyMapping {
         #
         elsif ($node->{type} eq 'COMMAND' &&
                      $node->{command} eq 'end' &&
-                     $node->{children}->[0]->{content} eq $mapping->{name}) {
+                     $node->{children}->{nodes}[0]->{content} eq $mapping->{name}) {
 
             # make new subtree (no params)
             my $applied = $mapping->{etemplate}->copy();
@@ -1150,7 +1150,7 @@ sub _addInputs {
         if ($node->{type} eq 'COMMAND' &&
             $node->{command} eq 'input') {
 
-            my $file = $node->{children}->[0]->{content};
+            my $file = $node->{children}->{nodes}[0]->{content};
             next if ($file =~ /pstex/);	# ignore pstex images
 
             #print "reading input file $file\n";
@@ -1450,7 +1450,7 @@ sub _makeEnvMapping {
         $tree->{nodes}[$i]->{command} ne 'renewenvironment'));
 
     # figure out command (first child, text node)
-    my $command = $tree->{nodes}[$i]->{children}->[0]->{content}; 
+    my $command = $tree->{nodes}[$i]->{children}->{nodes}[0]->{content};
     if ($command =~ /^\s*\\(\S+)\s*$/) {
         $command = $1;
     }
@@ -1518,7 +1518,7 @@ sub _makeMapping {
         $tree->{nodes}[$i]->{command} ne 'renewcommand'));
 
     # figure out command (first child, text node)
-    my $command = $tree->{nodes}[$i]->{children}->[0]->{content}; 
+    my $command = $tree->{nodes}[$i]->{children}->{nodes}[0]->{content}; 
     if ($command =~ /^\s*\\(\S+)\s*$/) {
         $command = $1;
     }

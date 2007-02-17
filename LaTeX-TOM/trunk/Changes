@@ -1,5 +1,10 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.5_04 Fri Feb 16 10:41:21 CET 2007
+
+ - Fixed approximately half a dozen broken hash keys in references
+   with {node} instead of {nodes} as subkey.
+
 0.5_03 Fri Feb 16 02:00:52 CET 2007
 
  - Fixed wrong spelling of $self->{node} to $self->{nodes} within

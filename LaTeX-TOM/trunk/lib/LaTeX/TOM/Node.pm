@@ -150,7 +150,7 @@ sub getFirstChild {
     my $node = shift;
 
     if ($node->{children}) {
-        return $node->{children}->[0];
+        return $node->{children}->{nodes}[0];
     }
 
     return undef;
@@ -160,7 +160,7 @@ sub getLastChild {
     my $node = shift;
 
     if ($node->{children}) {
-        return $node->{children}->[scalar @{$node->{children}} - 1];
+        return $node->{children}->{nodes}[scalar @{$node->{children}} - 1];
     }
 
     return undef;
