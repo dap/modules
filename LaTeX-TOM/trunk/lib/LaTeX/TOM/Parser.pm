@@ -875,7 +875,7 @@ sub _applyMapping {
         #
         if ($node->{type} eq 'COMMAND' &&
                 $node->{command} eq 'begin' &&
-                $node->{children}->[0]->{nodes}{content} eq $mapping->{name}) {
+                $node->{children}->{nodes}[0]->{content} eq $mapping->{name}) {
 
             # grab the nparams next group nodes as parameters
             #

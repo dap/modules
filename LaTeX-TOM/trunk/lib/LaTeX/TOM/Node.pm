@@ -160,7 +160,7 @@ sub getLastChild {
     my $node = shift;
 
     if ($node->{children}) {
-        return $node->{children}->{nodes}[scalar @{$node->{children}} - 1];
+        return $node->{children}->{nodes}[-1];
     }
 
     return undef;

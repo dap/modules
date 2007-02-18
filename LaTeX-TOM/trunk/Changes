@@ -1,5 +1,12 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.5_05 Sun Feb 18 11:30:51 CET 2007
+
+ - Fixing reference types in all ...->{children}->{nodes}->[...]
+   occurrences in the LaTeX::TOM::Parser::_applyMapping and
+   LaTeX::TOM::Node::getLastChild subroutines.
+   [Otakar Smrz, otakar.smrz@mff.cuni.cz]
+
 0.5_04 Fri Feb 16 10:41:21 CET 2007
 
  - Fixed approximately half a dozen broken hash keys in references
