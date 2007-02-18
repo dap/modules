@@ -33,7 +33,7 @@ my %resolve = (SCALAR => '',
                HASH   => {});
 
 while (my ($arg, $type) = each %makeargs) {
-    $make->{make_args}{$arg} = $resolve{$type};
+    $make->{make_args}{args}{$arg} = $resolve{$type};
 }
 
 $make->_get_data;
