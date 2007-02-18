@@ -1,5 +1,16 @@
 Revision history for Perl extension Module::Build::Convert.
 
+0.47_05
+
+ - Comments "attached" to an argument and loose comments are properly
+   processed.
+
+ - Code chunks and variables are now being handled by Text::Balanced's
+   extract_codeblock() and extract_variable().
+
+ - A new configuration option has been introduced: 'Process_Code'.
+   Processing "code" may be invoked via the -c parameter of make2build.
+
 0.47_04 Wed Feb 14 00:28:41 CET 2007
 
  - In _debug_array_text() an attempt was made to dereference a non-

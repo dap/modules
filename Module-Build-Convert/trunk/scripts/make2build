@@ -11,7 +11,7 @@ convert($params);
 sub parse_switches {
     use Getopt::Long qw(:config no_ignore_case);
     my %opts;
-    GetOptions(\%opts,'d','e','h','l=i','n','rc','v','vv','V') or usage();
+    GetOptions(\%opts,'c','d','e','h','l=i','n','rc','v','vv','V') or usage();
     # debugging happens while parsing takes place
     if ($opts{d} && $opts{x}) {
         print "Can't debug while in executing Makefile.PL mode\n";
@@ -24,6 +24,7 @@ sub parse_switches {
     usage()   if $opts{h};
     version() if $opts{V};
     return { Path             => $ARGV[0],
+             Process_Code     => $opts{c},
              Debug            => $opts{d},
              Exec_Makefile    => $opts{e}, 
              Len_Indent       => $opts{l},
@@ -35,6 +36,7 @@ sub parse_switches {
 sub usage {
     print <<USAGE;
 Usage: $0 [switches] [path-to-distribution]
+  -c           process code (within the arguments list)
   -d           debug the parsing process
   -e           execute Makefile.PL
   -h           help screen

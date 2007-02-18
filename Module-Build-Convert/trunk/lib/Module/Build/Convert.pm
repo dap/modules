@@ -14,8 +14,9 @@ use File::Slurp ();
 use File::Spec ();
 use IO::File ();
 use IO::Prompt ();
+use Text::Balanced ();
 
-our $VERSION = '0.47_04';
+our $VERSION = '0.47_05';
 
 use constant LEADCHAR => '* ';
 
@@ -33,6 +34,7 @@ sub new {
                                   Exec_Makefile       => $params{Exec_Makefile}       || 0,
                                   Verbose             => $params{Verbose}             || 0,
                                   Debug               => $params{Debug}               || 0,
+                                  Process_Code        => $params{Process_Code}        || 0,
                                   Use_Native_Order    => $params{Use_Native_Order}    || 0,
                                   Len_Indent          => $params{Len_Indent}          || 3,
                                   DD_Indent           => $params{DD_Indent}           || 2,
@@ -318,7 +320,7 @@ sub _run_makefile {
     no warnings 'redefine';
 
     *ExtUtils::MakeMaker::WriteMakefile = sub {
-      %{$self->{make_args}} = @{$self->{make_args_arr}} = @_;
+      %{$self->{make_args}{args}} = @{$self->{make_args_arr}} = @_;
     };
 
     # beware, do '' overwrites existing globals
@@ -365,6 +367,9 @@ sub _parse_makefile {
     $self->_debug(LEADCHAR."Entering parse\n\n", 'no_wait');
 
     while ($self->{parse}{makefile}) {
+        $self->{parse}{makefile} .= "\n" 
+          unless $self->{parse}{makefile} =~ /\n$/s;
+
         # process string
         if ($self->{parse}{makefile} =~ s/$found_string//) {
             $self->_parse_process_string($1,$2,$3);
@@ -380,27 +385,34 @@ sub _parse_makefile {
             $self->_parse_process_hash($1,$2,$3);
             $self->_parse_register_comment;
             $self->_debug($self->_debug_hash_text);
-        # process everything else
-        # XXX experimental & disfunctional for now
+        # process "code"
         } else {
+            chomp $self->{parse}{makefile};
+
             $self->_parse_process_code;
             $self->_parse_catch_trapped_loop;
-            #$self->_parse_substitute_makeargs;
-            #$self->_parse_append_makecode;
-            #$self->_debug($self->_debug_code_text);
+
+            if ($self->{Config}{Process_Code}) {
+                $self->_parse_substitute_makeargs;
+                $self->_parse_append_makecode;
+                $self->_debug($self->_debug_code_text);
+            }
         }
+
+        $self->{parse}{makefile} = ''
+          if $self->{parse}{makefile} !~ /\w/;
     }
 
     $self->_debug(LEADCHAR."Leaving parse\n\n", 'no_wait');
 
-    %{$self->{make_args}} = %{$self->{parse}{makeargs}};
+    %{$self->{make_args}{args}} = %{$self->{parse}{makeargs}};
 }
 
 sub _parse_init {
     my $self = shift;
 
-    @{$self->{parse}{histargs}} = ();
-    %{$self->{parse}{makeargs}} = ();
+    %{$self->{make_code}} = ();
+    %{$self->{parse}}     = ();
 }
 
 sub _parse_regexps {
@@ -411,21 +423,21 @@ sub _parse_regexps {
                             ['"]? (\w+) ['"]?
                             \s* => \s* [^ \{ \[ ]
                             ['"]? ([\$ \@ \% \< \> \( \) \\ \/ \- \: \. \w]+.*?) ['"]?
-                            (?: ,? \n? | ,? (\s+ \# \s+ \w+ .*?) \n)
+                            ,? ([^\n]+ \# \s+ \w+ .*?)? \n
                        /sx;
     my $found_array  = qr/^
                             \s*
                             ['"]? (\w+) ['"]?
                             \s* => \s*
                             \[ \s* (.*?) \s* \]
-                            (?: ,? \n | ,? (\s+ \# \s+ \w+ .*?) \n)
+                            ,? ([^\n]+ \# \s+ \w+ .*?)? \n
                        /sx;
     my $found_hash   = qr/^
                             \s*
                             ['"]? (\w+) ['"]?
                             \s* => \s*
                             \{ \s* (.*?) \s*? \}
-                            (?: ,? \n? | ,? (\s+ \# \s+ \w+ .*?) \n)
+                            ,? ([^\n]+ \# \s+ \w+ .*?)? \n
                        /sx;
 
     return ($found_string, $found_array, $found_hash);
@@ -434,7 +446,9 @@ sub _parse_regexps {
 sub _parse_process_string {
     my ($self, $arg, $value, $comment) = @_;
 
+    $value   ||= '';
     $comment ||= '';
+
     $value =~ tr/['"]//d;
 
     $self->{parse}{makeargs}{$arg} = $value;
@@ -457,6 +471,7 @@ sub _parse_process_array {
     $self->{parse}{values}  = $self->{parse}{makeargs}{$arg},
     $self->{parse}{comment} = $comment;
 }
+
 
 sub _parse_process_hash {
     my ($self, $arg, $values, $comment) = @_;
@@ -483,28 +498,63 @@ sub _parse_process_hash {
 sub _parse_process_code {
     my $self = shift;
 
-    my ($debug_desc, $makecode);
+    my ($debug_desc, $retval);
 
-    if ($self->{parse}{makefile} =~ s/^\s*(\#.*\s*(?:=>\s*['"]?\w*['"]?))?,?\n//s) {
-        $debug_desc = 'comment';
-        $makecode = $1;
-    } elsif ($self->{parse}{makefile} =~ s/^\s*(['"]?\w+['"]?\s*=>\s*<<['"]?(.*?)['"]?,.*\2)//s) {
-        $debug_desc = 'here-doc';
-        $makecode = $1;
-    } elsif ($self->{parse}{makefile} =~ s/^\s*(\(?.*\?.*\:(.*?\),|.*['"],))\s*//s) {
-        $debug_desc = 'ternary operator';
-        $makecode = $1;
-    } elsif ($self->{parse}{makefile} =~ s/^\s*([\Q$@%\E]\w+)\s*//) {
+    my @code     = Text::Balanced::extract_codeblock($self->{parse}{makefile}, '()');
+    my @variable = Text::Balanced::extract_variable($self->{parse}{makefile});
+
+    # [0] extracted
+    # [1] remainder
+
+    if ($code[0]) {
+        $code[0] =~ s/^\s*\(\s*//s;
+        $code[0] =~ s/\s*\)\s*$//s;
+
+        $code[0] =~ s/\s*=>\s*/\ =>\ /gs;
+        $code[1] =~ s/^\s*,//;
+
+        $self->{parse}{makefile} = $code[1];
+        $retval                  = $code[0];
+
+        $debug_desc = 'code';
+    } elsif ($variable[0]) {
+        $self->{parse}{makefile} = $variable[1];
+        $retval                  = $variable[0];
+
         $debug_desc = 'variable';
-        $makecode = $1;
+    } elsif ($self->{parse}{makefile} =~ /\#/) {
+        my $comment;
+
+        $self->{parse}{makefile} .= "\n"
+          unless $self->{parse}{makefile} =~ /\n$/s;
+
+        while ($self->{parse}{makefile} =~ /\G(\s*?\#.*?(,|\.)?\n)/cgs) {
+            $comment .= $1;
+        }
+
+        $comment ||= '';
+
+        $self->{parse}{makefile} =~ s/$comment//;
+
+        my @comment;
+
+        @comment = split /\n/,   $comment;
+        @comment = grep { /\#/ } @comment;
+
+        foreach $comment (@comment) {
+            $comment =~ s/^\s*?(\#.*)$/$1/gm;
+            chomp $comment;
+        }
+
+        $retval     = \@comment;
+        $debug_desc = 'comment';
     } else {
-        $self->{parse}{makefile} =~ s/^\s*(.*?)\s*//;
-        $debug_desc = 'unknown';
-        $makecode = $1;
+        $retval     = '';
+        $debug_desc = 'unclassified';
     }
 
     $self->{parse}{debug_desc} = $debug_desc;
-    $self->{parse}{makecode}   = $makecode;
+    $self->{parse}{makecode}   = $retval;
 }
 
 sub _parse_catch_trapped_loop {
@@ -512,43 +562,44 @@ sub _parse_catch_trapped_loop {
 
     no warnings 'uninitialized';
 
-   $self->{parse}{trapped_loop}{$self->{parse}{makecode}}++
-     if $self->{parse}{makecode} eq $self->{makecode_prev};
+    $self->{parse}{trapped_loop}{$self->{parse}{makecode}}++
+      if $self->{parse}{makecode} eq $self->{makecode_prev};
 
-   if ($self->{parse}{trapped_loop}{$self->{parse}{makecode}} >= 1) {
-       $self->{Config}{Exec_Makefile} = 1;
-       $self->{Config}{reinit}        = 1;
-       $self->convert;
-       exit;
-   }
+    if ($self->{parse}{trapped_loop}{$self->{parse}{makecode}} > 1) {
+        $self->{Config}{Exec_Makefile} = 1;
+        $self->{Config}{reinit}        = 1;
+        $self->convert;
+        exit;
+    }
 
-   $self->{makecode_prev} = $self->{parse}{makecode};
+    $self->{makecode_prev} = $self->{parse}{makecode};
 }
 
-#sub _parse_substitute_makeargs {
-#    my $self = shift;
-#
-#    $self->{parse}{makecode} ||= '';
-#
-#    SUBST: foreach my $make (keys %{$self->{Data}{table}}) {
-#        if ($self->{parse}{makecode} =~ /\b$make\b/s) {
-#            $self->{parse}{makecode} =~ s/$make/$self->{Data}{table}{$make}/;
-#            last SUBST;
-#       }
-#    }
-#}
+sub _parse_substitute_makeargs {
+    my $self = shift;
 
-#sub _parse_append_makecode {
-#    my $self = shift;
-#
-#    if (@{$self->{parse}{histargs}}) {
-#        pop @{$self->{parse}{histargs}} 
-#         until $self->{Data}{table}{$self->{parse}{histargs}->[-1]};
-#
-#        push @{$self->{make_code}{$self->{Data}{table}{$self->{parse}{histargs}->[-1]}}}, 
-#              $self->{parse}{makecode};
-#    }
-#}
+    $self->{parse}{makecode} ||= '';
+
+    foreach my $make (keys %{$self->{Data}{table}}) {
+        if ($self->{parse}{makecode} =~ /\b$make\b/s) {
+            $self->{parse}{makecode} =~ s/$make/$self->{Data}{table}{$make}/;
+       }
+    }
+}
+
+sub _parse_append_makecode {
+    my $self = shift;
+
+    unless (@{$self->{parse}{histargs}||[]}) {
+        push @{$self->{make_code}{args}{begin}}, $self->{parse}{makecode};
+    } else {
+        pop @{$self->{parse}{histargs}}
+          until $self->{Data}{table}{$self->{parse}{histargs}->[-1]};
+
+        push @{$self->{make_code}{args}{$self->{Data}{table}{$self->{parse}{histargs}->[-1]}}},
+               $self->{parse}{makecode};
+    }
+}
 
 sub _parse_register_comment {
     my $self = shift;
@@ -580,11 +631,13 @@ EOT
 sub _debug_array_text {
     my $self = shift;
 
+    my @values = @{$self->{parse}{values}};
+
     my $output = <<EOT;
 Found array []
 ++++++++++++++
 \$arg: $self->{parse}{arg}
-\$values: $self->{parse}{values}
+\$values: @values
 \$comment: $self->{parse}{comment}
 \$remaining args:
 $self->{parse}{makefile}
@@ -608,19 +661,29 @@ EOT
     return $output;
 }
 
-#sub _debug_code_text {
-#    my $self = shift;
-#
-#    my $output = <<EOT;
-#Found code &
-#++++++++++++
-#$self->{parse}{debug_desc}: $self->{parse}{makecode}
-#remaining args:
-#$self->{parse}{makefile}
-#
-#EOT
-#    return $output;
-#}
+sub _debug_code_text {
+    my $self = shift;
+
+    my @args;
+
+    if (ref $self->{parse}{makecode} eq 'ARRAY') {
+        push @args, @{$self->{parse}{makecode}};
+    } else {
+        push @args, $self->{parse}{makecode};
+    }
+
+    @args = map { "\n$_" } @args if @args > 1;
+
+    my $output = <<EOT;
+Found code &
+++++++++++++
+$self->{parse}{debug_desc}: @args
+remaining args:
+$self->{parse}{makefile}
+
+EOT
+    return $output;
+}
 
 sub _read_makefile {
     my $self = shift;
@@ -641,7 +704,7 @@ sub _convert {
 
     $self->_insert_args;
 
-    foreach my $arg (keys %{$self->{make_args}}) {
+    foreach my $arg (keys %{$self->{make_args}{args}}) {
         if ($self->{disabled}{$arg}) {
             $self->_do_verbose(LEADCHAR."$arg disabled, skipping\n");
             next;
@@ -650,12 +713,12 @@ sub _convert {
             $self->_do_verbose(LEADCHAR."$arg unknown, skipping\n");
             next;
         }
-        if (ref $self->{make_args}{$arg} eq 'HASH') {
+        if (ref $self->{make_args}{args}{$arg} eq 'HASH') {
             if (ref $self->{Data}{table}->{$arg} eq 'HASH') {
                 # embedded structure
                 my @iterators = ();
                 my $current = $self->{Data}{table}->{$arg};
-                my $value = $self->{make_args}{$arg};
+                my $value = $self->{make_args}{args}{$arg};
                 push @iterators, _iterator($current, $value, keys %$current);
                 while (@iterators) {
                     my $iterator = shift @iterators;
@@ -680,13 +743,13 @@ sub _convert {
                 # flat structure
                 my %tmphash;
                 %{$tmphash{$self->{Data}{table}->{$arg}}} =
-                  map { $_ => $self->{make_args}{$arg}{$_} } keys %{$self->{make_args}{$arg}};
+                  map { $_ => $self->{make_args}{args}{$arg}{$_} } keys %{$self->{make_args}{args}{$arg}};
                 push @{$self->{build_args}}, \%tmphash;
             }
-        } elsif (ref $self->{make_args}{$arg} eq 'ARRAY') { 
-            push @{$self->{build_args}}, { $self->{Data}{table}->{$arg} => $self->{make_args}{$arg} };
-        } elsif (ref $self->{make_args}{$arg} eq '') {
-            push @{$self->{build_args}}, { $self->{Data}{table}->{$arg} => $self->{make_args}{$arg} };
+        } elsif (ref $self->{make_args}{args}{$arg} eq 'ARRAY') { 
+            push @{$self->{build_args}}, { $self->{Data}{table}->{$arg} => $self->{make_args}{args}{$arg} };
+        } elsif (ref $self->{make_args}{args}{$arg} eq '') {
+            push @{$self->{build_args}}, { $self->{Data}{table}->{$arg} => $self->{make_args}{args}{$arg} };
         } else { # unknown type
             warn "$arg - unknown type of argument\n";
         }
@@ -704,7 +767,7 @@ sub _insert_args {
     while (my ($arg, $value) = each %{$self->{Data}{default_args}}) {
         no warnings 'uninitialized';
 
-        if (exists $self->{make_args}{$build{$arg}}) {
+        if (exists $self->{make_args}{args}{$build{$arg}}) {
             $self->_do_verbose(LEADCHAR."Overriding default \'$arg => $value\'\n");
             next;
         }
@@ -916,6 +979,20 @@ sub _write_args {
     my $arg;
     my $regex = '$chunk =~ /=> \{/';
 
+    if (@{$self->{make_code}{args}{begin}||[]}) {
+        foreach my $codechunk (@{$self->{make_code}{args}{begin}}) {
+            if (ref $codechunk eq 'ARRAY') {
+                foreach my $code (@$codechunk) {
+                    $self->_do_verbose("$self->{INDENT}$code\n", 2);
+                    print "$self->{INDENT}$code\n";
+                }
+            } else {
+                $self->_do_verbose("$self->{INDENT}$codechunk\n", 2);
+                print "$self->{INDENT}$codechunk\n";
+            }
+        }
+    }
+
     foreach my $chunk (@{$self->{buildargs_dumped}}) {
         # Hash/Array output
         if ($chunk =~ /=> [\{\[]/) {
@@ -971,13 +1048,25 @@ sub _write_args {
         }
 
         no warnings 'uninitialized';
+        my @args;
 
-        if ($self->{make_code}{$arg}) {
-            foreach my $line (@{$self->{make_code}{$arg}}) {
-                $line .= ',' unless $line =~ /^\#/;
+        if ($self->{make_code}{args}{$arg}) {
+            @args = ();
+            foreach my $arg (@{$self->{make_code}{args}{$arg}}) {
+                if (ref $arg eq 'ARRAY') {
+                    push @args, @$arg;
+                } else {
+                    push @args, $arg;
+                }
+            }
 
-                $self->_do_verbose("$self->{INDENT}$line\n", 2);
-                print "$self->{INDENT}$line\n";
+            foreach $arg (@args) {
+                next unless $arg;
+
+                $arg .= ',' unless $arg =~ /^\#/;
+
+                $self->_do_verbose("$self->{INDENT}$arg\n", 2);
+                print "$self->{INDENT}$arg\n";
             }
         }
     }
@@ -1236,6 +1325,11 @@ switches C<-v> (mode 1) and C<-vv> (mode 2). Default: 0
 =item Debug
 
 Rudimentary debug facility for examining the parsing process.
+Default: 0
+
+=item Process_Code
+
+Process code embedded within the arguments list.
 Default: 0
 
 =item Use_Native_Order

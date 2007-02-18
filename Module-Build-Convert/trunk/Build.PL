@@ -23,6 +23,7 @@ my $build = Module::Build->new
                  'Getopt::Long' => 0,
                  'IO::File' => 0,
                  'IO::Prompt' => 0,
+                 'Text::Balanced' => 0,
                },
    build_requires => { 'Test::More' => 0 },
    recommends => {
