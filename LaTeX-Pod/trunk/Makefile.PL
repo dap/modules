@@ -5,7 +5,9 @@ WriteMakefile
           'PL_FILES' => {},
           'INSTALLDIRS' => 'site',
           'NAME' => 'LaTeX::Pod',
-          'EXE_FILES' => [],
+          'EXE_FILES' => [
+                           'scripts/latex2pod'
+                         ],
           'VERSION_FROM' => 'lib/LaTeX/Pod.pm',
           'PREREQ_PM' => {
                            'Test::More' => 0,
