@@ -61,6 +61,9 @@ CONSTRUCTOR
         Rudimentary debug facility for examining the parsing process.
         Default: 0
 
+    Process_Code
+        Process code embedded within the arguments list. Default: 0
+
     Use_Native_Order
         Native sorting order. If set to 1, the native sorting order of the
         Makefile arguments will be tried to preserve; it's equal to using

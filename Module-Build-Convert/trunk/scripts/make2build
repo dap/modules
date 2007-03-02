@@ -69,6 +69,7 @@ make2build - frontend to Module::Build::Convert
                     # ExtUtils::MakeMaker based distribution
 
  Usage: /usr/local/bin/make2build [switches] [path-to-distribution]
+   -c           process code (within the arguments list)
    -d           debug the parsing process
    -e           execute Makefile.PL
    -h           help screen

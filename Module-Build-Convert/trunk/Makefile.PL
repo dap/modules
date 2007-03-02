@@ -18,6 +18,7 @@ WriteMakefile
                            'Data::Dumper' => 0,
                            'Carp' => 0,
                            'Test::More' => 0,
+                           'Text::Balanced' => 0,
                            'File::Basename' => 0,
                            'IO::Prompt' => 0,
                            'File::Slurp' => 0,

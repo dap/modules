@@ -1,6 +1,10 @@
 Revision history for Perl extension Module::Build::Convert.
 
-0.47_05
+0.47_06
+
+ - Included the documentation of the -c switch in make2build.
+
+0.47_05 Sun Feb 18 02:37:05 CET 2007
 
  - Comments "attached" to an argument and loose comments are properly
    processed.
