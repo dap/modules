@@ -2,6 +2,9 @@ Revision history for Perl extension Module::Build::Convert.
 
 0.47_06
 
+ - Integrated negative zero-width look-ahead assertion in the regular
+   expression matching strings within the method _parse_makefile().
+
  - MakeMaker's MY:: subs are now being removed.
 
  - Included the documentation of the -c switch in make2build.
