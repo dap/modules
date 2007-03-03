@@ -2,6 +2,10 @@ Revision history for Perl extension Module::Build::Convert.
 
 0.47_06
 
+ - Comments to be removed from the parsing string are now being
+   properly escaped. The substitution in _parse_process_code() 
+   was previously broken.
+
  - Integrated negative zero-width look-ahead assertion in the regular
    expression matching strings within the method _parse_makefile().
 
