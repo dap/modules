@@ -2,6 +2,9 @@ Revision history for Perl extension Module::Build::Convert.
 
 0.47_06 Sat Mar  3 14:43:00 CET 2007
 
+ - A greedy match was the cause that the ampersand (&) wasn't removed
+   from &WriteMakefile(). The regular expression has been adjusted.
+
  - Instead of deleting all single- & doublequotes in $value within 
    _parse_process_string(), now only leading and trailing quotes are 
    being removed.

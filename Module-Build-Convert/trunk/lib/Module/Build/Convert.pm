@@ -691,7 +691,7 @@ sub _read_makefile {
     my $self = shift;
 
     my $makefile = File::Slurp::read_file($self->{Config}{Makefile_PL});
-    $makefile =~ s/^(.*)\&?WriteMakefile\s*?\(\s*(.*?)\s*\)\s*?;(.*)$/$2/s;
+    $makefile =~ s/^(.*?)\&?WriteMakefile\s*?\(\s*(.*?)\s*\)\s*?;(.*)$/$2/s;
 
     my $makecode_begin = $1;
     my $makecode_end   = $3;
@@ -1001,8 +1001,9 @@ sub _extract_sub {
     $quoted_pattern = quotemeta $pattern;
 
     foreach my $line (split /\n/, $text) {
-        if ($line =~ /^sub $quoted_pattern\w+\s+\{/) { $seen{begin} = 1 }
-        if ($seen{begin} && $line =~ /^\s*}/       ) { $seen{end}   = 1 }
+        if ($line =~ /^sub $quoted_pattern\w+/s ||
+            $line =~ /^\{/)                        { $seen{begin} = 1 }
+        if ($seen{begin} && $line =~ /^\s*}/)      { $seen{end}   = 1 }
 
         if ($seen{begin} || $seen{end}) {
             push @sub, $line;
