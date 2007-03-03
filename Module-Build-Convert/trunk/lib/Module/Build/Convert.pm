@@ -449,7 +449,8 @@ sub _parse_process_string {
     $value   ||= '';
     $comment ||= '';
 
-    $value =~ tr/['"]//d;
+    $value =~ s/^['"]//;
+    $value =~ s/['"]$//;
 
     $self->{parse}{makeargs}{$arg} = $value;
     push @{$self->{parse}{histargs}}, $arg;

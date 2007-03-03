@@ -1,15 +1,20 @@
 Revision history for Perl extension Module::Build::Convert.
 
-0.47_06
+0.47_06 Sat Mar  3 14:43:00 CET 2007
+
+ - Instead of deleting all single- & doublequotes in $value within 
+   _parse_process_string(), now only leading and trailing quotes are 
+   being removed.
 
  - Comments to be removed from the parsing string are now being
    properly escaped. The substitution in _parse_process_code() 
    was previously broken.
 
  - Integrated negative zero-width look-ahead assertion in the regular
-   expression matching strings within the method _parse_makefile().
+   expression matching strings within _parse_makefile().
 
- - MakeMaker's MY:: subs are now being removed.
+ - MakeMaker's MY:: subs are now being removed. The strings are
+   fetched by _extract_sub().
 
  - Included the documentation of the -c switch in make2build.
 
