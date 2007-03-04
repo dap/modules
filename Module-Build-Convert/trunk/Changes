@@ -1,5 +1,11 @@
 Revision history for Perl extension Module::Build::Convert.
 
+0.47_07
+
+ - Code statements as arguments within the arguments list are
+   properly dequoted. Furthermore, "complex" constructs consisting
+   of variables intermixed with static data are double-quoted.
+
 0.47_06 Sat Mar  3 14:43:00 CET 2007
 
  - A greedy match was the cause that the ampersand (&) wasn't removed

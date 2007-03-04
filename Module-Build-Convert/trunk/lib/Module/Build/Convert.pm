@@ -16,7 +16,7 @@ use IO::File ();
 use IO::Prompt ();
 use Text::Balanced ();
 
-our $VERSION = '0.47_06';
+our $VERSION = '0.47_07';
 
 use constant LEADCHAR => '* ';
 
@@ -875,7 +875,6 @@ sub _dump {
     $Data::Dumper::Terse     = 1;
 
     my $d = Data::Dumper->new(\@{$self->{build_args}});
-
     $self->{buildargs_dumped} = [ $d->Dump ];
 }
 
@@ -1083,9 +1082,11 @@ sub _write_args {
                 $line =~ s/^(\s+)([\w:]+)/$1'$2'/ if $line =~ /^\s+/;
 
                 # Add comma where appropriate (version numbers, parentheses)
-                $line .= ',' if $line =~ /[\d+\}\]]$/;
+                $line .= ',' if $line =~ /[\d+ \} \]] $/x;
 
-                $line =~ s/'(\d|\$\w+)'/$1/g;
+                # (De)quotify numbers, variables & code bits
+                $line =~ s/' \\? ( \d | [\\ \/ \( \) \$ \@ \%]+ \w+) '/$1/gx;
+                $self->_quotify(\$line) if $line =~ /\(/;
 
                 my $output = "$self->{INDENT}$line";
                 $output .= ($i == $#lines && defined($self->{make_comments}{$arg}))
@@ -1094,12 +1095,15 @@ sub _write_args {
                 $self->_do_verbose($output, 2);
                 print $output;
             }
-        } else { # Scalar output
+        } else { # String output
             chomp $chunk;
             # Remove redundant parentheses
-            $chunk =~ s/^\{\s+(.*?)\s+\}$/$1/s;
+            $chunk =~ s/^\{\s+(.*?)\s+\}$/$1/sx;
 
-            $chunk =~ s/'(\d|\$\w+)'/$1/g;
+            # (De)quotify numbers, variables & code bits
+            $chunk =~ s/' \\? ( \d | [\\ \/ \( \) \$ \@ \%]+ \w+ ) '/$1/gx;
+            $self->_quotify(\$chunk) if $chunk =~ /\(/;
+
             ($arg) = $chunk =~ /^\s*(\w+)/;
 
             my $output = "$self->{INDENT}$chunk,";
@@ -1131,6 +1135,20 @@ sub _write_args {
                 print "$self->{INDENT}$arg\n";
             }
         }
+    }
+}
+
+sub _quotify {
+    my ($self, $string) = @_;
+
+    # Removing single-quotes and escaping backslashes
+    $$string =~ s/(=>\s+?)'/$1/;
+    $$string =~ s/',?$//;
+    $$string =~ s/\\'/'/g; 
+
+    # Double-quoting $(NAME) variables
+    if ($$string =~ /\$\(/) {
+        $$string =~ s/(=>\s+?)(.*)/$1"$2"/; 
     }
 }
 
