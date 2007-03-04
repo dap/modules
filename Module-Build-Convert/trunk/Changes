@@ -2,6 +2,10 @@ Revision history for Perl extension Module::Build::Convert.
 
 0.47_07
 
+ - Ensured that de- or re-quoted arguments have a trailing comma.
+   The last argument within multiple arguments remains without a
+   comma.
+
  - Code statements as arguments within the arguments list are
    properly dequoted. Furthermore, "complex" constructs consisting
    of variables intermixed with static data are double-quoted.

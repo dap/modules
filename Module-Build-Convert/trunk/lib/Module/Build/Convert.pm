@@ -1081,21 +1081,30 @@ sub _write_args {
                 # Quote sub hash keys
                 $line =~ s/^(\s+)([\w:]+)/$1'$2'/ if $line =~ /^\s+/;
 
-                # Add comma where appropriate (version numbers, parentheses)
+                # Add comma where appropriate (version numbers, parentheses, brackets)
                 $line .= ',' if $line =~ /[\d+ \} \]] $/x;
 
                 # (De)quotify numbers, variables & code bits
                 $line =~ s/' \\? ( \d | [\\ \/ \( \) \$ \@ \%]+ \w+) '/$1/gx;
                 $self->_quotify(\$line) if $line =~ /\(/;
 
-                my $output = "$self->{INDENT}$line";
-                $output .= ($i == $#lines && defined($self->{make_comments}{$arg}))
-                  ? "$self->{make_comments}{$arg}\n" : "\n";
+                # Add comma to dequotified key/value pairs
+                my $comma = ',' if $line =~ /['"](?!,)$/ && $#lines - $i != 1;
 
+                # Construct line output
+                my $output = "$self->{INDENT}$line$comma";
+
+                # Add adhering comments at end of array/hash
+                $output .= ($i == $#lines && defined $self->{make_comments}{$arg})
+                  ? "$self->{make_comments}{$arg}\n"
+                  : "\n";
+
+                # Output line
                 $self->_do_verbose($output, 2);
                 print $output;
             }
-        } else { # String output
+        # String output
+        } else {
             chomp $chunk;
             # Remove redundant parentheses
             $chunk =~ s/^\{\s+(.*?)\s+\}$/$1/sx;
@@ -1104,11 +1113,14 @@ sub _write_args {
             $chunk =~ s/' \\? ( \d | [\\ \/ \( \) \$ \@ \%]+ \w+ ) '/$1/gx;
             $self->_quotify(\$chunk) if $chunk =~ /\(/;
 
+            # Extract argument (key)
             ($arg) = $chunk =~ /^\s*(\w+)/;
 
+            # Construct line output & add adhering comment
             my $output = "$self->{INDENT}$chunk,";
             $output .= $self->{make_comments}{$arg} if defined $self->{make_comments}{$arg};
 
+            # Output key/value pair
             $self->_do_verbose("$output\n", 2);
             print "$output\n";
         }
@@ -1148,7 +1160,7 @@ sub _quotify {
 
     # Double-quoting $(NAME) variables
     if ($$string =~ /\$\(/) {
-        $$string =~ s/(=>\s+?)(.*)/$1"$2"/; 
+        $$string =~ s/(=>\s+?)(.*)/$1"$2"/;
     }
 }
 
