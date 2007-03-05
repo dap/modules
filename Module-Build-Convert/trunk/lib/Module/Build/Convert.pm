@@ -802,13 +802,18 @@ sub _sort_args {
     if ($self->{Config}{Use_Native_Order}) {
         no warnings 'uninitialized';
 
+        # Mapping an incremental value to the arguments (keys) in the
+        # order they appear.
         for (my ($i,$s) = 0; $s < @{$self->{make_args_arr}}; $s++) {
+            # Skipping values
             next unless $s % 2 == 0;
+            # Populating table with according M::B arguments and counter
             $native_sortorder{$self->{Data}{table}{$self->{make_args_arr}[$s]}} = $i
               if exists $self->{Data}{table}{$self->{make_args_arr}[$s]};
             $i++;
         }
     }
+
     my %sortorder;
     {
         my %have_args = map { keys %$_ => 1 } @{$self->{build_args}};
@@ -819,15 +824,18 @@ sub _sort_args {
             my %slot;
 
             foreach my $arg (grep $have_args{$_}, @{$self->{Data}{sort_order}}) {
+                # Building sorting table for existing MakeMaker arguments
                 if ($native_sortorder{$arg}) {
                     $sortorder{$arg} = $native_sortorder{$arg};
                     $slot{$native_sortorder{$arg}} = 1;
+                # Inject default arguments at free indexes
                 } else {
                     $i++ while $slot{$i};
                     $sortorder{$arg} = $i++;
                 }
             }
 
+            # Sorting sort table ascending
             my @args = sort { $sortorder{$a} <=> $sortorder{$b} } keys %sortorder;
             $i = 0; %sortorder = map { $_ => $i++ } @args;
 
@@ -837,6 +845,7 @@ sub _sort_args {
             } grep $have_args{$_}, @{$self->{Data}{sort_order}};
         }
     }
+
     my ($is_sorted, @unsorted);
     do {
 
@@ -858,6 +867,7 @@ sub _sort_args {
                   push @{$self->{build_args}},
                     splice(@{$self->{build_args}}, $sortorder{$arg}, 1,
                       splice(@{$self->{build_args}}, $i, 1));
+
                   last SORT;
               }
           }
@@ -1089,7 +1099,8 @@ sub _write_args {
                 $self->_quotify(\$line) if $line =~ /\(/;
 
                 # Add comma to dequotified key/value pairs
-                my $comma = ',' if $line =~ /['"](?!,)$/ && $#lines - $i != 1;
+                my $comma   = ',' if $line =~ /['"](?!,)$/ && $#lines - $i != 1;
+                   $comma ||= '';
 
                 # Construct line output
                 my $output = "$self->{INDENT}$line$comma";

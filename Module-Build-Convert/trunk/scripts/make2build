@@ -28,7 +28,7 @@ sub parse_switches {
              Debug            => $opts{d},
              Exec_Makefile    => $opts{e}, 
              Len_Indent       => $opts{l},
-             Use_native_order => $opts{n},
+             Use_Native_Order => $opts{n},
              Create_RC        => $opts{rc},
              Verbose          => $opts{v} ? 1 : $opts{vv} ? 2 : undef };
 }
