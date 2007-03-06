@@ -1070,7 +1070,6 @@ sub _write_args {
 
             # Remove redundant parentheses
             $chunk =~ s/^\{.*?\n(.*(?{ $regex ? '\}' : '\]' }))\s+\}\s+$/$1/os;
-            Carp::croak $@ if $@;
 
             # One element per each line
             my @lines;
