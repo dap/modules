@@ -1,11 +1,9 @@
 Revision history for Perl extension Module::Build::Convert.
 
-0.47_07
+0.47_07 Tue Mar  6 09:21:07 CET 2007
 
  - Corrected the spelling of the mistakenly lower-case written
    configuration option "Use_Native_Ordering" within make2build.
-   The sorting functionality is invoked via the make2build
-   switch -n.
 
  - Ensured that de- or re-quoted arguments have a trailing comma.
    The last argument within multiple arguments remains without a

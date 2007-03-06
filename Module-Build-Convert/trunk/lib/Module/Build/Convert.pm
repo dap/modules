@@ -1366,7 +1366,7 @@ Module::Build::Convert - Makefile.PL to Build.PL converter
 
 C<ExtUtils::MakeMaker> has been a de-facto standard for the common distribution of Perl
 modules; C<Module::Build> is expected to supersede C<ExtUtils::MakeMaker> in some time
-(part of the Perl core as of 5.10?)
+(part of the Perl core as of 5.9.4).
 
 The transition takes place slowly, as the converting process manually achieved
 is yet an uncommon practice. The Module::Build::Convert F<Makefile.PL> parser is
