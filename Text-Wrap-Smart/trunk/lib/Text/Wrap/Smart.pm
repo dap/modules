@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 
+use Carp qw(croak);
 use Math::BigFloat;
 
 our ($VERSION, @EXPORT_OK);
@@ -13,60 +14,79 @@ $VERSION = '0.4';
 
 sub wrap_smart {
     my ($text, $conf) = @_;
-    die "No text defined!\n" unless $text;
+    croak "wrap_smart(\\\$text [, { options } ])\n" unless $text;
 
     my $msg_size = $conf->{max_msg_size} || 160;
     my $no_split = $conf->{no_split};
-    my @strings;
 
-    my ($i, $length_eval);
+    my ($i, $pos, @strings);
 
-    my $length = length($text);
-    $length_eval = $length;
+    my $length      = length $text;
+    my $length_eval = $length;
 
+    # Count possible chunks
     do {
         $length_eval -= $msg_size;
         $i++;
     } while ($length_eval > 0);
 
-    my $x = Math::BigFloat->new($length / $i);
+    # Ceil average message length
+    my $x       = Math::BigFloat->new($length / $i);
     my $average = $x->bceil();
 
-    unless ($no_split) {
-        for ($i = 0; $i < $length; $i += $average) {
-            my $string = substr($text, $i, $average);
+    if (!$no_split) {
+        # Split text in *exact* substrings
+        for ($pos = 0; $pos < $length; $pos += $average) {
+            my $string = substr($text, $pos, $average);
             push @strings, $string;
         }
     } else {
         my ($have_space, $pos);
-        my $start = 0;
+
+        my $offset    = 0;
         my $text_eval = $text;
 
-        while ($start < (length($text)-1)) {
-            if (length($text_eval) > $average && $text_eval =~ / /) {
-                $pos = rindex($text_eval, ' ', $average);
+        # Iterate while end position is not reached
+        while ($offset < length($text) - 1) {
+            # Determine nearest offset of a word boundary
+            if (length $text_eval > $average && $text_eval =~ / /) {
+                $pos        = rindex($text_eval, ' ', $average);
                 $have_space = 1;
+            # If space encountered & remaining text is less than average, 
+            # set position to end; otherwise set position to msg size provided.
             } else {
-                $pos = $have_space ? length($text_eval) : $msg_size;
+                $pos = $have_space ? length $text_eval : $msg_size;
             }
 
-            $pos = length($text_eval) if $pos == -1;
-            my $str = substr($text_eval, 0, $pos);
+            # Set position to remaining length if no word boundary is found
+            $pos       = length $text_eval if $pos == -1;
+
+            # Extract substring
+            my $substr = substr($text_eval, 0, $pos);
+
+            # Increment position to skip word boundary
             $pos++;
             my $length = 0;
 
-            if ($pos > length($text_eval)) {
-                $pos = length($text_eval);
+            # Set position to end of index if end is reached
+            if ($pos > length $text_eval) {
+                $pos    = length $text_eval;
                 $length = 0;
+            # Otherwise, calculate remaining length of text
             } else {
                 $length = length($text_eval) - $pos;
             }
 
+            # Shrink the text accordingly & increment offset
             $text_eval = substr($text_eval, $pos, $length);
-            $start += $pos;
+            $offset   += $pos;
 
-            $/ = ' '; chomp($str);
-            push @strings, $str;
+            # Mark trailing spaces to be removed
+            $/ = ' ';
+
+            # Remove newline & push substring
+            chomp $substr;
+            push @strings, $substr;
        }
     }
 

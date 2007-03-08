@@ -1,5 +1,13 @@
 Revision history for Perl extension Text::Wrap::Smart.
 
+0.4 Wed Mar  7 19:29:27 CET 2007
+
+ - Commented Text/Wrap/Smart.pm.
+
+ - Added no_split.t to testsuite which tests that an
+   according amount of substrings with specific length
+   is returned.
+
 0.3 Sun Dec 17 21:48:49 CET 2006
 
  - Fixed broken splitting of lines.
