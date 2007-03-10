@@ -20,9 +20,9 @@ DESCRIPTION
 
 FUNCTIONS
   wrap_smart
-     @chunks = wrap_smart($text, \%options);
+     @chunks = wrap_smart($text [, { options } ]);
 
-    %options may contain the "no_split" option indicating that words shall
+    "options" may contain the "no_split" option indicating that words shall
     not be broken up. "max_msg_size" sets the character length boundary for
     each chunk emitted.
 

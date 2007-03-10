@@ -1,5 +1,9 @@
 Revision history for Perl extension Text::Wrap::Smart.
 
+0.5 Sat Mar 10 13:30:44 CET 2007
+
+ - Localised $/ within wrap_smart().
+
 0.4 Wed Mar  7 19:29:27 CET 2007
 
  - Commented Text/Wrap/Smart.pm.

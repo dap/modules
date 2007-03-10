@@ -9,7 +9,7 @@ use Math::BigFloat;
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.4';
+$VERSION = '0.5';
 @EXPORT_OK = qw(wrap_smart);
 
 sub wrap_smart {
@@ -82,9 +82,9 @@ sub wrap_smart {
             $offset   += $pos;
 
             # Mark trailing spaces to be removed
-            $/ = ' ';
+            local $/ = ' ';
 
-            # Remove newline & push substring
+            # Remove spaces & push substring
             chomp $substr;
             push @strings, $substr;
        }
@@ -123,9 +123,9 @@ C<wrap_smart()> may nevertheless be used for other purposes.
 
 =head2 wrap_smart
 
- @chunks = wrap_smart($text, \%options);
+ @chunks = wrap_smart($text [, { options } ]);
 
-C<%options> may contain the C<no_split> option indicating that
+C<options> may contain the C<no_split> option indicating that
 words shall not be broken up. C<max_msg_size> sets the character
 length boundary for each chunk emitted.
 
