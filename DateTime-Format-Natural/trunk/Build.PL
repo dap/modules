@@ -13,6 +13,7 @@ my $build = Module::Build->new
    requires => {
                  'Date::Calc' => 0,
                  'DateTime' => 0,
+                 'List::MoreUtils' => 0,
                },
    build_requires => { 'Test::More' => 0 },
    recommends => {

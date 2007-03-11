@@ -4,17 +4,21 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Base);
 
-our $VERSION = '0.23_01';
+use List::MoreUtils qw(any none);
+
+our $VERSION = '0.25';
 
 sub new {
     my ($class, %opts) = @_;
 
     my $lang = $opts{lang} || 'en';
     my $mod  = __PACKAGE__.'::Lang::'.uc($lang);
+
     eval "use $mod";
     die $@ if $@;
 
     my $obj = {};
+
     $obj->{data} = $mod->__new();
     $obj->{lang} = $lang;
 
@@ -24,12 +28,12 @@ sub new {
 sub parse_datetime {
     my $self = shift;
 
-    my ($DEBUG, $date_string, %opts);
+    my ($date_string, %opts);
 
     if (@_ > 1) {
-        %opts        = @_;
-        $date_string = $opts{string};
-        $DEBUG       = $opts{debug};
+        %opts          = @_;
+        $date_string   = $opts{string};
+        $self->{Debug} = $opts{debug};
     } else {
         ($date_string) = @_;
     }
@@ -50,142 +54,225 @@ sub parse_datetime {
             $self->{datetime}->set_month($bits[1]);
             $self->{datetime}->set_year($bits[2]);
 
-            $self->_set_modified;
+            $self->{tokens_count} = 3;
+            $self->_set_modified(3);
 
             return $self->_get_datetime_object;
         }
     } else {
-        @{$self->{tokens}} = split ' ', $date_string;
+        @{$self->{tokens}}    = split ' ', $date_string;
+        $self->{tokens_count} = scalar @{$self->{tokens}};
     }
 
-    my ($dont_proceed1, $dont_proceed2, $dont_proceed3) = (0,0,0);
+    $self->_process;
+}
 
-    for ($self->{index} = 0; $self->{index} < @{$self->{tokens}}; $self->{index}++) {
-        no warnings 'uninitialized';
+sub _process {
+    my $self = shift;
 
-        print "$self->{tokens}->[$self->{index}]\n" if $DEBUG;
+    for ($self->{index} = 0;
+         $self->{index} < @{$self->{tokens}};
+         $self->{index}++) {
 
-        $self->{tokens}->[$self->{index}] =~ s/^(\d{1,2})(?:st|nd|rd|th)$/$1/i;
+        $self->_debug_head;
 
-        if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('second')) {
-            $self->_set_modified;
-        }
-
-        if ($self->{tokens}->[$self->{index}+2] =~ $self->{data}->__main('ago')) {
-            $self->_ago;
-        }
-
-        if ($self->{tokens}->[$self->{index}+3] =~ $self->{data}->__main('now')) {
-            $self->_now;
-        }
-
-        foreach my $daytime (@{$self->{data}->__main('daytime')}) {
-            if ($self->{tokens}->[$self->{index}] =~ $daytime) {
-                $self->_daytime;
-            }
-        }
-
-        if ($self->{tokens}->[$self->{index}+1] =~ /^(\d{4})$/) {
-            $self->{datetime}->set_year($1);
-        }
-
-        OUTER1: foreach my $match (@{$self->{data}->__main('months')}) {
-            foreach my $i qw(-1 0 1 2) {
-                if ($self->{tokens}->[$self->{index}+$i] =~ /^$match$/i) {
-                    $dont_proceed1 = 1;
-                    last OUTER1;
-                }
-            }
-        }
-
-       unless ($dont_proceed1) {
-            $self->_months;
-       }
-
-       if ($self->{tokens}->[$self->{index}] =~ /^at$/i) {
-           next;
-       } elsif ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('at_intro')) {
-        OUTER2: foreach my $match (@{$self->{data}->__main('at_matches')}) {
-                foreach my $i qw(-1 0 1 2) {
-                    if ($self->{tokens}->[$self->{index}+$i] =~ /^$match$/i) {
-                        $dont_proceed2 = 1;
-                        last OUTER2;
-                    }
-                }
-            }
-            unless ($dont_proceed2) {
-                $self->_at($1, $2, $3, $4);
-            }
-        }
-
-        if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('number_intro')) {
-            OUTER3: foreach my $match (@{$self->{data}->__main('number_matches')}) {
-                foreach my $i qw(-1 0 1 2) {
-                    if ($self->{tokens}->[$self->{index}+$i] =~ /^$match$/i) {
-                       $dont_proceed3 = 1;
-                       last OUTER3;
-                    }
-                }
-            }
-            OUTER4: foreach my $weekday (keys %{$self->{data}->{weekdays}}) {
-                if ($self->{tokens}->[$self->{index}+1] =~ /^$weekday$/i) {
-                    $dont_proceed3 = 1;
-                    last OUTER4;
-                }
-            }
-            unless ($dont_proceed3) {
-                $self->_number($1);
-            }
-        }
-
-        if ($self->{tokens}->[$self->{index}] =~ /^\d{4}$/) {
-            $self->{datetime}->set_year($self->{tokens}->[$self->{index}]);
-        }
-
-        if ($self->{tokens}->[$self->{index}]      !~ $self->{data}->__main('weekdays')
-            && $self->{tokens}->[$self->{index}-1] !~ $self->{data}->__main('weekdays')
-            && $self->{tokens}->[$self->{index}-2] !~ $self->{data}->__main('weekdays')
-            && $self->{tokens}->[$self->{index}+1] !~ $self->{data}->__main('weekdays')) {
-            $self->_weekday;
-
-        }
-
-        if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('this_in')) {
-            $self->{buffer} = 'this_in';
-            next;
-        } elsif ($self->{buffer} eq 'this_in') {
-            $self->_this_in;
-        }
-
-        if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('next')) {
-            $self->{buffer} = 'next';
-            next;
-        } elsif ($self->{buffer} eq 'next') {
-            $self->_next;
-        }
-
-        if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('last')) {
-            $self->{buffer} = 'last';
-            next;
-        } elsif ($self->{buffer} eq 'last') {
-            $self->_last;
-        }
-
-        $self->_day;
-        $self->_monthdays_limit;
+        $self->_process_numify;
+        $self->_process_second;
+        $self->_process_ago;
+        $self->_process_now;
+        $self->_process_daytime;
+        $self->_process_year;
+        $self->_process_months;
+        $self->_process_at;
+        $self->_process_number;
+        $self->_process_weekday;
+        $self->_process_this_in;
+        $self->_process_next;
+        $self->_process_last;
+        $self->_process_day;
+        $self->_process_monthdays_limit;
     }
 
     return $self->_get_datetime_object;
 }
 
-sub _get_modified   { $_[0]->{modified}     }
-sub _set_modified   { $_[0]->{modified} = 1 }
-sub _unset_modified { $_[0]->{modified} = 0 }
+sub _debug_head {
+    my $self = shift;
+
+    print "$self->{tokens}->[$self->{index}]\n" if $self->{Debug};
+}
+
+sub _process_numify {
+    my $self = shift;
+
+    $self->{tokens}->[$self->{index}] =~ s/^(\d{1,2})(?:st|nd|rd|th)$/$1/i;
+}
+
+sub _process_second {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('second')) {
+        $self->_set_modified(1);
+    }
+}
+
+sub _process_ago {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}+2] =~ $self->{data}->__main('ago')) {
+        $self->_ago;
+    }
+}
+
+sub _process_now {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}+3] =~ $self->{data}->__main('now')) {
+        $self->_now;
+    }
+}
+
+sub _process_daytime {
+    my $self = shift;
+
+    foreach my $daytime (@{$self->{data}->__main('daytime')}) {
+        if ($self->{tokens}->[$self->{index}] =~ $daytime) {
+            $self->_daytime;
+        }
+    }
+}
+
+sub _process_year {
+    my $self = shift;
+
+    foreach my $token (@{$self->{tokens}}) {
+        if ($token =~ /^(\d{4})$/) {
+            $self->{datetime}->set_year($1);
+            $self->_set_modified(1);
+        }
+    }
+}
+
+sub _process_months {
+    my $self = shift;
+
+    my $dont_proceed;
+
+    foreach my $match (@{$self->{data}->__main('months')}) {
+        if (any { /^$match$/i } @{$self->{tokens}}) {
+            $dont_proceed = 1;
+            last;
+        }
+    }
+
+    $self->_months unless $dont_proceed;
+}
+
+sub _process_at {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}] =~ /^at$/i) {
+        return;
+    } elsif ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('at_intro')) {
+        my $dont_proceed;
+
+        foreach my $match (@{$self->{data}->__main('at_matches')}) {
+            if (any { /^$match$/i } @{$self->{tokens}}) {
+                $dont_proceed = 1;
+                last;
+            }
+        }
+
+        $self->_at($1,$2,$3,$4) unless $dont_proceed;
+    }
+}
+
+sub _process_number {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('number_intro')) {
+        my $dont_proceed;
+
+        foreach my $match (@{$self->{data}->__main('number_matches')}) {
+            if (any { /^$match$/i } @{$self->{tokens}}) {
+                $dont_proceed = 1;
+                last;
+            }
+        }
+
+        foreach my $weekday (keys %{$self->{data}->{weekdays}}) {
+            if ($self->{tokens}->[$self->{index}+1] =~ /^$weekday$/i) {
+                $dont_proceed = 1;
+                last;
+            }
+        }
+
+        $self->_number($1) unless $dont_proceed;
+    }
+}
+
+sub _process_weekday {
+    my $self = shift;
+
+    if (none { /$self->{data}->__main('weekdays')/ } @{$self->{tokens}}) {
+        $self->_weekday;
+    }
+}
+
+sub _process_this_in {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('this_in')) {
+        $self->{buffer} = 'this_in';
+        return;
+    } elsif ($self->{buffer} eq 'this_in') {
+        $self->_this_in;
+    }
+}
+
+sub _process_next {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('next')) {
+        $self->{buffer} = 'next';
+        return;
+    } elsif ($self->{buffer} eq 'next') {
+        $self->_next;
+    }
+}
+
+sub _process_last {
+    my $self = shift;
+
+    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('last')) {
+        $self->{buffer} = 'last';
+        return;
+    } elsif ($self->{buffer} eq 'last') {
+        $self->_last;
+    }
+}
+
+sub _process_day {
+    my $self = shift;
+
+    $self->_day;
+}
+
+sub _process_monthdays_limit {
+    my $self = shift;
+
+    $self->_monthdays_limit;
+}
+
+sub _get_modified   { $_[0]->{modified}          }
+sub _set_modified   { $_[0]->{modified} += $_[1] }
+sub _unset_modified { $_[0]->{modified}  = 0     }
 
 sub _get_datetime_object {
     my $self = shift;
 
-    die "$self->{date_string} not valid input, exiting.\n" unless $self->_get_modified;
+    die "$self->{date_string} not valid input, exiting.\n"
+         unless $self->_get_modified >= $self->{tokens_count};
 
     $self->{year}  = $self->{datetime}->year;
     $self->{month} = $self->{datetime}->month;
@@ -194,11 +281,11 @@ sub _get_datetime_object {
     $self->{min}   = $self->{datetime}->minute;
     $self->{sec}   = $self->{datetime}->second;
 
-    $self->{sec}   = "0$self->{sec}"   unless length($self->{sec})   == 2;
-    $self->{min}   = "0$self->{min}"   unless length($self->{min})   == 2;
-    $self->{hour}  = "0$self->{hour}"  unless length($self->{hour})  == 2;
-    $self->{day}   = "0$self->{day}"   unless length($self->{day})   == 2;
-    $self->{month} = "0$self->{month}" unless length($self->{month}) == 2;
+    $self->{sec}   = sprintf("%02i", $self->{sec});
+    $self->{min}   = sprintf("%02i", $self->{min});
+    $self->{hour}  = sprintf("%02i", $self->{hour});
+    $self->{day}   = sprintf("%02i", $self->{day});
+    $self->{month} = sprintf("%02i", $self->{month});
 
     $self->_unset_modified;
 

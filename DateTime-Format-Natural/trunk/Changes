@@ -1,5 +1,19 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.25 Sun Mar 11 23:02:45 CET 2007
+
+ - Separated the logic within parse_datetime() to _process()
+   and according internal subroutines.
+
+ - Commented the majority of functions within Base.pm.
+
+ - Introduced List::MoreUtils' any() & none() functions;
+   deprecated use of 'no warnings' statement which need
+   arose by accessing indexes of @{$self->{tokens}} where
+   no members were present.
+
+ - Created TODO file with pending items.
+
 0.24 Wed Jan 17 22:51:51 CET 2007
 
  - Introduced a warning handler to silence the warnings about

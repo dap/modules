@@ -10,7 +10,8 @@ WriteMakefile
           'PREREQ_PM' => {
                            'Test::More' => 0,
                            'DateTime' => 0,
-                           'Date::Calc' => 0
+                           'Date::Calc' => 0,
+                           'List::MoreUtils' => 0
                          }
         )
 ;

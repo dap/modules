@@ -68,7 +68,8 @@ our (%data_weekdays, %data_months, %main, %ago, %now, %daytime, %months,
        'midnight' => qr/midnight/i,
        );
 
-%this_in = ('hour'   => qr/hour(?:s)/i,
+%this_in = ('second' => qr/second/i,
+            'hour'   => qr/hour(?:s)/i,
             'week'   => qr/^week$/i,
             'number' => qr/^(\d{1,2})(?:st|nd|rd|th)?$/i,
             );
