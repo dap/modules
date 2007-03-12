@@ -16,7 +16,7 @@ use IO::File ();
 use IO::Prompt ();
 use Text::Balanced ();
 
-our $VERSION = '0.47_07';
+our $VERSION = '0.48';
 
 use constant LEADCHAR => '* ';
 

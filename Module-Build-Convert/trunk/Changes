@@ -1,5 +1,9 @@
 Revision history for Perl extension Module::Build::Convert.
 
+0.48 Mon Mar 12 10:08:45 CET 2007
+
+ - Merged development version to stable.
+
 0.47_07 Tue Mar  6 09:21:07 CET 2007
 
  - Corrected the spelling of the mistakenly lower-case written
