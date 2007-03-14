@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.6 Wed Mar 14 01:05:09 CET 2007
+
+ - Merged development version to stable.
+
 0.5_05 Sun Feb 18 11:30:51 CET 2007
 
  - Fixing reference types in all ...->{children}->{nodes}->[...]
