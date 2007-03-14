@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.10_01';
+our $VERSION = '0.11';
 
 sub new {
     my ($self, $file) = @_;
