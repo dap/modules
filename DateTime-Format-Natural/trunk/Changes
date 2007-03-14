@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.26 Wed Mar 14 13:15:07 CET 2007
+
+ - The constructor accepts now an optional 'format' parameter specifying
+   in which format numeric dates should be parsed (either / or - may be
+   used to separate the units). [mike <pulsation@gmail.com>]
+
 0.25 Sun Mar 11 23:02:45 CET 2007
 
  - Separated the logic within parse_datetime() to _process()

@@ -6,7 +6,7 @@ use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 
 sub new {
     my ($class, %opts) = @_;
@@ -19,8 +19,9 @@ sub new {
 
     my $obj = {};
 
-    $obj->{data} = $mod->__new();
-    $obj->{lang} = $lang;
+    $obj->{data}   = $mod->__new();
+    $obj->{format} = $opts{format} || 'd/m/y';
+    $obj->{lang}   = $lang;
 
     return bless $obj, $class || ref($class);
 }
@@ -46,13 +47,29 @@ sub parse_datetime {
 
     $self->{date_string} = $date_string;
 
-    if ($date_string =~ m!/!) {
-        my @bits = split '\/', $date_string;
+    if ($date_string =~ m!(?:/|\-)!) {
+        my $separator = $date_string =~ m!/! ? '/' : '-';
+           $separator = quotemeta $separator;
 
-        if (scalar @bits == 3) {
-            $self->{datetime}->set_day($bits[0]);
-            $self->{datetime}->set_month($bits[1]);
-            $self->{datetime}->set_year($bits[2]);
+        my @separated_order = split $separator, $self->{format};
+        my $separated_index = 0;
+
+        $self->{_separated_indices} = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
+
+        my @bits = split $separator, $date_string;
+
+        my @time    = localtime;
+        my $century = substr($time[5] + 1900, 0, 2);
+
+        if ($bits[$self->{_separated_indices}->{y}] > $century) { $century-- }
+
+        my $year = $bits[$self->{_separated_indices}->{y}];
+            $year = "$century$year" if length $year == 2;
+
+        if (@bits == 3) {
+            $self->{datetime}->set_day  ($bits[$self->{_separated_indices}->{d}]);
+            $self->{datetime}->set_month($bits[$self->{_separated_indices}->{m}]);
+            $self->{datetime}->set_year ($year);
 
             $self->{tokens_count} = 3;
             $self->_set_modified(3);
@@ -340,10 +357,11 @@ natural parsing logic.
 
 Creates a new DateTime::Format::Natural object.
 
- $parse = DateTime::Format::Natural->new(lang => '[en|de]');
+ $parse = DateTime::Format::Natural->new(lang => '[en|de]', format => 'mm/dd/yy');
 
-C<lang> contains the language selected, currently limited to
-C<en> (english) & C<de> (german).
+C<lang> contains the language selected, currently limited to C<en> (english) & C<de>
+(german), defaults to 'en'. C<format> specifices to format of numeric dates, defaults
+to 'd/m/y'.
 
 =head2 parse_datetime
 

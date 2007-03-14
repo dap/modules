@@ -18,10 +18,11 @@ FUNCTIONS
   new
     Creates a new DateTime::Format::Natural object.
 
-     $parse = DateTime::Format::Natural->new(lang => '[en|de]');
+     $parse = DateTime::Format::Natural->new(lang => '[en|de]', format => 'mm/dd/yy');
 
     "lang" contains the language selected, currently limited to "en"
-    (english) & "de" (german).
+    (english) & "de" (german), defaults to 'en'. "format" specifices to
+    format of numeric dates, defaults to 'd/m/y'.
 
   parse_datetime
     Creates a "DateTime" object from a human readable date/time string.
