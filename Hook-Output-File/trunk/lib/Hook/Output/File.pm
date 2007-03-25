@@ -2,7 +2,6 @@ package Hook::Output::File;
 
 use strict;
 use warnings;
-
 use base qw(Tie::Handle);
 
 use Carp qw(croak);
@@ -10,7 +9,7 @@ use File::Spec ();
 
 our @ISA = qw(Tie::StdHandle);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub redirect {
     my ($class, %opts) = @_;
@@ -105,6 +104,10 @@ achieved when exiting the current scope.
      another_sub();
 
  }   # implicitly uninstalls hook
+
+=head1 BUGS & CAVEATS
+
+Doesn't work in a forked environment, such as the case with daemons.
 
 =head1 SEE ALSO
 
