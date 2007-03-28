@@ -6,15 +6,15 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 sub new {
-    my ($self, $file) = @_;
+    my $class = shift;
 
-    my $class = ref($self) || $self;
-    croak "$file: $!" unless -f $file;
+    my $self = bless {}, ref($class) || $class;
+    $self->_init(@_);
 
-    return bless _init_self({ file => $file }), $class;
+    return $self;
 }
 
 sub convert {
@@ -55,15 +55,15 @@ sub convert {
     return $self->_pod_finalize;
 }
 
-sub _init_self {
-    my $args = shift;
+sub _init {
+    my ($self, $file) = @_;
 
-    my %opts;
+    croak "$file: $!" unless -f $file;
 
-    $opts{file}      = $args->{file};
-    $opts{title_inc} = 1;
+    $self->{file}      = $file;
+    $self->{title_inc} = 1;
 
-    @{$opts{dispatch_text}} = (
+    @{$self->{dispatch_text}} = (
         [ q{$self->_is_set_node('title')},    q{$self->_process_text_title}     ],
         [ q{$self->_is_set_node('verbatim')}, q{$self->_process_text_verbatim}  ],
         [ q{$node->getNodeText =~ /\\\item/}, q{$self->_process_text_item}      ],
@@ -73,7 +73,7 @@ sub _init_self {
         [ q{!$dispatched},                    q{$self->_process_text}           ],
     );
 
-    @{$opts{dispatch_command}} = (
+    @{$self->{dispatch_command}} = (
         [ q{$self->_is_set_previous('item')},                   q{$self->_process_item}               ],
         [ q{$cmd_name eq 'chapter'},                            q{$self->_process_chapter}            ],
         [ q{$cmd_name eq 'section'},                            q{$self->_process_section}            ],
@@ -83,8 +83,6 @@ sub _init_self {
         [ q{$cmd_name eq 'author'},                             q{$self->_register_node('docauthor')} ],
         [ q{$cmd_name =~ /textbf|textsf|emph/},                 q{$self->_register_node($cmd_name)}   ],
     );
-
-    return \%opts;
 }
 
 sub _init_tom {
