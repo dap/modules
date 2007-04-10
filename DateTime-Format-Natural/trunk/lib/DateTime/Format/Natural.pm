@@ -6,7 +6,7 @@ use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 sub new {
     my ($class, %opts) = @_;
@@ -387,6 +387,11 @@ Not implemented yet.
 =head1 EXAMPLES
 
 See the modules C<DateTime::Format::Natural::Lang::*> for a overview of valid input.
+
+=head1 CREDITS
+
+Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's journal
+entry L<http://use.perl.org/~miyagawa/journal/31378> for more information.
 
 =head1 SEE ALSO
 

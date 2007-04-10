@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.27
+
+ - Mentioning Tatsuhiko Miyagawa as the inspiration source in
+   the documentation's Credits section.
+
 0.26 Wed Mar 14 13:15:07 CET 2007
 
  - The constructor accepts now an optional 'format' parameter specifying
