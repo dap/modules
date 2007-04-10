@@ -43,45 +43,57 @@ sub parse_datetime {
         $self->{datetime} = DateTime->now(time_zone => 'local');
     }
 
-    $date_string =~ tr/,//d;
+    $self->_flush_datetime_objects;
 
-    $self->{date_string} = $date_string;
+    my @date_strings = $date_string =~ /to/i
+      ? split /\s+ to \s+/ix, $date_string
+      : ($date_string);
 
-    if ($date_string =~ m!(?:/|\-)!) {
-        my $separator = $date_string =~ m!/! ? '/' : '-';
-           $separator = quotemeta $separator;
+    foreach $date_string (@date_strings) {
+        $date_string =~ tr/,//d;
 
-        my @separated_order = split $separator, $self->{format};
-        my $separated_index = 0;
+        $self->{date_string} = $date_string;
 
-        $self->{_separated_indices} = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
+        if ($date_string =~ m!(?:/|\-)!) {
+            my $separator = $date_string =~ m!/! ? '/' : '-';
+               $separator = quotemeta $separator;
 
-        my @bits = split $separator, $date_string;
+            my @separated_order = split $separator, $self->{format};
+            my $separated_index = 0;
 
-        my @time    = localtime;
-        my $century = substr($time[5] + 1900, 0, 2);
+            $self->{_separated_indices} = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
 
-        if ($bits[$self->{_separated_indices}->{y}] > $century) { $century-- }
+            my @bits = split $separator, $date_string;
 
-        my $year = $bits[$self->{_separated_indices}->{y}];
-            $year = "$century$year" if length $year == 2;
+            my @time    = localtime;
+            my $century = substr($time[5] + 1900, 0, 2);
 
-        if (@bits == 3) {
-            $self->{datetime}->set_day  ($bits[$self->{_separated_indices}->{d}]);
-            $self->{datetime}->set_month($bits[$self->{_separated_indices}->{m}]);
-            $self->{datetime}->set_year ($year);
+            if ($bits[$self->{_separated_indices}->{y}] > $century) { $century-- }
 
-            $self->{tokens_count} = 3;
-            $self->_set_modified(3);
+            my $year = $bits[$self->{_separated_indices}->{y}];
+               $year = "$century$year" if length $year == 2;
 
-            return $self->_get_datetime_object;
+            if (@bits == 3) {
+                $self->{datetime}->set_day  ($bits[$self->{_separated_indices}->{d}]);
+                $self->{datetime}->set_month($bits[$self->{_separated_indices}->{m}]);
+                $self->{datetime}->set_year ($year);
+
+                $self->{tokens_count} = 3;
+                $self->_set_modified(3);
+
+                $self->_save_datetime_object;
+
+                return $self->_get_datetime_objects;
+            }
+        } else {
+            @{$self->{tokens}}    = split ' ', $date_string;
+            $self->{tokens_count} = scalar @{$self->{tokens}};
         }
-    } else {
-        @{$self->{tokens}}    = split ' ', $date_string;
-        $self->{tokens_count} = scalar @{$self->{tokens}};
+
+        $self->_process;
     }
 
-    $self->_process;
+    return $self->_get_datetime_objects;
 }
 
 sub _process {
@@ -110,7 +122,7 @@ sub _process {
         $self->_process_monthdays_limit;
     }
 
-    return $self->_get_datetime_object;
+    $self->_save_datetime_object;
 }
 
 sub _debug_head {
@@ -285,7 +297,13 @@ sub _get_modified   { $_[0]->{modified}          }
 sub _set_modified   { $_[0]->{modified} += $_[1] }
 sub _unset_modified { $_[0]->{modified}  = 0     }
 
-sub _get_datetime_object {
+sub _flush_datetime_objects {
+    my $self = shift;
+
+    undef @{$self->{stack}};
+}
+
+sub _save_datetime_object {
     my $self = shift;
 
     die "$self->{date_string} not valid input, exiting.\n"
@@ -312,7 +330,14 @@ sub _get_datetime_object {
                            hour   => $self->{hour},
                            minute => $self->{min},
                            second => $self->{sec});
-    return $dt;
+
+    push @{$self->{stack}}, $dt;
+}
+
+sub _get_datetime_objects {
+    my $self = shift;
+
+    return @{$self->{stack}};
 }
 
 # solely for debugging purpose
@@ -392,6 +417,14 @@ See the modules C<DateTime::Format::Natural::Lang::*> for a overview of valid in
 
 Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's journal
 entry L<http://use.perl.org/~miyagawa/journal/31378> for more information.
+
+Furthermore, thanks to (in order of appearance)
+
+ Clayton L. Scott
+ Dave Rolsky
+ CPAN Author 'SEKIMURA'
+ mike (pulsation)
+ Mark Stosberg
 
 =head1 SEE ALSO
 

@@ -1,9 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
-0.27
+0.27 Tue Apr 10 22:19:15 CEST 2007
 
  - Mentioning Tatsuhiko Miyagawa as the inspiration source in
    the documentation's Credits section.
+
+ - Implemented a simple timespan calculation, provided the natural
+   dates are separated by the literal token 'to' (case-insensitive).
+   [Mark Stosberg <mark@summersault.com>]
 
 0.26 Wed Mar 14 13:15:07 CET 2007
 

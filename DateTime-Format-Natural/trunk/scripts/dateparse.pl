@@ -69,6 +69,9 @@ while (1) {
     print 'Input date string: ';
     chomp(my $input = <STDIN>);
 
-    my $dt = $parse->parse_datetime(string => $input, debug => $debug);
-    printf("%02s.%02s.%4s %02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min);
+    my @dt = $parse->parse_datetime(string => $input, debug => $debug);
+
+    foreach my $dt (@dt) {
+        printf("%02s.%02s.%4s %02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min);
+    }
 }
