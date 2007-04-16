@@ -6,7 +6,7 @@ use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.28';
+our $VERSION = '0.29';
 
 sub new {
     my ($class, %opts) = @_;
@@ -344,7 +344,7 @@ sub _get_datetime_objects {
 
 # solely for debugging purpose
 sub _set_datetime {
-    my ($self, $year, $month, $day, $hour, $min) = @_;
+    my ($self, $year, $month, $day, $hour, $min, $sec) = @_;
 
     $self->{datetime} = DateTime->now(time_zone => 'local');
 
@@ -355,6 +355,7 @@ sub _set_datetime {
     $self->{datetime}->set_day($day);
     $self->{datetime}->set_hour($hour);
     $self->{datetime}->set_minute($min);
+    $self->{datetime}->set_second($sec);
 }
 
 1;
@@ -420,13 +421,15 @@ See the modules C<DateTime::Format::Natural::Lang::*> for a overview of valid in
 Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's journal
 entry L<http://use.perl.org/~miyagawa/journal/31378> for more information.
 
-Furthermore, thanks to (in order of appearance)
+Furthermore, thanks to (in order of appearance) who have contributed
+valuable suggestions & patches:
 
  Clayton L. Scott
  Dave Rolsky
  CPAN Author 'SEKIMURA'
  mike (pulsation)
  Mark Stosberg
+ Tuomas Jormola
 
 =head1 SEE ALSO
 

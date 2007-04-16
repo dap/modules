@@ -52,13 +52,15 @@ CREDITS
     journal entry <http://use.perl.org/~miyagawa/journal/31378> for more
     information.
 
-    Furthermore, thanks to (in order of appearance)
+    Furthermore, thanks to (in order of appearance) who have contributed
+    valuable suggestions & patches:
 
      Clayton L. Scott
      Dave Rolsky
      CPAN Author 'SEKIMURA'
      mike (pulsation)
      Mark Stosberg
+     Tuomas Jormola
 
 SEE ALSO
     DateTime, Date::Calc, <http://datetime.perl.org>

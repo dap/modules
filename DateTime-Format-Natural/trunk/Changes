@@ -1,5 +1,16 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.29 Mon Apr 16 22:00:27 CEST 2007
+
+ - Support for parsing seconds and minutes in ago stanzas
+   [Tuomas Jormola <tj@solitudo.net>]
+
+ - Added according testcases to the testsuite for parsing
+   seconds and minutes in ago stanzas.
+
+ - Modified scripts/dateparse.pl to return a absolute time
+   with precision in seconds.
+
 0.28 Wed Apr 11 01:44:49 CEST 2007
 
  - Moved timespan separator definition to language metadata

@@ -8,17 +8,25 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
                   Decode_Day_of_Week
                   Nth_Weekday_of_Month_Year);
 
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 $SIG{__WARN__} = \&_filter_warnings;
 
 sub _ago {
     my $self = shift;
 
-    my @new_tokens  = splice(@{$self->{tokens}}, $self->{index}, 3);
+    my @new_tokens = splice(@{$self->{tokens}}, $self->{index}, 3);
 
+    # seconds ago
+    if ($new_tokens[1] =~ $self->{data}->__ago('second')) {
+        $self->{datetime}->subtract(seconds => $new_tokens[0]);
+        $self->_set_modified(3);
+    # minutes ago
+    } elsif ($new_tokens[1] =~ $self->{data}->__ago('minute')) {
+        $self->{datetime}->subtract(minutes => $new_tokens[0]);
+        $self->_set_modified(3);
     # hours ago
-    if ($new_tokens[1] =~ $self->{data}->__ago('hour')) {
+    } elsif ($new_tokens[1] =~ $self->{data}->__ago('hour')) {
         $self->{datetime}->subtract(hours => $new_tokens[0]);
         $self->_set_modified(3);
     # days ago
@@ -43,7 +51,7 @@ sub _ago {
 sub _now {
     my $self = shift;
 
-    my @new_tokens  = splice(@{$self->{tokens}}, $self->{index}, 4);
+    my @new_tokens = splice(@{$self->{tokens}}, $self->{index}, 4);
 
     # days
     if ($new_tokens[1] =~ $self->{data}->__now('day')) {

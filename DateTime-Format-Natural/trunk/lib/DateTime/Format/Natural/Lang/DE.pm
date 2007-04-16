@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 
 our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
      %months, %at, %this_in, %next, %last, %day, %setyearday);
@@ -38,11 +38,13 @@ our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
          'last'           => qr/^letzte(?:r|s|n)?$/i,
          );
 
-%ago = ('hour'  => qr/^stunde(?:n)?$/i,
-        'day'   => qr/^tag(?:e)?$/i,
-        'week'  => qr/^woche(?:n)?$/i,
-        'month' => qr/^monat(?:e)?$/i,
-        'year'  => qr/^jahr(?:e)?$/i,
+%ago = ('second' => qr/^sekunde(?:n)?$/i,
+        'minute' => qr/^minute(?:n)?$/i,
+        'hour'   => qr/^stunde(?:n)?$/i,
+        'day'    => qr/^tag(?:e)?$/i,
+        'week'   => qr/^woche(?:n)?$/i,
+        'month'  => qr/^monat(?:e)?$/i,
+        'year'   => qr/^jahr(?:e)?$/i,
         );
 
 %now = ('day'    => qr/^tag(?:e)?$/i,
@@ -141,6 +143,8 @@ Below are some examples of human readable date/time input in german:
 
 =head2 Complex
 
+ 25 Sekunden her
+ 10 Minuten her
  3 Jahre her
  5 Monate vor jetzt
  7 Stunden her

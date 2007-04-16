@@ -22,7 +22,7 @@ The header should somehow resemble following piece of code:
  use warnings;
  use base qw(DateTime::Format::Natural::Lang::Base);
 
- our $VERSION = '0.6';
+ our $VERSION = '0.8';
 
  our (%data_weekdays, %data_months, %main, %ago, %now, %daytime, %months,
       %number, %at, %this_in, %next, %last, %day, %setyearday);
@@ -45,6 +45,11 @@ if it's a initial release, otherwise replace it with your custom version number.
 Replace C<%data_weekdays> with the weekdays in your language chosen.
 The same with C<%data_months> concerning months.
 
+ %timespan = ('literal' => 'to');
+
+The timespan definition. C<'literal'> is needed as key, only the value
+(C<'to'>) may be changed.
+
  %main = ('second'         => qr/^second$/i,
           'ago'            => qr/^ago$/i,
           'now'            => qr/^now$/i,
@@ -60,7 +65,7 @@ The same with C<%data_months> concerning months.
           'last'           => qr/^last$/i,
           );
 
-This is the hash with contains the regular expressions for the C<parse_datetime()>
+This is the hash which contains the regular expressions for the C<parse_datetime()>
 routine in C<DateTime::Format::Natural>.
 
  %ago = ('hour'  => qr/^hour(?:s)?$/i,

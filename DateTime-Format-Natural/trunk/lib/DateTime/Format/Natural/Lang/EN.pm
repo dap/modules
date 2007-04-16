@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime, %months,
      %number, %at, %this_in, %next, %last, %day, %setyearday);
@@ -38,11 +38,13 @@ our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime, %mont
          'last'           => qr/^last$/i,
          );
 
-%ago = ('hour'  => qr/^hour(?:s)?$/i,
-        'day'   => qr/^day(?:s)?$/i,
-        'week'  => qr/^week(?:s)?$/i,
-        'month' => qr/^month(?:s)?$/i,
-        'year'  => qr/^year(?:s)?$/i,
+%ago = ('second' => qr/^second(?:s)?$/i,
+        'minute' => qr/^minute(?:s)?$/i,
+        'hour'   => qr/^hour(?:s)?$/i,
+        'day'    => qr/^day(?:s)?$/i,
+        'week'   => qr/^week(?:s)?$/i,
+        'month'  => qr/^month(?:s)?$/i,
+        'year'   => qr/^year(?:s)?$/i,
         );
 
 %now = ('day'    => qr/^day(?:s)?$/i,
@@ -142,6 +144,8 @@ Below are some examples of human readable date/time input in english:
 
 =head2 Complex
 
+ 25 seconds ago
+ 10 minutes ago
  3 years ago
  5 months before now
  7 hours ago

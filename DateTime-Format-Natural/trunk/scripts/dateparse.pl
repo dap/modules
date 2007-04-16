@@ -72,6 +72,6 @@ while (1) {
     my @dt = $parse->parse_datetime(string => $input, debug => $debug);
 
     foreach my $dt (@dt) {
-        printf("%02s.%02s.%4s %02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min);
+        printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
     }
 }
