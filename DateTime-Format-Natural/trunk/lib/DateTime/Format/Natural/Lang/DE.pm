@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.5';
+our $VERSION = '0.6';
 
-our (%data_weekdays, %data_months, %main, %ago, %now, %daytime,
+our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
      %months, %at, %this_in, %next, %last, %day, %setyearday);
 
 {
@@ -20,6 +20,8 @@ our (%data_weekdays, %data_months, %main, %ago, %now, %daytime,
                                          Mai Juni Juli August September
                                          Oktober November Dezember);
 }
+
+%timespan = ('literal' => 'bis');
 
 %main = ('second'         => qr/^sekunde$/i,
          'ago'            => qr/^her$/i,

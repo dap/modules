@@ -31,7 +31,7 @@ sub parse_switches {
     supported() if $opts{s};
 
     $debug  ||= $opts{d};
-    $lang   ||= $opts{l};
+    $lang     = $opts{l} || LANG_DEFAULT;
     $format ||= $opts{f};
 }
 

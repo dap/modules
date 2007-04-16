@@ -14,7 +14,7 @@ DESCRIPTION
     which takes a string with a human readable date/time and creates a
     machine readable one by applying natural parsing logic.
 
-FUNCTIONS
+METHODS
   new
     Creates a new DateTime::Format::Natural object.
 
@@ -41,11 +41,24 @@ FUNCTIONS
     Returns a "DateTime" object.
 
   format_datetime
-    Not implemented yet.
+    Currently not implemented.
 
 EXAMPLES
     See the modules "DateTime::Format::Natural::Lang::*" for a overview of
     valid input.
+
+CREDITS
+    Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's
+    journal entry <http://use.perl.org/~miyagawa/journal/31378> for more
+    information.
+
+    Furthermore, thanks to (in order of appearance)
+
+     Clayton L. Scott
+     Dave Rolsky
+     CPAN Author 'SEKIMURA'
+     mike (pulsation)
+     Mark Stosberg
 
 SEE ALSO
     DateTime, Date::Calc, <http://datetime.perl.org>

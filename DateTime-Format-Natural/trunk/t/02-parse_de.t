@@ -6,7 +6,7 @@ use warnings;
 use DateTime::Format::Natural;
 use Test::More tests => 38;
 
-my ($min, $hour, $day, $month, $year) = (13,01,24,11,2006);
+my ($min, $hour, $day, $month, $year) = (13, 01, 24, 11, 2006);
 
 my %simple = ('Donnerstag'               => '23.11.2006 01:13',
               'November'                 => '24.11.2006 01:13',
@@ -28,27 +28,27 @@ my %simple = ('Donnerstag'               => '23.11.2006 01:13',
               'Gestern nachmittag'       => '23.11.2006 12:00',
               'Donnerstag letzte Woche'  => '16.11.2006 01:13');
 
-my %complex = ('3 Jahre her'                     => '24.11.2003 01:13',
-               '5 Monate vor jetzt'              => '24.06.2006 01:13',
-               '7 Stunden her'                   => '23.11.2006 18:13',
-               'in 3 Stunden'                    => '24.11.2006 04:13',
-               'morgen 1 Jahr her'               => '25.11.2005 01:13',
-               'Samstag 3 Tage her um 5:00pm'    => '22.11.2006 17:00',
-               '4 Tag letzte Woche'              => '16.11.2006 01:13',
-               '3 Mittwoch in November'          => '15.11.2006 01:13',
-               '3 Monat nächstes Jahr'           => '24.03.2007 01:13');
+my %complex = ('3 Jahre her'                  => '24.11.2003 01:13',
+               '5 Monate vor jetzt'           => '24.06.2006 01:13',
+               '7 Stunden her'                => '23.11.2006 18:13',
+               'in 3 Stunden'                 => '24.11.2006 04:13',
+               'morgen 1 Jahr her'            => '25.11.2005 01:13',
+               'Samstag 3 Tage her um 5:00pm' => '22.11.2006 17:00',
+               '4 Tag letzte Woche'           => '16.11.2006 01:13',
+               '3 Mittwoch in November'       => '15.11.2006 01:13',
+               '3 Monat nächstes Jahr'        => '24.03.2007 01:13');
 
-my %specific = ('Januar 5'          => '05.01.2006 01:13',
-                'dez 25'            => '25.12.2006 01:13',
-                'mai 27'            => '27.05.2006 01:13',
-                'Oktober 2006'      => '24.10.2006 01:13',
-                'Februar 14, 2004'  => '14.02.2004 01:13',
-                'Freitag'           => '24.11.2006 01:13',
-                'jan 3 2010'        => '03.01.2010 01:13',
-                '3 jan 2000'        => '03.01.2000 01:13',
-                '27/5/1979'         => '27.05.1979 01:13',
-                '4:00'              => '24.11.2006 04:00',
-                '17:00'             => '24.11.2006 17:00');
+my %specific = ('Januar 5'         => '05.01.2006 01:13',
+                'dez 25'           => '25.12.2006 01:13',
+                'mai 27'           => '27.05.2006 01:13',
+                'Oktober 2006'     => '24.10.2006 01:13',
+                'Februar 14, 2004' => '14.02.2004 01:13',
+                'Freitag'          => '24.11.2006 01:13',
+                'jan 3 2010'       => '03.01.2010 01:13',
+                '3 jan 2000'       => '03.01.2000 01:13',
+                '27/5/1979'        => '27.05.1979 01:13',
+                '4:00'             => '24.11.2006 04:00',
+                '17:00'            => '24.11.2006 17:00');
 
 compare(\%simple);
 compare(\%complex);

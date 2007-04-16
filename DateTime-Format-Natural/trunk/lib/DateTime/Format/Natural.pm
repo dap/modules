@@ -6,7 +6,7 @@ use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 
 sub new {
     my ($class, %opts) = @_;
@@ -45,8 +45,10 @@ sub parse_datetime {
 
     $self->_flush_datetime_objects;
 
-    my @date_strings = $date_string =~ /to/i
-      ? split /\s+ to \s+/ix, $date_string
+    my $timespan_sep = $self->{data}->__timespan('literal');
+
+    my @date_strings = $date_string =~ /$timespan_sep/i
+      ? split /\s+ $timespan_sep \s+/ix, $date_string
       : ($date_string);
 
     foreach $date_string (@date_strings) {
@@ -61,21 +63,21 @@ sub parse_datetime {
             my @separated_order = split $separator, $self->{format};
             my $separated_index = 0;
 
-            $self->{_separated_indices} = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
+            my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
 
             my @bits = split $separator, $date_string;
 
             my @time    = localtime;
             my $century = substr($time[5] + 1900, 0, 2);
 
-            if ($bits[$self->{_separated_indices}->{y}] > $century) { $century-- }
+            if ($bits[$separated_indices->{y}] > $century) { $century-- }
 
-            my $year = $bits[$self->{_separated_indices}->{y}];
+            my $year = $bits[$separated_indices->{y}];
                $year = "$century$year" if length $year == 2;
 
             if (@bits == 3) {
-                $self->{datetime}->set_day  ($bits[$self->{_separated_indices}->{d}]);
-                $self->{datetime}->set_month($bits[$self->{_separated_indices}->{m}]);
+                $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
+                $self->{datetime}->set_month($bits[$separated_indices->{m}]);
                 $self->{datetime}->set_year ($year);
 
                 $self->{tokens_count} = 3;
@@ -376,7 +378,7 @@ C<DateTime::Format::Natural> consists of a method, C<parse_datetime>, which take
 string with a human readable date/time and creates a machine readable one by applying
 natural parsing logic.
 
-=head1 FUNCTIONS
+=head1 METHODS
 
 =head2 new
 
@@ -407,7 +409,7 @@ Returns a C<DateTime> object.
 
 =head2 format_datetime
 
-Not implemented yet.
+Currently not implemented.
 
 =head1 EXAMPLES
 

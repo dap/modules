@@ -1,5 +1,18 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.28 Wed Apr 11 01:44:49 CEST 2007
+
+ - Moved timespan separator definition to language metadata
+   base classes.
+
+ - scripts/dateparse.pl language chosen always defaulted
+   to 'en' irrespective whether another one has been chosen
+   or not. Changed it to only fallback to the default language
+   ('en') if no other one has been provided.
+
+ - Added t/03-parse_format.t to the testsuite which tests datestrings
+   with various differing format strings.
+ 
 0.27 Tue Apr 10 22:19:15 CEST 2007
 
  - Mentioning Tatsuhiko Miyagawa as the inspiration source in

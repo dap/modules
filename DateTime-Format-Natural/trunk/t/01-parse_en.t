@@ -6,7 +6,7 @@ use warnings;
 use DateTime::Format::Natural;
 use Test::More tests => 39;
 
-my ($min, $hour, $day, $month, $year) = (13,01,24,11,2006);
+my ($min, $hour, $day, $month, $year) = (13, 01, 24, 11, 2006);
 
 my %simple = ('thursday'             => '23.11.2006 01:13',
               'november'             => '24.11.2006 01:13',

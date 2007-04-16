@@ -15,6 +15,7 @@ scripts/dateparse.pl
 t/00-load.t
 t/01-parse_en.t
 t/02-parse_de.t
+t/03-parse_format.t
 t/pod-coverage.t
 t/pod.t
 TODO
