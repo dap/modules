@@ -48,6 +48,9 @@ CONSTRUCTOR
     Create_RC
         Create a RC file in the homedir of the current user. Default: 0
 
+    Parse_PPI
+        Parse the Makefile.PL in the PPI Parser mode. Default: 0
+
     Exec_Makefile
         Execute the Makefile.PL via 'do Makefile.PL'. Default: 0
 

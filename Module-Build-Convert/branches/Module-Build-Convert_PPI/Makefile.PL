@@ -10,6 +10,7 @@ WriteMakefile
                          ],
           'VERSION_FROM' => 'lib/Module/Build/Convert.pm',
           'PREREQ_PM' => {
+                           'PPI' => 0,
                            'Getopt::Long' => 0,
                            'IO::File' => 0,
                            'File::HomeDir' => 0,

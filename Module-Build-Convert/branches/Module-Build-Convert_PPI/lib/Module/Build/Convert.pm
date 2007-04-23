@@ -17,7 +17,7 @@ use IO::Prompt ();
 use PPI ();
 use Text::Balanced ();
 
-our $VERSION = '0.48_01';
+our $VERSION = '0.48_02';
 
 use constant LEADCHAR => '* ';
 
@@ -424,32 +424,32 @@ sub _parse_makefile_ppi {
 
         my $token = $have{code} ? $tokens[$i] : $token{curr}->();
 
-        if ($self->_is_quotelike($token) && !$have{structure} && !$have{code} && $token{last}->(1) ne '=>') {
+        if ($self->_is_quotelike($token) && !$have{code} && !$have{nested_structure} && $token{last}->(1) ne '=>') {
             $keyword = $token;
             $type    = 'string';
             next;
-        } elsif ($token eq '=>' && !$have{structure}) {
+        } elsif ($token eq '=>' && !$have{nested_structure}) {
             next;
         }
 
         next if $structure_ended && $token eq ',';
         $structure_ended = 0;
 
-        if ($token->isa('PPI::Token::Structure')) {
+        if ($token->isa('PPI::Token::Structure') && !$have{code}) {
             if ($token =~ /[\Q[{\E]/) {
-                $have{structure}++;
+                $have{nested_structure}++;
 
                 my %assoc = ('[' => 'array',
                              '{' => 'hash');
 
                 $type = $assoc{$token};
             } elsif ($token =~ /[\Q]}\E]/) {
-                $have{structure}--;
-                $structure_ended = 1 unless $have{structure};
+                $have{nested_structure}--;
+                $structure_ended = 1 unless $have{nested_structure};
             }
         }
 
-        $structure_ended = 1 if !$have{structure} && $token{next}->() eq ',' && !$have{code};
+        $structure_ended = 1 if  $token{next}->() eq ',' && !$have{code} && !$have{nested_structure};
         $have{code}      = 1 if  $token->isa('PPI::Token::Word') && $token{next}->(1) ne '=>';
 
         if ($have{code}) {
@@ -459,18 +459,18 @@ sub _parse_makefile_ppi {
                             unseen => sub { $structure_ended = 1; $seen{code} = 0; $have{code} = 0 });
 
             if ($followed_by_arrow->()) {
-                ($token{next}->(1) =~ /^[\Q}]\E]$/ || !$have{structure})
+                ($token{next}->(1) =~ /^[\Q}]\E]$/ || !$have{nested_structure})
                   ? $finalize{seen}->()
-                  : $have{structure}
+                  : $have{nested_structure}
                     ? $finalize{unseen}->()
                     : ();
-            } elsif (($token eq ',' && $token{next}->(1) eq ']') 
+            } elsif (($token eq ',' && $token{next}->(1) eq ']')
                    || $token{next}->(1) eq ']') {
-                $finalize{unseen}->();
+                      $finalize{unseen}->();
             }
         }
 
-        unless ($token =~ /^[\Q[]{}\E]$/) {
+        unless ($token =~ /^[\Q[]{}\E]$/ && !$have{code}) {
             next if $token eq '=>';
             next if $token eq ',' && !$have{code} && !$seen{code};
 
@@ -491,7 +491,7 @@ sub _parse_makefile_ppi {
             }
         }
 
-        if ($structure_ended) {
+        if ($structure_ended && @items) {
             # Obscure construct. Needed to 'serialize' the PPI tokens.
             @items = map { /(.*)/; $1 } @items;
 

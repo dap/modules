@@ -1,5 +1,10 @@
 Revision history for Perl extension Module::Build::Convert.
 
+0.48_02 Sat Apr  7 20:25:43 CEST 2007
+
+ - Fixed some pathological case where an empty @items was
+   being finalized in _parse_makefile_ppi().
+
 0.48_01 Wed Apr  4 23:22:04 CEST 2007
 
  - Took an approach at implementing a PPI-based parser;

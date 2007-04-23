@@ -3,13 +3,13 @@
 use strict;
 use warnings;
 
+use Getopt::Long qw(:config no_ignore_case);
 use Module::Build::Convert;
 
 my $params = parse_switches() if @ARGV;
 convert($params);
 
 sub parse_switches {
-    use Getopt::Long qw(:config no_ignore_case);
     my %opts;
     GetOptions(\%opts,'c','d','e','h','l=i','n','p','rc','v','vv','V') or usage();
 
