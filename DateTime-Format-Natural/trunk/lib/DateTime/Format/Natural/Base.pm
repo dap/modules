@@ -134,7 +134,7 @@ sub _daytime {
              ? $self->{opts}{daytime}{morning}
              : MORNING - $self->{hours_before}));
 
-        undef $self->{hours_before};
+        delete $self->{hours_before};
         $self->_set_modified(1);
     # afternoon
     } elsif ($self->{tokens}->[$self->{index}] =~ $self->{data}->__daytime('afternoon')) {
@@ -144,7 +144,7 @@ sub _daytime {
              ? $self->{opts}{daytime}{afternoon}
              : AFTERNOON - $self->{hours_before}));
 
-        undef $self->{hours_before};
+        delete $self->{hours_before};
         $self->_set_modified(1);
     # evening
     } else {
@@ -154,7 +154,7 @@ sub _daytime {
              ? $self->{opts}{daytime}{evening}
              : EVENING - $self->{hours_before}));
 
-        undef $self->{hours_before};
+        delete $self->{hours_before};
         $self->_set_modified(1);
     }
 
@@ -287,7 +287,7 @@ sub _at {
             }
 
             $self->_set_modified(1);
-            undef $self->{hours_before};
+            delete $self->{hours_before};
         # midnight
         } elsif ($noon_midnight =~ $self->{data}->__at('midnight')) {
             $self->{datetime}->set_hour(0);
