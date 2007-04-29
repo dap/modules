@@ -3,12 +3,16 @@ package DateTime::Format::Natural::Base;
 use strict;
 use warnings;
 
+use constant MORNING   => '08';
+use constant AFTERNOON => '14';
+use constant EVENING   => '20';
+
 use DateTime;
 use Date::Calc qw(Add_Delta_Days Days_in_Month
                   Decode_Day_of_Week
                   Nth_Weekday_of_Month_Year);
 
-our $VERSION = '0.8';
+our $VERSION = '0.9';
 
 $SIG{__WARN__} = \&_filter_warnings;
 
@@ -125,24 +129,30 @@ sub _daytime {
     # morning
     if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__daytime('morning')) {
         $self->{datetime}->set_hour($hour_token
-          ? $hour_token 
-          : '08' - $self->{hours_before});
+          ? $hour_token
+          : ($self->{opts}{daytime}{morning}
+             ? $self->{opts}{daytime}{morning}
+             : MORNING - $self->{hours_before}));
 
         undef $self->{hours_before};
         $self->_set_modified(1);
-    # afternoon (explicit)
+    # afternoon
     } elsif ($self->{tokens}->[$self->{index}] =~ $self->{data}->__daytime('afternoon')) {
-        $self->{datetime}->set_hour($hour_token 
-          ? $hour_token + 12 
-          : '14' - $self->{hours_before});
-
-        undef $self->{hours_before};
-        $self->_set_modified(1);
-    # afternoon (implicit)
-    } else {
         $self->{datetime}->set_hour($hour_token
           ? $hour_token + 12 
-          : '14' - $self->{hours_before});
+          : ($self->{opts}{daytime}{afternoon}
+             ? $self->{opts}{daytime}{afternoon}
+             : AFTERNOON - $self->{hours_before}));
+
+        undef $self->{hours_before};
+        $self->_set_modified(1);
+    # evening
+    } else {
+        $self->{datetime}->set_hour($hour_token
+          ? $hour_token + 12
+          : ($self->{opts}{daytime}{evening}
+             ? $self->{opts}{daytime}{evening}
+             : EVENING - $self->{hours_before}));
 
         undef $self->{hours_before};
         $self->_set_modified(1);

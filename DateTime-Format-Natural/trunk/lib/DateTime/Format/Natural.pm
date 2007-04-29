@@ -6,10 +6,19 @@ use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 sub new {
-    my ($class, %opts) = @_;
+    my $class = shift;
+
+    my $self = bless {}, ref($class) || $class;
+    $self->_init(@_);
+
+    return $self;
+}
+
+sub _init {
+    my ($self, %opts) = @_;
 
     my $lang = $opts{lang} || 'en';
     my $mod  = __PACKAGE__.'::Lang::'.uc($lang);
@@ -19,11 +28,12 @@ sub new {
 
     my $obj = {};
 
-    $obj->{data}   = $mod->__new();
-    $obj->{format} = $opts{format} || 'd/m/y';
-    $obj->{lang}   = $lang;
+    $self->{data}          = $mod->__new();
+    $self->{format}        = $opts{format} || 'd/m/y';
+    $self->{lang}          = $lang;
+    $self->{opts}{daytime} = $opts{daytime};
 
-    return bless $obj, $class || ref($class);
+    return $self;
 }
 
 sub parse_datetime {
@@ -369,48 +379,76 @@ DateTime::Format::Natural - Create machine readable date/time with natural parsi
 
  use DateTime::Format::Natural;
 
- $parse = DateTime::Format::Natural->new;
+ $parser = DateTime::Format::Natural->new;
 
- $dt = $parse->parse_datetime($date_string);
+ $dt = $parser->parse_datetime($date_string);
 
 =head1 DESCRIPTION
 
-C<DateTime::Format::Natural> consists of a method, C<parse_datetime>, which takes a
-string with a human readable date/time and creates a machine readable one by applying
-natural parsing logic.
+C<DateTime::Format::Natural> takes a string with a human readable date/time and creates a
+machine readable one by applying natural parsing logic.
 
 =head1 METHODS
 
 =head2 new
 
-Creates a new DateTime::Format::Natural object.
+Creates a new C<DateTime::Format::Natural> object. Arguments to C<new()> are options and
+not necessarily required.
 
- $parse = DateTime::Format::Natural->new(lang => '[en|de]', format => 'mm/dd/yy');
+ $parser = DateTime::Format::Natural->new(
+           lang    => '[en|de]',
+           format  => 'mm/dd/yy',
+           daytime => { morning   => 06,
+                        afternoon => 13,
+                        evening   => 20, 
+                      },
+ );
 
-C<lang> contains the language selected, currently limited to C<en> (english) & C<de>
-(german), defaults to 'en'. C<format> specifices to format of numeric dates, defaults
-to 'd/m/y'.
+=over 4
+
+=item lang
+
+Contains the language selected, currently limited to C<en> (english) & C<de> (german).
+Defaults to 'C<en>'.
+
+=item format
+
+Specifies the format of numeric dates, defaults to 'C<d/m/y>'.
+
+=item daytime
+
+A hash consisting of specific hours given for peculiar daytimes. Daytimes may be
+selectively changed.
+
+=back
 
 =head2 parse_datetime
 
 Creates a C<DateTime> object from a human readable date/time string.
 
- $dt = $parse->parse_datetime($date_string);
+ $dt = $parser->parse_datetime($date_string);
 
- $dt = $parse->parse_datetime(string => $date_string, debug => 1);
+ $dt = $parser->parse_datetime(
+       string => $date_string,
+       debug  => 1,
+ );
 
-The options may contain the keys C<string> & C<debug>. C<string> may consist of the
-datestring, whereas C<debug> holds the boolean value for the debugging option. If
-debugging is enabled, each token that is analysed will be output to STDOUT with a
-trailing newline appended.
+=over 4
 
-The C<string> parameter is required.
+=item string
 
-Returns a C<DateTime> object.
+The date string.
 
-=head2 format_datetime
+=item debug
 
-Currently not implemented.
+Boolean value indicating debugging mode.
+
+If debugging is enabled, each token that is analysed will be output to STDOUT
+with a trailing newline appended.
+
+=back
+
+Returns a L<DateTime> object.
 
 =head1 EXAMPLES
 

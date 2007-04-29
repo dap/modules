@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
      %months, %at, %this_in, %next, %last, %day, %setyearday);
@@ -28,7 +28,7 @@ our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
          'now'            => qr/^jetzt$/i,
          'daytime'        => [qr/^(?:nachmittag|abend)$/i, qr/^Morgen$/],
          'months'         => [qw(in diesem)],
-         'at_intro'       => qr/^(\d{1,2})(?!\d)(\:\d{2})?(am|pm)?|(mittag|mitternacht)$/i,
+         'at_intro'       => qr/^(\d{1,2})(?!\d)(\:\d{2})?(am|pm)?|((?<!nach)mittag|mitternacht)$/i,
          'at_matches'     => [qw(tag in monat)],
          'number_intro'   => qr/^(\d{1,2})$/i,
          'number_matches' => [qw(tag tage woche wochen monat monate Morgen abend jahr in)],

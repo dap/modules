@@ -25,7 +25,7 @@ my %simple = ('Donnerstag'               => '23.11.2006 01:13:00',
               'Gestern um 4:00'          => '23.11.2006 04:00:00',
               'Letzten Freitag um 20:00' => '17.11.2006 20:00:00',
               'morgen um 6:45pm'         => '25.11.2006 18:45:00',
-              'Gestern nachmittag'       => '23.11.2006 12:00:00',
+              'Gestern nachmittag'       => '23.11.2006 14:00:00',
               'Donnerstag letzte Woche'  => '16.11.2006 01:13:00');
 
 my %complex = ('25 Sekunden her'              => '24.11.2006 01:12:35',

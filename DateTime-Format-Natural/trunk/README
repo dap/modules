@@ -5,43 +5,60 @@ NAME
 SYNOPSIS
      use DateTime::Format::Natural;
 
-     $parse = DateTime::Format::Natural->new;
+     $parser = DateTime::Format::Natural->new;
 
-     $dt = $parse->parse_datetime($date_string);
+     $dt = $parser->parse_datetime($date_string);
 
 DESCRIPTION
-    "DateTime::Format::Natural" consists of a method, "parse_datetime",
-    which takes a string with a human readable date/time and creates a
-    machine readable one by applying natural parsing logic.
+    "DateTime::Format::Natural" takes a string with a human readable
+    date/time and creates a machine readable one by applying natural parsing
+    logic.
 
 METHODS
   new
-    Creates a new DateTime::Format::Natural object.
+    Creates a new "DateTime::Format::Natural" object. Arguments to "new()"
+    are options and not necessarily required.
 
-     $parse = DateTime::Format::Natural->new(lang => '[en|de]', format => 'mm/dd/yy');
+     $parser = DateTime::Format::Natural->new(
+               lang    => '[en|de]',
+               format  => 'mm/dd/yy',
+               daytime => { morning   => 06,
+                            afternoon => 13,
+                            evening   => 20 
+                          },
+     );
 
-    "lang" contains the language selected, currently limited to "en"
-    (english) & "de" (german), defaults to 'en'. "format" specifices to
-    format of numeric dates, defaults to 'd/m/y'.
+    lang
+        Contains the language selected, currently limited to "en" (english)
+        & "de" (german). Defaults to '"en"'.
+
+    format
+        Specifies the format of numeric dates, defaults to '"d/m/y"'.
+
+    daytime
+        A hash consisting of specific hours given for peculiar daytimes.
+        Daytimes may be selectively changed.
 
   parse_datetime
     Creates a "DateTime" object from a human readable date/time string.
 
-     $dt = $parse->parse_datetime($date_string);
+     $dt = $parser->parse_datetime($date_string);
 
-     $dt = $parse->parse_datetime(string => $date_string, debug => 1);
+     $dt = $parser->parse_datetime(
+           string => $date_string,
+           debug  => 1,
+     );
 
-    The options may contain the keys "string" & "debug". "string" may
-    consist of the datestring, whereas "debug" holds the boolean value for
-    the debugging option. If debugging is enabled, each token that is
-    analysed will be output to STDOUT with a trailing newline appended.
+    string
+        The date string.
 
-    The "string" parameter is required.
+    debug
+        Boolean value indicating debugging mode.
 
-    Returns a "DateTime" object.
+        If debugging is enabled, each token that is analysed will be output
+        to STDOUT with a trailing newline appended.
 
-  format_datetime
-    Currently not implemented.
+    Returns a DateTime object.
 
 EXAMPLES
     See the modules "DateTime::Format::Natural::Lang::*" for a overview of

@@ -1,5 +1,16 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.30 Sun Apr 29 02:33:16 CEST 2007
+
+ - Fixed some spurious date results assumptions in t/01-parse_en.t
+   and t/02-parse_de.t which were caused by a bug.
+
+ - Extended documentation to include options pertaining to method
+   calls within the documentation in listed form.
+
+ - Added functionality to change the default values for specific
+   daytimes. Furthermore, according testcases have been added.
+
 0.29 Mon Apr 16 22:00:27 CEST 2007
 
  - Support for parsing seconds and minutes in ago stanzas
