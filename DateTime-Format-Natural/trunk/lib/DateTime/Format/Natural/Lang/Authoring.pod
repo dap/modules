@@ -5,7 +5,7 @@ DateTime::Format::Natural::Lang::Authoring - Authoring the language metadata
 =head1 DESCRIPTION
 
 Whenever a language is provided via the C<lang> parameter to 
-C<DateTime::Format::Natural's> constructor C<new>, C<parse_datetime>
+C<DateTime::Format::Natural's> constructor C<new()>, C<parse_datetime()>
 will subsequently use the I<translation metadata> found within, for example,
 C<DateTime::Format::Natural::Lang::EN>, if we chosen the english language.
 
