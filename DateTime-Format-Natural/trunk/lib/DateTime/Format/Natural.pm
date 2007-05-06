@@ -48,7 +48,7 @@ sub parse_datetime {
     }
 
     unless ($self->{nodatetimeset}) {
-        $self->{datetime} = DateTime->now(time_zone => 'local');
+        $self->{datetime} = DateTime->now(time_zone => 'floating');
     }
 
     $self->_flush_datetime_objects;
@@ -354,7 +354,7 @@ sub _get_datetime_objects {
 sub _set_datetime {
     my ($self, $year, $month, $day, $hour, $min, $sec) = @_;
 
-    $self->{datetime} = DateTime->now(time_zone => 'local');
+    $self->{datetime} = DateTime->now(time_zone => 'floating');
 
     $self->{nodatetimeset} = 1;
 

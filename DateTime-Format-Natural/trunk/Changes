@@ -1,8 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
-0.31
+0.31 Sun May  6 02:57:13 CEST 2007
 
  - Replaced undef on hash elements within Natural/Base.pm with delete.
+
+ - Changed 'time_zone' parameter's value in calls to DateTime->now()
+   with 'floating' instead of 'local'. This should function as fix
+   to failures reported on MSWin & Cygwin platforms according to
+   [Dave Rolsky <urth@autarch.org>].
 
 0.30 Sun Apr 29 02:33:16 CEST 2007
 
