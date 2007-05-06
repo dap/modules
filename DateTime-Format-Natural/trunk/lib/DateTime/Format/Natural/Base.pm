@@ -12,7 +12,7 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
                   Decode_Day_of_Week
                   Nth_Weekday_of_Month_Year);
 
-our $VERSION = '0.9';
+our $VERSION = '0.10';
 
 $SIG{__WARN__} = \&_filter_warnings;
 

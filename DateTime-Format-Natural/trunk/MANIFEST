@@ -20,4 +20,3 @@ t/04-parse_daytime_en.t
 t/05-parse_daytime_de.t
 t/pod-coverage.t
 t/pod.t
-TODO

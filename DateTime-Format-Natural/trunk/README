@@ -24,7 +24,7 @@ METHODS
                format  => 'mm/dd/yy',
                daytime => { morning   => 06,
                             afternoon => 13,
-                            evening   => 20 
+                            evening   => 20,
                           },
      );
 
