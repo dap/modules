@@ -9,6 +9,12 @@ Revision history for Perl extension DateTime::Format::Natural.
    to failures reported on MSWin & Cygwin platforms according to
    [Dave Rolsky <urth@autarch.org>].
 
+ - Due to an unlocalized signal warning handler, uninitialized
+   warnings in code which either required/use'd DateTime::Format::Natural
+   were being supressed. The handler has been commented out (and left in
+   for debugging/development purpose) and replaced by an according
+   'no warnings' statements in both Natural.pm & Natural/Base.pm.
+
 0.30 Sun Apr 29 02:33:16 CEST 2007
 
  - Fixed some spurious date results assumptions in t/01-parse_en.t

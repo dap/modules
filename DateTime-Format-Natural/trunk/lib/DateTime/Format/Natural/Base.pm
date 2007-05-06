@@ -2,6 +2,7 @@ package DateTime::Format::Natural::Base;
 
 use strict;
 use warnings;
+no warnings 'uninitialized';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -14,7 +15,7 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
 
 our $VERSION = '0.10';
 
-$SIG{__WARN__} = \&_filter_warnings;
+#$SIG{__WARN__} = \&_filter_warnings;
 
 sub _ago {
     my $self = shift;
@@ -683,12 +684,13 @@ sub _setweekday {
     $self->_set_modified(1);
 }
 
-sub _filter_warnings {
-    if ($_[0] =~ /uninitialized/ &&
-        $_[0] =~ /pattern|string|subtraction/) {
-        return;
-    } else { print $_[0] }
-};
+# XXX defunct - changed signal warning handler globally
+#sub _filter_warnings {
+#    if ($_[0] =~ /uninitialized/ &&
+#        $_[0] =~ /pattern|string|subtraction/) {
+#        return;
+#    } else { print $_[0] }
+#};
 
 1;
 __END__

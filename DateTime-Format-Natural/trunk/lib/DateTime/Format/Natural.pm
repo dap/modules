@@ -2,6 +2,7 @@ package DateTime::Format::Natural;
 
 use strict;
 use warnings;
+no warnings 'uninitialized';
 use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
