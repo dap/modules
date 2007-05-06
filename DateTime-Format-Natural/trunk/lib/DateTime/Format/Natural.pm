@@ -26,8 +26,6 @@ sub _init {
     eval "use $mod";
     die $@ if $@;
 
-    my $obj = {};
-
     $self->{data}          = $mod->__new();
     $self->{format}        = $opts{format} || 'd/m/y';
     $self->{lang}          = $lang;
@@ -400,7 +398,7 @@ not necessarily required.
            format  => 'mm/dd/yy',
            daytime => { morning   => 06,
                         afternoon => 13,
-                        evening   => 20, 
+                        evening   => 20,
                       },
  );
 

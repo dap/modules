@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.31
+
+ - Replaced undef on hash elements within Natural/Base.pm with delete.
+
 0.30 Sun Apr 29 02:33:16 CEST 2007
 
  - Fixed some spurious date results assumptions in t/01-parse_en.t
