@@ -94,7 +94,7 @@ sub parse_datetime {
 
                 $self->_save_datetime_object;
 
-                return $self->_get_datetime_objects;
+                last;
             }
         } else {
             @{$self->{tokens}}    = split ' ', $date_string;
@@ -186,8 +186,8 @@ sub _process_year {
     my $self = shift;
 
     foreach my $token (@{$self->{tokens}}) {
-        if ($token =~ /^(\d{4})$/) {
-            $self->{datetime}->set_year($1);
+        if (my ($year) = $token =~ /^(\d{4})$/) {
+            $self->{datetime}->set_year($year);
             $self->_set_modified(1);
         }
     }
@@ -196,16 +196,13 @@ sub _process_year {
 sub _process_months {
     my $self = shift;
 
-    my $dont_proceed;
-
     foreach my $match (@{$self->{data}->__main('months')}) {
         if (any { /^$match$/i } @{$self->{tokens}}) {
-            $dont_proceed = 1;
-            last;
+            return;
         }
     }
 
-    $self->_months unless $dont_proceed;
+    $self->_months;
 }
 
 sub _process_at {
@@ -214,16 +211,15 @@ sub _process_at {
     if ($self->{tokens}->[$self->{index}] =~ /^at$/i) {
         return;
     } elsif ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('at_intro')) {
-        my $dont_proceed;
+        my @matches = ($1, $2, $3, $4);
 
         foreach my $match (@{$self->{data}->__main('at_matches')}) {
             if (any { /^$match$/i } @{$self->{tokens}}) {
-                $dont_proceed = 1;
-                last;
+                return;
             }
         }
 
-        $self->_at($1,$2,$3,$4) unless $dont_proceed;
+        $self->_at(@matches);
     }
 }
 
@@ -231,23 +227,21 @@ sub _process_number {
     my $self = shift;
 
     if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('number_intro')) {
-        my $dont_proceed;
+        my $match = $1;
 
         foreach my $match (@{$self->{data}->__main('number_matches')}) {
             if (any { /^$match$/i } @{$self->{tokens}}) {
-                $dont_proceed = 1;
-                last;
+                return;
             }
         }
 
         foreach my $weekday (keys %{$self->{data}->{weekdays}}) {
             if ($self->{tokens}->[$self->{index}+1] =~ /^$weekday$/i) {
-                $dont_proceed = 1;
-                last;
+                return;
             }
         }
 
-        $self->_number($1) unless $dont_proceed;
+        $self->_number($match);
     }
 }
 
