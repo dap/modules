@@ -69,10 +69,8 @@ sub compare_strings {
     my $parse = DateTime::Format::Natural->new(lang => 'de');
     $parse->_set_datetime($year, $month, $day, $hour, $min, $sec);
 
-    my @dt = $parse->parse_datetime(string => $string);
+    my $dt = $parse->parse_datetime(string => $string);
 
-    foreach my $dt (@dt) {
-        my $res_string = sprintf("%02s.%02s.%4s %02s:%02s:%02s", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
-        is($res_string, $result, $string);
-    }
+    my $res_string = sprintf("%02s.%02s.%4s %02s:%02s:%02s", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
+    is($res_string, $result, $string);
 }

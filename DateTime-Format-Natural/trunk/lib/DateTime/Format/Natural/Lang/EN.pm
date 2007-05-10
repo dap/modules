@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.9';
+our $VERSION = '0.10';
 
 our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime, %months,
      %number, %at, %this_in, %next, %last, %day, %setyearday);
@@ -157,6 +157,11 @@ Below are some examples of human readable date/time input in english:
  3rd wednesday in november
  3rd month next year
  7 hours before tomorrow at noon
+
+=head2 Timespans
+
+ Monday to Friday
+ 1 April to 31 August
 
 =head2 Specific Dates
 

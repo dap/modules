@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.31';
+our $VERSION = '0.32';
 
 sub new {
     my $class = shift;
@@ -38,73 +38,85 @@ sub _init {
 sub parse_datetime {
     my $self = shift;
 
-    my ($date_string, %opts);
+    $self->_parse_init(@_);
+
+    my $date_string = $self->{Date_string};
+    $date_string =~ tr/,//d;
+
+    if ($date_string =~ m!(?:/|\-)!) {
+        my $separator = $date_string =~ m!/! ? '/' : '-';
+           $separator = quotemeta $separator;
+
+        my @separated_order = split $separator, $self->{format};
+        my $separated_index = 0;
+
+        my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
+
+        my @bits = split $separator, $date_string;
+
+        my @time    = localtime;
+        my $century = substr($time[5] + 1900, 0, 2);
+
+        if ($bits[$separated_indices->{y}] > $century) { $century-- }
+
+        my $year = $bits[$separated_indices->{y}];
+           $year = "$century$year" if length $year == 2;
+
+        if (@bits == 3) {
+            $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
+            $self->{datetime}->set_month($bits[$separated_indices->{m}]);
+            $self->{datetime}->set_year ($year);
+
+            $self->{tokens_count} = 3;
+            $self->_set_modified(3);
+
+            return $self->_get_datetime_object;
+        }
+    } else {
+        @{$self->{tokens}}    = split ' ', $date_string;
+        $self->{tokens_count} = scalar @{$self->{tokens}};
+    }
+
+    $self->_process;
+
+    return $self->_get_datetime_object;
+}
+
+sub parse_datetime_duration {
+    my $self = shift;
+
+    $self->_parse_init(@_);
+
+    my $timespan_sep = $self->{data}->__timespan('literal');
+
+    my @date_strings = $self->{Date_string} =~ /$timespan_sep/i
+      ? split /\s+ $timespan_sep \s+/ix, $self->{Date_string}
+      : ($self->{Date_string});
+
+    my @stack;
+    foreach my $date_string (@date_strings) {
+        push @stack, $self->parse_datetime($date_string);
+    }
+
+    return @stack;
+}
+
+sub _parse_init {
+    my $self = shift;
+
+    my %opts;
 
     if (@_ > 1) {
-        %opts          = @_;
-        $date_string   = $opts{string};
-        $self->{Debug} = $opts{debug};
+        %opts                = @_;
+        $self->{Date_string} = $opts{string};
+        $self->{Debug}       = $opts{debug};
     } else {
-        ($date_string) = @_;
+        ($self->{Date_string}) = @_;
     }
 
     unless ($self->{nodatetimeset}) {
         $self->{datetime} = DateTime->now(time_zone => 'floating');
     }
-
-    $self->_flush_datetime_objects;
-
-    my $timespan_sep = $self->{data}->__timespan('literal');
-
-    my @date_strings = $date_string =~ /$timespan_sep/i
-      ? split /\s+ $timespan_sep \s+/ix, $date_string
-      : ($date_string);
-
-    foreach $date_string (@date_strings) {
-        $date_string =~ tr/,//d;
-
-        $self->{date_string} = $date_string;
-
-        if ($date_string =~ m!(?:/|\-)!) {
-            my $separator = $date_string =~ m!/! ? '/' : '-';
-               $separator = quotemeta $separator;
-
-            my @separated_order = split $separator, $self->{format};
-            my $separated_index = 0;
-
-            my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
-
-            my @bits = split $separator, $date_string;
-
-            my @time    = localtime;
-            my $century = substr($time[5] + 1900, 0, 2);
-
-            if ($bits[$separated_indices->{y}] > $century) { $century-- }
-
-            my $year = $bits[$separated_indices->{y}];
-               $year = "$century$year" if length $year == 2;
-
-            if (@bits == 3) {
-                $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
-                $self->{datetime}->set_month($bits[$separated_indices->{m}]);
-                $self->{datetime}->set_year ($year);
-
-                $self->{tokens_count} = 3;
-                $self->_set_modified(3);
-
-                $self->_save_datetime_object;
-
-                last;
-            }
-        } else {
-            @{$self->{tokens}}    = split ' ', $date_string;
-            $self->{tokens_count} = scalar @{$self->{tokens}};
-        }
-
-        $self->_process;
-    }
-
-    return $self->_get_datetime_objects;
 }
 
 sub _process {
@@ -132,8 +144,6 @@ sub _process {
         $self->_process_day;
         $self->_process_monthdays_limit;
     }
-
-    $self->_save_datetime_object;
 }
 
 sub _debug_head {
@@ -302,17 +312,13 @@ sub _get_modified   { $_[0]->{modified}          }
 sub _set_modified   { $_[0]->{modified} += $_[1] }
 sub _unset_modified { $_[0]->{modified}  = 0     }
 
-sub _flush_datetime_objects {
-    my $self = shift;
-
-    undef @{$self->{stack}};
-}
-
-sub _save_datetime_object {
+sub _get_datetime_object {
     my $self = shift;
 
     die "$self->{date_string} not valid input, exiting.\n"
          unless $self->_get_modified >= $self->{tokens_count};
+
+    $self->_unset_modified;
 
     $self->{year}  = $self->{datetime}->year;
     $self->{month} = $self->{datetime}->month;
@@ -327,22 +333,13 @@ sub _save_datetime_object {
     $self->{day}   = sprintf("%02i", $self->{day});
     $self->{month} = sprintf("%02i", $self->{month});
 
-    $self->_unset_modified;
-
     my $dt = DateTime->new(year   => $self->{year},
                            month  => $self->{month},
                            day    => $self->{day},
                            hour   => $self->{hour},
                            minute => $self->{min},
                            second => $self->{sec});
-
-    push @{$self->{stack}}, $dt;
-}
-
-sub _get_datetime_objects {
-    my $self = shift;
-
-    return @{$self->{stack}};
+    return $dt;
 }
 
 # solely for debugging purpose
@@ -375,6 +372,7 @@ DateTime::Format::Natural - Create machine readable date/time with natural parsi
  $parser = DateTime::Format::Natural->new;
 
  $dt = $parser->parse_datetime($date_string);
+ @dt = $parser->parse_datetime_duration($date_string);
 
 =head1 DESCRIPTION
 
@@ -443,6 +441,19 @@ with a trailing newline appended.
 
 Returns a L<DateTime> object.
 
+=head2 parse_datetime_duration
+
+Creates one or more C<DateTime> object(s) from a human readable date/time string
+which may contain timespans/durations. 'Same' interface & options as parse_datetime(),
+but must be explicitly called in list context.
+
+ @dt = $parser->parse_datetime_duration($date_string);
+
+ @dt = $parser->parse_datetime_duration(
+       string => $date_string,
+       debug  => 1,
+ );
+
 =head1 EXAMPLES
 
 See the modules C<DateTime::Format::Natural::Lang::*> for a overview of valid input.
@@ -461,6 +472,8 @@ valuable suggestions & patches:
  mike (pulsation)
  Mark Stosberg
  Tuomas Jormola
+ Cory Watson
+ Urs Stotz
 
 =head1 SEE ALSO
 

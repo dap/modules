@@ -11,7 +11,8 @@ use constant EVENING   => '20';
 use DateTime;
 use Date::Calc qw(Add_Delta_Days Days_in_Month
                   Decode_Day_of_Week
-                  Nth_Weekday_of_Month_Year);
+                  Nth_Weekday_of_Month_Year
+                  check_date check_time);
 
 our $VERSION = '0.10';
 
@@ -129,37 +130,46 @@ sub _daytime {
 
     # morning
     if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__daytime('morning')) {
-        $self->{datetime}->set_hour($hour_token
+        my $hour = ($hour_token
           ? $hour_token
           : ($self->{opts}{daytime}{morning}
              ? $self->{opts}{daytime}{morning}
              : MORNING - $self->{hours_before}));
 
-        delete $self->{hours_before};
-        $self->_set_modified(1);
+        if ($self->_valid_time(hour => $hour)) {
+            $self->{datetime}->set_hour($hour);
+            delete $self->{hours_before};
+            $self->_set_modified(1);
+        }
     # afternoon
     } elsif ($self->{tokens}->[$self->{index}] =~ $self->{data}->__daytime('afternoon')) {
-        $self->{datetime}->set_hour($hour_token
+        my $hour = ($hour_token
           ? $hour_token + 12 
           : ($self->{opts}{daytime}{afternoon}
              ? $self->{opts}{daytime}{afternoon}
              : AFTERNOON - $self->{hours_before}));
 
-        delete $self->{hours_before};
-        $self->_set_modified(1);
+        if ($self->_valid_time(hour => $hour)) {
+            $self->{datetime}->set_hour($hour);
+            delete $self->{hours_before};
+            $self->_set_modified(1);
+        }
     # evening
     } else {
-        $self->{datetime}->set_hour($hour_token
+       my $hour = ($hour_token
           ? $hour_token + 12
           : ($self->{opts}{daytime}{evening}
              ? $self->{opts}{daytime}{evening}
              : EVENING - $self->{hours_before}));
 
-        delete $self->{hours_before};
-        $self->_set_modified(1);
+        if ($self->_valid_time(hour => $hour)) {
+            $self->{datetime}->set_hour($hour);
+            delete $self->{hours_before};
+            $self->_set_modified(1);
+        }
     }
 
-    $self->{datetime}->set_minute(00);
+    $self->{datetime}->set_minute(0);
 }
 
 sub _months {
@@ -173,19 +183,25 @@ sub _months {
             if ($self->{tokens}->[$self->{index}+$i] =~ /$key_month/i
              || $self->{tokens}->[$self->{index}+$i] =~ /$key_month_short/i) {
                 # Set month & flag modification state
-                $self->{datetime}->set_month($self->{data}->{months}->{$key_month});
-                $self->_set_modified(1);
+                if ($self->_valid_date(month => $self->{data}->{months}->{$key_month})) {
+                    $self->{datetime}->set_month($self->{data}->{months}->{$key_month});
+                    $self->_set_modified(1);
+                }
 
                 # Set day for: month [0-9] & remove day from tokens
-                if ($self->{tokens}->[$self->{index}+$i+1] =~ $self->{data}->__months('number')) {
-                    $self->{datetime}->set_day($1);
-                    $self->_set_modified(1);
+                if (my ($day) = $self->{tokens}->[$self->{index}+$i+1] =~ $self->{data}->__months('number')) {
+                    if ($self->_valid_date(day => $day)) {
+                        $self->{datetime}->set_day($day);
+                        $self->_set_modified(1);
+                    }
 
                     splice(@{$self->{tokens}}, $self->{index}+$i+1, 1);
                 # Set day for: [0-9] month & remove day from tokens
-                } elsif ($self->{tokens}->[$self->{index}+$i-1] =~ $self->{data}->__months('number')) {
-                    $self->{datetime}->set_day($1);
-                    $self->_set_modified(1);
+                } elsif (($day) = $self->{tokens}->[$self->{index}+$i-1] =~ $self->{data}->__months('number')) {
+                    if ($self->_valid_date(day => $day)) {
+                        $self->{datetime}->set_day($day);
+                        $self->_set_modified(1);
+                    }
 
                     splice(@{$self->{tokens}}, $self->{index}+$i-1, 1);
                 }
@@ -224,8 +240,10 @@ sub _number {
         }
     # [0-9] day ...
     } else {
-        $self->{datetime}->set_day($often);
-        $self->_set_modified(1);
+        if ($self->_valid_date(day => $often)) {
+            $self->{datetime}->set_day($often);
+            $self->_set_modified(1);
+        }
     }
 }
 
@@ -251,11 +269,19 @@ sub _at {
 
     # [0-9] ...
     if ($hour_token) {
-        $self->{datetime}->set_hour($hour_token);
-        $min_token =~ s!:!! if defined($min_token);
-        $self->{datetime}->set_minute($min_token || 00);
+        if ($self->_valid_time(hour => $hour_token)) {
+            $self->{datetime}->set_hour($hour_token);
+        }
 
-        $self->_set_modified(1);
+        $min_token =~ s/:// if defined($min_token);
+
+        if (!defined $min_token) {
+            $self->{datetime}->set_minute(0);
+            $self->_set_modified(1);
+        } elsif ($self->_valid_time(min => $min_token)) {
+            $self->{datetime}->set_minute($min_token);
+            $self->_set_modified(1);
+        }
 
         # am/pm
         if ($timeframe) {
@@ -389,12 +415,15 @@ sub _this_in {
                         my ($often) = $self->{tokens}->[$self->{index}-3] =~ $self->{data}->__this_in('number');
                         my ($year, $month, $day) =
                         Nth_Weekday_of_Month_Year($self->{datetime}->year, $self->{data}->{months}->{$month}, 
-                        $self->{data}->{weekdays}->{$weekday}, $often);
-                        $self->{datetime}->set_year($year);
-                        $self->{datetime}->set_month($month);
-                        $self->{datetime}->set_day($day);
+                          $self->{data}->{weekdays}->{$weekday}, $often);
 
-                        $self->_set_modified(2);
+                        if (check_date($year, $month, $day)) {
+                            $self->{datetime}->set_year($year);
+                            $self->{datetime}->set_month($month);
+                            $self->{datetime}->set_day($day);
+
+                            $self->_set_modified(2);
+                        }
 
                         splice(@{$self->{tokens}}, $self->{index}-3, 4);
                     }
@@ -442,10 +471,12 @@ sub _next {
             # [0-9] day next month
             if ($self->{tokens}->[$self->{index}-2] =~ $self->{data}->__next('day')) {
                 my $day = $self->{tokens}->[$self->{index}-3];
-                $day =~ s/$self->{data}->__next('number')/$1/ei;
+                $day =~ s/$self->{data}->__next('number')/$1/i;
 
-                $self->{datetime}->set_day($day);
-                $self->_set_modified(2);
+                if ($self->_valid_date(day => $day)) {
+                    $self->{datetime}->set_day($day);
+                    $self->_set_modified(2);
+                }
             }
 
             $self->_setmonthday;
@@ -462,10 +493,12 @@ sub _next {
             # [0-9] month next year
             if ($self->{tokens}->[$self->{index}-2] =~ $self->{data}->__next('month')) {
                 my $month = $self->{tokens}->[$self->{index}-3];
-                $month =~ s/$self->{data}->__next('number')/$1/ei;
+                $month =~ s/$self->{data}->__next('number')/$1/i;
 
-                $self->{datetime}->set_month($month);
-                $self->_set_modified(2);
+                if ($self->_valid_date(month => $month)) {
+                    $self->{datetime}->set_month($month);
+                    $self->_set_modified(2);
+                }
             }
 
             $self->_setyearday;
@@ -515,7 +548,7 @@ sub _last {
             $self->{datetime}->subtract(days => $days_diff);
 
             my $day = $self->{tokens}->[$self->{index}-3];
-            $day =~ s/$self->{data}->__last('number')/$1/ei;
+            $day =~ s/$self->{data}->__last('number')/$1/i;
 
             $self->{datetime}->add(days => $day);
             $self->{buffer} = '';
@@ -531,9 +564,12 @@ sub _last {
         # [0-9] day last month
         if ($self->{tokens}->[$self->{index}-2] =~ $self->{data}->__last('day')) {
             my $day = $self->{tokens}->[$self->{index}-3];
-            $day =~ s/$self->{data}->__last('number')/$1/ei;
+            $day =~ s/$self->{data}->__last('number')/$1/i;
 
-            $self->{datetime}->set_day($day);
+            if ($self->_valid_date(day => $day)) {
+                $self->{datetime}->set_day($day);
+                $self->_set_modified(2);
+            }
         }
 
         $self->{buffer} = '';
@@ -612,21 +648,30 @@ sub _day {
 
         # [0-9] hours before yesterday/tomorrow
         if ($self->{hours_before}) {
-            $self->{datetime}->set_hour(24 - $self->{hours_before});
+            my $hour = 24 - $self->{hours_before};
+            if ($self->_valid_time(hour => $hour)) {
+                $self->{datetime}->set_hour($hour);
+            }
 
             if ($self->{tokens}->[$self->{index}+2] !~ $self->{data}->__day('noonmidnight')) {
                 $self->{datetime}->subtract(days => 1);
             }
         # [0-9] hours after yesterday/tomorrow
         } elsif ($self->{hours_after}) {
-            $self->{datetime}->set_hour(0 + $self->{hours_after});
+            my $hour = 0 + $self->{hours_after};
+            if ($self->_valid_time(hour => $hour)) {
+                $self->{datetime}->set_hour($hour);
+            }
         }
     }
 
     # XXX: Make negative values positive; investigate further, possibly broken.
     if ($self->{datetime}->hour < 0) {
         my ($subtract) = $self->{datetime}->hour =~ /\-(.*)/;
-        $self->{datetime}->set_hour(12 - $subtract);
+        my $hour = 12 - $subtract;
+        if ($self->_valid_time(hour => $hour)) {
+            $self->{datetime}->set_hour($hour);
+        }
     }
 }
 
@@ -639,7 +684,7 @@ sub _setyearday {
 
         # [0-9] day
         my $days = $self->{tokens}->[$self->{index}-3];
-        $days =~ s/$self->{data}->__setyearday('ext')/$1/ei;
+        $days =~ s/$self->{data}->__setyearday('ext')/$1/i;
 
         # calculate year, month & day
         my ($year, $month, $day) = Add_Delta_Days($self->{datetime}->year, 1, 1, $days - 1);
@@ -682,6 +727,36 @@ sub _setweekday {
     $self->{buffer} = '';
 
     $self->_set_modified(1);
+}
+
+sub _valid_date {
+    my ($self, $type, $value) = @_;
+
+    my %set = map { $_ => $self->{datetime}->$_ } qw(year month day);
+    $set{$type} = $value;
+
+   if (check_date($set{year}, $set{month}, $set{day})) {
+       return 1;
+   } else {
+       eval { require Carp };
+       die $@ if $@;
+       Carp::croak "$value is not a valid $type\n";
+   }
+}
+
+sub _valid_time {
+    my ($self, $type, $value) = @_;
+
+    my %set = map { $_ => $self->{datetime}->$_ } qw(hour min sec);
+    $set{$type} = $value;
+
+    if (check_time($set{hour}, $set{min}, $set{sec})) {
+        return 1;
+    } else {
+        eval { require Carp };
+        die $@ if $@;
+        Carp::croak "$value is not a valid $type\n";
+    }
 }
 
 # XXX defunct - changed signal warning handler globally

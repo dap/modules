@@ -1,8 +1,19 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
-0.32
+0.32 Thu May 10 23:52:00 CEST 2007
 
  - Replaced some conditional variables with early return statements.
+
+ - Introcuded Date::Calc's check_date() and check_time() to assure
+   for integrity of date/time values submitted to according setter
+   methods.
+
+ - Wrapped check_date() and check_time() in subs which croak upon
+   error and supply the type of value and the actual value in the
+   message delivered to the caller, otherwise return true.
+
+ - Separated datetime_parse_duration() logic from datetime_parse()
+   and added according documentation [Cory Watson <jheephat@gmail.com>]
 
 0.31 Sun May  6 02:57:13 CEST 2007
 

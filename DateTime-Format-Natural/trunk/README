@@ -8,6 +8,7 @@ SYNOPSIS
      $parser = DateTime::Format::Natural->new;
 
      $dt = $parser->parse_datetime($date_string);
+     @dt = $parser->parse_datetime_duration($date_string);
 
 DESCRIPTION
     "DateTime::Format::Natural" takes a string with a human readable
@@ -60,6 +61,18 @@ METHODS
 
     Returns a DateTime object.
 
+  parse_datetime_duration
+    Creates one or more "DateTime" object(s) from a human readable date/time
+    string which may contain timespans/durations. 'Same' interface & options
+    as parse_datetime(), but must be explicitly called in list context.
+
+     @dt = $parser->parse_datetime_duration($date_string);
+
+     @dt = $parser->parse_datetime_duration(
+           string => $date_string,
+           debug  => 1,
+     );
+
 EXAMPLES
     See the modules "DateTime::Format::Natural::Lang::*" for a overview of
     valid input.
@@ -78,6 +91,8 @@ CREDITS
      mike (pulsation)
      Mark Stosberg
      Tuomas Jormola
+     Cory Watson
+     Urs Stotz
 
 SEE ALSO
     DateTime, Date::Calc, <http://datetime.perl.org>
