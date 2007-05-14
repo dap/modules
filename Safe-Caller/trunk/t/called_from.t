@@ -32,14 +32,14 @@ sub new {
     return bless { safe => $safe }, $class;
 }
 
-sub foo { 
+sub foo {
     my ($self) = @_;
-    return $self->bar; 
+    return $self->bar;
 }
 
 package Foo;
 
-use base 'Base';
+use base qw(Base);
 
 sub bar {
     my ($self) = @_;
@@ -48,10 +48,10 @@ sub bar {
 
 package Bar;
 
-use base 'Base';
+use base qw(Base);
 
 sub bar {
     my ($self) = @_;
-    return ($self->{safe}->called_from_pkg('Base'), $self->{safe}->called_from_file('t/called_from.t'), 
-            $self->{safe}->called_from_line(37), $self->{safe}->called_from_sub('Bar::bar'));
+    return ($self->{safe}->called_from_pkg('Base'), $self->{safe}->called_from_file('t/called_from.t'),
+            $self->{safe}->called_from_line(37),    $self->{safe}->called_from_sub('Bar::bar'));
 }
