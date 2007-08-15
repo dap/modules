@@ -53,7 +53,7 @@ Usage: $0 [switches] [path-to-distribution]
   -h           help screen
   -l length    indentation length
   -n           native ordering of build arguments
-  -p           PPI parser mode (experimental)
+  -p           PPI parse mode
   -rc          create RC-file in homedir
   -v(v)        verbosity level
   -V           print version
@@ -80,14 +80,14 @@ make2build - frontend to Module::Build::Convert
  make2build         # In the root directory of an
                     # ExtUtils::MakeMaker based distribution
 
- Usage: /usr/local/bin/make2build [switches] [path-to-distribution]
+ Usage: make2build [switches] [path-to-distribution]
    -c           process code (within the arguments list)
    -d           debug the parsing process
    -e           execute Makefile.PL
    -h           help screen
    -l length    indentation length
    -n           native ordering of build arguments
-   -p           PPI parser mode (experimental)
+   -p           PPI parse mode
    -rc          create RC-file in homedir
    -v(v)        verbosity level
    -V           version

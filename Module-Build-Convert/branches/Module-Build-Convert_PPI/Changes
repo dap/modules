@@ -1,5 +1,22 @@
 Revision history for Perl extension Module::Build::Convert.
 
+0.49 Wed Aug 15 23:17:25 CEST 2007
+
+ - Merged development version to stable.
+
+ - Fixed _parse_data(), which previously died with a warning (due to an
+   attempt to modify an unmodifiable array) when run in batch-mode.
+   The root of the cause was re-reading (slurping) from the <DATA> handle,
+   which after the second iteration silently skipped over to read
+   from the beginning of __END__ until EOF - ergo, no appropriate
+   chunks were generated.
+
+ - Removed 'my' occurences within the SYNOPSIS part of the documentation.
+
+ - Beautified documentation (added code tags for options to new()).
+
+ - Unmarked the -p switch (PPI mode) within make2build as experimental.
+
 0.48_02 Sat Apr  7 20:25:43 CEST 2007
 
  - Fixed some pathological case where an empty @items was

@@ -17,7 +17,7 @@ use IO::Prompt ();
 use PPI ();
 use Text::Balanced ();
 
-our $VERSION = '0.48_02';
+our $VERSION = '0.49';
 
 use constant LEADCHAR => '* ';
 
@@ -42,7 +42,7 @@ sub new {
                                   DD_Indent           => $params{DD_Indent}           || 2,
                                   DD_Sortkeys         => $params{DD_Sortkeys}         || 1 }}, $class;
 
-    $obj->{Config}{RC}              = File::Spec->catfile(File::HomeDir::home(), $obj->{Config}{RC});
+    $obj->{Config}{RC} = File::Spec->catfile(File::HomeDir::home(), $obj->{Config}{RC});
 
     # Save length of filename for creating underlined title in output
     $obj->{Config}{Build_PL_Length} = length($obj->{Config}{Build_PL});
@@ -265,9 +265,14 @@ sub _parse_data {
     if (-e $rcfile && !-z $rcfile && File::Slurp::read_file($rcfile) =~ /\w+/) {
         $data = File::Slurp::read_file($rcfile);
     } else {
-        local $/ = '__END__';
-        $data = <DATA>;
-        chomp $data;
+        if (!defined $self->{DATA}) {
+            local $/ = '__END__';
+            $data = <DATA>;
+            chomp $data;
+	    $self->{DATA} = $data;
+	} else {
+	    $data = $self->{DATA};
+	}
     }
 
     unless ($create_rc) {
@@ -1573,12 +1578,13 @@ Module::Build::Convert - Makefile.PL to Build.PL converter
 
  use Module::Build::Convert;
 
- my %params = (Path => '/path/to/perl/distribution(s)',
-               Verbose => 2,
-               Use_Native_Order => 1,
-               Len_Indent => 4);
+ # example arguments (empty %args is sufficient too)
+ %args = (Path => '/path/to/perl/distribution(s)',
+          Verbose => 2,
+          Use_Native_Order => 1,
+          Len_Indent => 4);
 
- my $make = Module::Build::Convert->new(%params);
+ $make = Module::Build::Convert->new(%args);
  $make->convert;
 
 =head1 DESCRIPTION
@@ -1599,83 +1605,83 @@ Options:
 
 =over 4
 
-=item Path
+=item * C<Path>
 
 Path to a Perl distribution. May point to a single distribution
 directory or to one containing more than one distribution.
 Default: C<''>
 
-=item Makefile_PL
+=item * C<Makefile_PL>
 
 Filename of the Makefile script. Default: F<Makefile.PL>
 
-=item Build_PL
+=item * C<Build_PL>
 
 Filename of the Build script. Default: F<Build.PL>
 
-=item MANIFEST
+=item * C<MANIFEST>
 
 Filename of the MANIFEST file. Default: F<MANIFEST>
 
-=item RC
+=item * C<RC>
 
 Filename of the RC file. Default: F<.make2buildrc>
 
-=item Dont_Overwrite_Auto
+=item * C<Dont_Overwrite_Auto>
 
-If a Build.PL already exists, output a notification and ask
-whether it should be overwritten.
+If a Build.PL already exists, output a notification and ask whether it 
+should be overwritten.
 Default: 1
 
-=item Create_RC
+=item * C<Create_RC>
 
 Create a RC file in the homedir of the current user.
 Default: 0
 
-=item Parse_PPI
+=item * C<Parse_PPI>
 
 Parse the Makefile.PL in the L<PPI> Parser mode.
 Default: 0
 
-=item Exec_Makefile
+=item * C<Exec_Makefile>
 
 Execute the Makefile.PL via C<'do Makefile.PL'>.
 Default: 0
 
-=item Verbose
+=item * C<Verbose>
 
 Verbose mode. If set to 1, overridden defaults and skipped arguments
 are printed while converting; if set to 2, output of C<Verbose = 1> and
 created Build script will be printed. May be set via the make2build 
 switches C<-v> (mode 1) and C<-vv> (mode 2). Default: 0
 
-=item Debug
+=item * C<Debug>
 
 Rudimentary debug facility for examining the parsing process.
 Default: 0
 
-=item Process_Code
+=item * C<Process_Code>
 
 Process code embedded within the arguments list.
 Default: 0
 
-=item Use_Native_Order
+=item * C<Use_Native_Order>
 
 Native sorting order. If set to 1, the native sorting order of
 the Makefile arguments will be tried to preserve; it's equal to
 using the make2build switch C<-n>. Default: 0
 
-=item Len_Indent
+=item * C<Len_Indent>
 
 Indentation (character width). May be set via the make2build
 switch C<-l>. Default: 3
 
-=item DD_Indent
+=item * C<DD_Indent>
 
 C<Data::Dumper> indendation mode. Mode 0 will be disregarded in favor
 of 2. Default: 2
 
-=item DD_Sortkeys
+=item * C<DD_Sortkeys>
 
 C<Data::Dumper> sort keys. Default: 1
 
