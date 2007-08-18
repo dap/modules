@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 our (%init, %data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
      %months, %at, %this_in, %next, %last, %day, %setyearday);
@@ -128,7 +128,8 @@ and variables. This class is loaded if the user specifies the german language.
 
 =head1 EXAMPLES
 
-Below are some examples of human readable date/time input in german:
+Below are some examples of human readable date/time input in german (be aware
+that the parser doesn't differentiate between lower/upper case):
 
 =head2 Simple
 
@@ -144,9 +145,11 @@ Below are some examples of human readable date/time input in german:
  morgen
  diesen Dienstag
  nächster Monat
+ nächster Mai
  diesen Morgen
  diese Sekunde
  Gestern um 4:00
+ letzten Januar
  Letzten Freitag um 20:00
  Donnerstag letzte Woche
  morgen um 18:45

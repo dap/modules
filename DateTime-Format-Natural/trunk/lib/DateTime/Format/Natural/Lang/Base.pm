@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 
 our @EXPORT = qw(AUTOLOAD __new);
 
@@ -19,7 +19,7 @@ sub __new {
     $obj->{weekdays} = \%{$class.'::'.'data_weekdays'};
     $obj->{months}   = \%{$class.'::'.'data_months'};
 
-    return bless $obj, $class || ref($class);
+    return bless $obj, ref($class) || $class;
 }
 
 AUTOLOAD {

@@ -1,5 +1,19 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.35 Wed May 23 21:00:39 CEST 2007
+
+ - Implemented next [monthname] & last [monthname] parsing and
+   added according tests. [Shawn M. Moore <sartak@gmail>]
+
+ - Added tests for the constant daytime values.
+
+ - Albeit it's unlikely that someone will ever subclass Lang/Base.pm,
+   a bug in the statement involving bless() within the constructor has 
+   been fixed (ref($class) 'check' must come first, otherwise subclassing
+   is impossible).
+
+ - scripts/dateparse is now being installed.
+
 0.34 Sun May 20 17:09:09 CEST 2007
 
  - Hopefully fixed "Type of arg 1 to List::MoreUtils::any must be block

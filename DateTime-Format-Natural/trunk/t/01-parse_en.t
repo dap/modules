@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use DateTime::Format::Natural;
-use Test::More tests => 41;
+use Test::More tests => 43;
 
 my ($sec, $min, $hour, $day, $month, $year) = (00, 13, 01, 24, 11, 2006);
 
@@ -20,9 +20,11 @@ my %simple = ('thursday'             => '23.11.2006 01:13:00',
               'tomorrow'             => '25.11.2006 01:13:00',
               'this tuesday'         => '21.11.2006 01:13:00',
               'next month'           => '24.12.2006 01:13:00',
+              'next may'             => '24.05.2007 01:13:00',
               'this morning'         => '24.11.2006 08:00:00',
               'this second'          => '24.11.2006 01:13:00',
               'yesterday at 4:00'    => '23.11.2006 04:00:00',
+              'last january'         => '24.01.2005 01:13:00',
               'last friday at 20:00' => '17.11.2006 20:00:00',
               'tomorrow at 6:45pm'   => '25.11.2006 18:45:00',
               'afternoon yesterday'  => '23.11.2006 14:00:00',

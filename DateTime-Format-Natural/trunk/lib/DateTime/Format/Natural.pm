@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.34';
+our $VERSION = '0.35';
 
 sub new {
     my $class = shift;
@@ -559,6 +559,7 @@ valuable suggestions & patches:
  Tuomas Jormola
  Cory Watson
  Urs Stotz
+ Shawn M. Moore
 
 =head1 SEE ALSO
 

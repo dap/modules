@@ -80,3 +80,30 @@ while (1) {
         Carp::croak $parse->error, "\n";
     }
 }
+
+=head1 NAME
+
+dateparse - frontend to DateTime::Format::Natural
+
+=head1 SYNOPSIS
+
+ Usage: ./dateparse [switches]
+   -d, --debug            debugging mode (experimental)
+   -f, --format           format of numeric dates
+   -h, --help             help screen
+   -l, --language code    language (country code)
+   -s, --supported        list of supported languages
+   -V, --version          print version
+
+=head1 AUTHOR
+
+Steven Schubiger <schubiger@cpan.org>
+
+=head1 LICENSE
+
+This program is free software; you may redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See L<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut

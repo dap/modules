@@ -10,11 +10,13 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
                   check_date check_time);
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
-use constant MORNING   => '08';
-use constant AFTERNOON => '14';
-use constant EVENING   => '20';
+use constant {
+    MORNING   => '08',
+    AFTERNOON => '14',
+    EVENING   => '20',
+};
 
 sub _ago {
     my $self = shift;
@@ -482,6 +484,20 @@ sub _next {
             last;
         }
 
+        # next [month]
+        if (any { ${$self->_token(0)} =~ /$_/i } keys %{$self->{data}->{months}}) {
+            my $month = $self->{data}->{months}->{ucfirst ${$self->_token(0)}};
+
+            $self->{datetime}->add(years => 1);
+            $self->{datetime}->set_month($month);
+
+            $self->_setyearday;
+            $self->{buffer} = '';
+            $self->_set_modified(2);
+
+            last;
+        }
+
         # ... next year
         if (${$self->_token(0)} =~ $self->{data}->__next('year')) {
             $self->{datetime}->add(years => 1);
@@ -549,6 +565,18 @@ sub _last {
             $self->{buffer} = '';
             $self->_set_modified(2);
         }
+    }
+
+    # last [month]
+    if (any { ${$self->_token(0)} =~ /$_/i } keys %{$self->{data}->{months}}) {
+        my $month = $self->{data}->{months}->{ucfirst ${$self->_token(0)}};
+
+        $self->{datetime}->subtract(years => 1);
+        $self->{datetime}->set_month($month);
+
+        $self->_setyearday;
+        $self->{buffer} = '';
+        $self->_set_modified(2);
     }
 
     # ... month

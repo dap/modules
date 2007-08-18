@@ -5,7 +5,9 @@ WriteMakefile
           'PL_FILES' => {},
           'INSTALLDIRS' => 'site',
           'NAME' => 'DateTime::Format::Natural',
-          'EXE_FILES' => [],
+          'EXE_FILES' => [
+                           'scripts/dateparse'
+                         ],
           'VERSION_FROM' => 'lib/DateTime/Format/Natural.pm',
           'PREREQ_PM' => {
                            'Test::More' => 0,

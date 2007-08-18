@@ -20,6 +20,7 @@ my $build = Module::Build->new
                    'Test::Pod' => '1.14',
                    'Test::Pod::Coverage' => '1.04',
                  },
+   script_files => [ 'scripts/dateparse' ],
    license => 'perl',
    create_readme => 1,
    create_makefile_pl => 'traditional',

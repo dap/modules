@@ -119,7 +119,8 @@ implicitly.
 
 =head1 EXAMPLES
 
-Below are some examples of human readable date/time input in english:
+Below are some examples of human readable date/time input in english (be aware
+that the parser doesn't differentiate between lower/upper case):
 
 =head2 Simple
 
@@ -135,9 +136,11 @@ Below are some examples of human readable date/time input in english:
  tomorrow
  this tuesday
  next month
+ next mai
  this morning
  this second
  yesterday at 4:00
+ last january
  last friday at 20:00
  last week tuesday
  tomorrow at 6:45pm
