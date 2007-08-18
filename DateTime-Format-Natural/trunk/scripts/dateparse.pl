@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Carp ();
 use DateTime::Format::Natural;
 
 use constant LANG_DEFAULT => 'en';
@@ -71,7 +72,11 @@ while (1) {
 
     my @dt = $parse->parse_datetime_duration(string => $input, debug => $debug);
 
-    foreach my $dt (@dt) {
-        printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
+    if ($parse->success) {
+        foreach my $dt (@dt) {
+            printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
+        }
+    } else {
+        Carp::croak $parse->error, "\n";
     }
 }

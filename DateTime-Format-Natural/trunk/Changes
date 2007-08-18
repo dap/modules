@@ -1,5 +1,26 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.33 Sat May 19 03:08:29 CEST 2007
+
+ - Got mostly rid of the "no warnings 'uninitialized'" statements and
+   ensured that no undefined values will be encountered by introducing
+   an according token accessor which will return either a reference to
+   an existing token or to a defined string (in case a token does not
+   yield any defined value).
+
+ - Disallowed 'am/pm' for german language metadata since they're
+   not known to a native german speaker assuming it is referred
+   to the german language itself. [Urs Stotz <stotz@gmx.ch]
+
+ - Introduced two methods, success() and error(). Former indicates
+   whether the parsing of a date/time string succeeded or not; latter
+   provides the error string if former one should fail. Furthermore,
+   the entire system is now reliant upon both of them and doesn't
+   croak any longer if parsing should fail.
+
+ - Added according getter/setter/unsetter accessors for the internal
+   error and failure attributes.
+
 0.32 Thu May 10 23:52:00 CEST 2007
 
  - Replaced some conditional variables with early return statements.

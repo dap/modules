@@ -4,10 +4,12 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
-our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime, %months,
+our (%init, %data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime, %months,
      %number, %at, %this_in, %next, %last, %day, %setyearday);
+
+%init = ('tokens' => sub {});
 
 {
     my $i = 1;

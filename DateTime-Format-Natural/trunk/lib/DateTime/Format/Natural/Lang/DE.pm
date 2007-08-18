@@ -4,10 +4,21 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.9';
+our $VERSION = '0.10';
 
-our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
+our (%init, %data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
      %months, %at, %this_in, %next, %last, %day, %setyearday);
+
+%init = ('tokens' => sub {
+                              my $self = shift;
+
+                              for (my $i = 0; $i < @{$self->{tokens}}; $i++) {
+                                  if ($self->{tokens}->[$i] =~ /uhr/i) {
+                                      splice(@{$self->{tokens}}, $i, 1);
+                                  }
+                              }
+                         }
+        );
 
 {
     my $i = 1;
@@ -28,7 +39,7 @@ our (%data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
          'now'            => qr/^jetzt$/i,
          'daytime'        => [qr/^(?:nachmittag|abend)$/i, qr/^Morgen$/],
          'months'         => [qw(in diesem)],
-         'at_intro'       => qr/^(\d{1,2})(?!\d)(\:\d{2})?(am|pm)?|((?<!nach)mittag|mitternacht)$/i,
+         'at_intro'       => qr/^(\d{1,2})(?!\d)(\:\d{2})?|((?<!nach)mittag|mitternacht)$/i,
          'at_matches'     => [qw(tag in monat)],
          'number_intro'   => qr/^(\d{1,2})$/i,
          'number_matches' => [qw(tag tage woche wochen monat monate Morgen abend jahr in)],
@@ -125,7 +136,7 @@ Below are some examples of human readable date/time input in german:
  November
  Freitag 13:00
  Mon 2:35
- 4pm
+ 16:00 Uhr
  6 am Morgen
  Samstag 7 am Abend
  Gestern
@@ -138,7 +149,7 @@ Below are some examples of human readable date/time input in german:
  Gestern um 4:00
  Letzten Freitag um 20:00
  Donnerstag letzte Woche
- Morgen um 6:45
+ morgen um 18:45
  Gestern nachmittag
 
 =head2 Complex
@@ -151,7 +162,7 @@ Below are some examples of human readable date/time input in german:
  7 Tage nach jetzt
  in 3 Stunden
  1 Jahr her morgen
- 3 Monate her Samstag um 5:00pm
+ 3 Monate her Samstag um 17:00
  4 Tag letzte Woche
  3 Monat nächstes Jahr
 

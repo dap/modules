@@ -1,4 +1,2 @@
 - Add tests for timespans/durations.
-- Enhance german language metadata class to properly reflect language.
-- Get rid of the no warnings 'uninitialized' statements and ensure that
-  no undefined values will be encountered.
+- Enhance german language metadata class to properly reflect language. (partly done)

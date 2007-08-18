@@ -2,12 +2,11 @@ package DateTime::Format::Natural;
 
 use strict;
 use warnings;
-no warnings 'uninitialized';
 use base qw(DateTime::Format::Natural::Base);
 
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.32';
+our $VERSION = '0.33';
 
 sub new {
     my $class = shift;
@@ -31,6 +30,8 @@ sub _init {
     $self->{format}        = $opts{format} || 'd/m/y';
     $self->{lang}          = $lang;
     $self->{opts}{daytime} = $opts{daytime};
+
+    $self->{buffer} = '';
 
     return $self;
 }
@@ -73,7 +74,8 @@ sub parse_datetime {
             return $self->_get_datetime_object;
         }
     } else {
-        @{$self->{tokens}}    = split ' ', $date_string;
+        @{$self->{tokens}} = split ' ', $date_string;
+        $self->{data}->__init('tokens')->($self);
         $self->{tokens_count} = scalar @{$self->{tokens}};
     }
 
@@ -101,6 +103,23 @@ sub parse_datetime_duration {
     return @stack;
 }
 
+sub success {
+    my $self = shift;
+
+    return ($self->_get_modified >= $self->{tokens_count}) && !$self->_get_failure ? 1 : 0;
+}
+
+sub error {
+    my $self = shift;
+
+    return '' if $self->success;
+
+    my $error  = "'$self->{Date_string}' does not parse ";
+       $error .= $self->_get_error || '(perhaps you have some garbage?)';
+
+    return $error;
+}
+
 sub _parse_init {
     my $self = shift;
 
@@ -117,6 +136,10 @@ sub _parse_init {
     unless ($self->{nodatetimeset}) {
         $self->{datetime} = DateTime->now(time_zone => 'floating');
     }
+
+    $self->_unset_failure;
+    $self->_unset_error;
+    $self->_unset_modified;
 }
 
 sub _process {
@@ -149,19 +172,19 @@ sub _process {
 sub _debug_head {
     my $self = shift;
 
-    print "$self->{tokens}->[$self->{index}]\n" if $self->{Debug};
+    print ${$self->_token(0)}, "\n" if $self->{Debug};
 }
 
 sub _process_numify {
     my $self = shift;
 
-    $self->{tokens}->[$self->{index}] =~ s/^(\d{1,2})(?:st|nd|rd|th)$/$1/i;
+    ${$self->_token(0)} =~ s/^(\d{1,2})(?:st|nd|rd|th)$/$1/i;
 }
 
 sub _process_second {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('second')) {
+    if (${$self->_token(0)} =~ $self->{data}->__main('second')) {
         $self->_set_modified(1);
     }
 }
@@ -169,7 +192,7 @@ sub _process_second {
 sub _process_ago {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}+2] =~ $self->{data}->__main('ago')) {
+    if (${$self->_token(2)} =~ $self->{data}->__main('ago')) {
         $self->_ago;
     }
 }
@@ -177,7 +200,7 @@ sub _process_ago {
 sub _process_now {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}+3] =~ $self->{data}->__main('now')) {
+    if (${$self->_token(3)} =~ $self->{data}->__main('now')) {
         $self->_now;
     }
 }
@@ -186,7 +209,7 @@ sub _process_daytime {
     my $self = shift;
 
     foreach my $daytime (@{$self->{data}->__main('daytime')}) {
-        if ($self->{tokens}->[$self->{index}] =~ $daytime) {
+        if (${$self->_token(0)} =~ $daytime) {
             $self->_daytime;
         }
     }
@@ -218,9 +241,9 @@ sub _process_months {
 sub _process_at {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}] =~ /^at$/i) {
+    if (${$self->_token(0)} =~ /^at$/i) {
         return;
-    } elsif ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('at_intro')) {
+    } elsif (${$self->_token(0)} =~ $self->{data}->__main('at_intro')) {
         my @matches = ($1, $2, $3, $4);
 
         foreach my $match (@{$self->{data}->__main('at_matches')}) {
@@ -236,7 +259,7 @@ sub _process_at {
 sub _process_number {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('number_intro')) {
+    if (${$self->_token(0)} =~ $self->{data}->__main('number_intro')) {
         my $match = $1;
 
         foreach my $match (@{$self->{data}->__main('number_matches')}) {
@@ -246,7 +269,7 @@ sub _process_number {
         }
 
         foreach my $weekday (keys %{$self->{data}->{weekdays}}) {
-            if ($self->{tokens}->[$self->{index}+1] =~ /^$weekday$/i) {
+            if (${$self->_token(1)} =~ /^$weekday$/i) {
                 return;
             }
         }
@@ -266,7 +289,7 @@ sub _process_weekday {
 sub _process_this_in {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('this_in')) {
+    if (${$self->_token(0)} =~ $self->{data}->__main('this_in')) {
         $self->{buffer} = 'this_in';
         return;
     } elsif ($self->{buffer} eq 'this_in') {
@@ -277,7 +300,7 @@ sub _process_this_in {
 sub _process_next {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('next')) {
+    if (${$self->_token(0)} =~ $self->{data}->__main('next')) {
         $self->{buffer} = 'next';
         return;
     } elsif ($self->{buffer} eq 'next') {
@@ -288,7 +311,7 @@ sub _process_next {
 sub _process_last {
     my $self = shift;
 
-    if ($self->{tokens}->[$self->{index}] =~ $self->{data}->__main('last')) {
+    if (${$self->_token(0)} =~ $self->{data}->__main('last')) {
         $self->{buffer} = 'last';
         return;
     } elsif ($self->{buffer} eq 'last') {
@@ -308,17 +331,30 @@ sub _process_monthdays_limit {
     $self->_monthdays_limit;
 }
 
-sub _get_modified   { $_[0]->{modified}          }
+sub _token {
+    my ($self, $pos, $type) = @_;
+
+    my $str = '';
+
+    return defined $self->{tokens}->[$self->{index} + $pos]
+      ? \$self->{tokens}->[$self->{index} + $pos]
+      : \$str;
+}
+
+sub _get_error      { $_[0]->{error}             }
+sub _set_error      { $_[0]->{error} = $_[1]     }
+sub _unset_error    { $_[0]->{error} = ''        }
+
+sub _get_failure    { $_[0]->{failure}           }
+sub _set_failure    { $_[0]->{failure} = 1       }
+sub _unset_failure  { $_[0]->{failure} = 0       }
+
+sub _get_modified   { $_[0]->{modified} || 0     }
 sub _set_modified   { $_[0]->{modified} += $_[1] }
 sub _unset_modified { $_[0]->{modified}  = 0     }
 
 sub _get_datetime_object {
     my $self = shift;
-
-    die "$self->{date_string} not valid input, exiting.\n"
-         unless $self->_get_modified >= $self->{tokens_count};
-
-    $self->_unset_modified;
 
     $self->{year}  = $self->{datetime}->year;
     $self->{month} = $self->{datetime}->month;
@@ -373,6 +409,12 @@ DateTime::Format::Natural - Create machine readable date/time with natural parsi
 
  $dt = $parser->parse_datetime($date_string);
  @dt = $parser->parse_datetime_duration($date_string);
+
+ if ($parser->success) {
+     # operate on $dt/@dt
+ } else {
+     warn $parser->error;
+ }
 
 =head1 DESCRIPTION
 
@@ -453,6 +495,15 @@ but must be explicitly called in list context.
        string => $date_string,
        debug  => 1,
  );
+
+=head2 success
+
+Returns a boolean indicating success or failure for parsing the date/time
+string given.
+
+=head2 error
+
+Returns the error message if the parsing didn't succeed.
 
 =head1 EXAMPLES
 

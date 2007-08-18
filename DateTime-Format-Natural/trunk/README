@@ -10,6 +10,12 @@ SYNOPSIS
      $dt = $parser->parse_datetime($date_string);
      @dt = $parser->parse_datetime_duration($date_string);
 
+     if ($parser->success) {
+         # operate on $dt/@dt
+     } else {
+         warn $parser->error;
+     }
+
 DESCRIPTION
     "DateTime::Format::Natural" takes a string with a human readable
     date/time and creates a machine readable one by applying natural parsing
@@ -72,6 +78,13 @@ METHODS
            string => $date_string,
            debug  => 1,
      );
+
+  success
+    Returns a boolean indicating success or failure for parsing the
+    date/time string given.
+
+  error
+    Returns the error message if the parsing didn't succeed.
 
 EXAMPLES
     See the modules "DateTime::Format::Natural::Lang::*" for a overview of
