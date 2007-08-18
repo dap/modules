@@ -10,7 +10,7 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
                   check_date check_time);
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.13';
+our $VERSION = '1.00';
 
 use constant {
     MORNING   => '08',
@@ -21,35 +21,37 @@ use constant {
 sub _ago {
     my $self = shift;
 
+    $self->_add_trace;
+
     my @new_tokens = splice(@{$self->{tokens}}, $self->{index}, 3);
 
     # seconds ago
     if ($new_tokens[1] =~ $self->{data}->__ago('second')) {
-        $self->{datetime}->subtract(seconds => $new_tokens[0]);
+        $self->_subtract(second => $new_tokens[0]);
         $self->_set_modified(3);
     # minutes ago
     } elsif ($new_tokens[1] =~ $self->{data}->__ago('minute')) {
-        $self->{datetime}->subtract(minutes => $new_tokens[0]);
+        $self->_subtract(minute => $new_tokens[0]);
         $self->_set_modified(3);
     # hours ago
     } elsif ($new_tokens[1] =~ $self->{data}->__ago('hour')) {
-        $self->{datetime}->subtract(hours => $new_tokens[0]);
+        $self->_subtract(hour => $new_tokens[0]);
         $self->_set_modified(3);
     # days ago
     } elsif ($new_tokens[1] =~ $self->{data}->__ago('day')) {
-        $self->{datetime}->subtract(days => $new_tokens[0]);
+        $self->_subtract(day => $new_tokens[0]);
         $self->_set_modified(3);
     # weeks ago
     } elsif ($new_tokens[1] =~ $self->{data}->__ago('week')) {
-        $self->{datetime}->subtract(days => (7 * $new_tokens[0]));
+        $self->_subtract(day => (7 * $new_tokens[0]));
         $self->_set_modified(3);
     # months ago
     } elsif ($new_tokens[1] =~ $self->{data}->__ago('month')) {
-        $self->{datetime}->subtract(months => $new_tokens[0]);
+        $self->_subtract(month => $new_tokens[0]);
         $self->_set_modified(3);
     # years ago
     } elsif ($new_tokens[1] =~ $self->{data}->__ago('year')) {
-        $self->{datetime}->subtract(years => $new_tokens[0]);
+        $self->_subtract(year => $new_tokens[0]);
         $self->_set_modified(3);
     }
 }
@@ -57,50 +59,52 @@ sub _ago {
 sub _now {
     my $self = shift;
 
+    $self->_add_trace;
+
     my @new_tokens = splice(@{$self->{tokens}}, $self->{index}, 4);
 
     # days
     if ($new_tokens[1] =~ $self->{data}->__now('day')) {
         # days before now
         if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-            $self->{datetime}->subtract(days => $new_tokens[0]);
+            $self->_subtract(day => $new_tokens[0]);
             $self->_set_modified(4);
         # days from now
         } elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-            $self->{datetime}->add(days => $new_tokens[0]);
+            $self->_add(day => $new_tokens[0]);
             $self->_set_modified(4);
         }
     # weeks
     } elsif ($new_tokens[1] =~ $self->{data}->__now('week')) {
         # weeks before now
         if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-            $self->{datetime}->subtract(days => (7 * $new_tokens[0]));
+            $self->_subtract(day => (7 * $new_tokens[0]));
             $self->_set_modified(4);
         # weeks from now
         } elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-            $self->{datetime}->add(days => (7 * $new_tokens[0]));
+            $self->_add(day => (7 * $new_tokens[0]));
             $self->_set_modified(4);
         }
      # months
      } elsif ($new_tokens[1] =~ $self->{data}->__now('month')) {
          # months before now
          if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-             $self->{datetime}->subtract(months => $new_tokens[0]);
+             $self->_subtract(month => $new_tokens[0]);
              $self->_set_modified(4);
          # months from now
          } elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-             $self->{datetime}->add(months => $new_tokens[0]);
+             $self->_add(month => $new_tokens[0]);
              $self->_set_modified(4);
          }
      # years
      } elsif ($new_tokens[1] =~ $self->{data}->__now('year')) {
          # years before now
          if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-             $self->{datetime}->subtract(years => $new_tokens[0]);
+             $self->_subtract(year => $new_tokens[0]);
              $self->_set_modified(4);
          # years from now
          } elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-             $self->{datetime}->add(years => $new_tokens[0]);
+             $self->_add(year => $new_tokens[0]);
              $self->_set_modified(4);
          }
      }
@@ -108,6 +112,8 @@ sub _now {
 
 sub _daytime {
     my $self = shift;
+
+    $self->_add_trace;
 
     my $hour_token;
     my @tokens = @{$self->{data}->__daytime('tokens')};
@@ -136,7 +142,7 @@ sub _daytime {
              : MORNING - $self->{hours_before}));
 
         if ($self->_valid_time(hour => $hour)) {
-            $self->{datetime}->set_hour($hour);
+            $self->_set(hour => $hour);
             $self->{hours_before} = 0;
             $self->_set_modified(1);
         }
@@ -149,7 +155,7 @@ sub _daytime {
              : AFTERNOON - $self->{hours_before}));
 
         if ($self->_valid_time(hour => $hour)) {
-            $self->{datetime}->set_hour($hour);
+            $self->_set(hour => $hour);
             $self->{hours_before} = 0;
             $self->_set_modified(1);
         }
@@ -162,17 +168,19 @@ sub _daytime {
              : EVENING - $self->{hours_before}));
 
         if ($self->_valid_time(hour => $hour)) {
-            $self->{datetime}->set_hour($hour);
+            $self->_set(hour => $hour);
             $self->{hours_before} = 0;
             $self->_set_modified(1);
         }
     }
 
-    $self->{datetime}->set_minute(0);
+    $self->_set(minute => 0);
 }
 
 sub _months {
     my $self = shift;
+
+    $self->_add_trace;
 
     foreach my $key_month (keys %{$self->{data}->{months}}) {
         my $key_month_short = substr($key_month, 0, 3);
@@ -182,14 +190,14 @@ sub _months {
             if (any { ${$self->_token($i)} =~ $_ } @{[qr/$key_month/i, qr/$key_month_short/i]}) {
                 # Set month & flag modification state
                 if ($self->_valid_date(month => $self->{data}->{months}->{$key_month})) {
-                    $self->{datetime}->set_month($self->{data}->{months}->{$key_month});
+                    $self->_set(month => $self->{data}->{months}->{$key_month});
                     $self->_set_modified(1);
                 }
 
                 # Set day for: month [0-9] & remove day from tokens
                 if (my ($day) = ${$self->_token(1)} =~ $self->{data}->__months('number')) {
                     if ($self->_valid_date(day => $day)) {
-                        $self->{datetime}->set_day($day);
+                        $self->_set(day => $day);
                         $self->_set_modified(1);
                     }
 
@@ -197,7 +205,7 @@ sub _months {
                 # Set day for: [0-9] month & remove day from tokens
                 } elsif (($day) = ${$self->_token($i-1)} =~ $self->{data}->__months('number')) {
                     if ($self->_valid_date(day => $day)) {
-                        $self->{datetime}->set_day($day);
+                        $self->_set(day => $day);
                         $self->_set_modified(1);
                     }
 
@@ -211,6 +219,8 @@ sub _months {
 sub _number {
     my ($self, $often) = @_;
 
+    $self->_add_trace;
+
     # Return for: [0-9] in ...
     return if ${$self->_token(1)} eq 'in'
            or !defined $self->{data}->__number('month')
@@ -220,10 +230,10 @@ sub _number {
 
     # [0-9] months ...
     if (${$self->_token(1)} =~ $self->{data}->__number('month')) {
-        $self->{datetime}->add(months => $often);
+        $self->_add(month => $often);
 
         if ($self->{datetime}->month() > 12) {
-            $self->{datetime}->subtract(months => 12);
+            $self->_subtract(month => 12);
         }
 
         $self->_set_modified(1);
@@ -243,7 +253,7 @@ sub _number {
     # [0-9] day ...
     } else {
         if ($self->_valid_date(day => $often)) {
-            $self->{datetime}->set_day($often);
+            $self->_set(day => $often);
             $self->_set_modified(1);
         }
     }
@@ -251,6 +261,8 @@ sub _number {
 
 sub _at {
     my ($self, $hour_token, $min_token, $timeframe, $noon_midnight) = @_;
+
+    $self->_add_trace;
 
     foreach my $token (@{$self->{tokens}}) {
         $self->_set_modified(1) and last if $token eq 'at';
@@ -271,16 +283,16 @@ sub _at {
     # [0-9] ...
     if ($hour_token) {
         if ($self->_valid_time(hour => $hour_token)) {
-            $self->{datetime}->set_hour($hour_token);
+            $self->_set(hour => $hour_token);
         }
 
         $min_token =~ s/:// if defined $min_token;
 
         if (!defined $min_token) {
-            $self->{datetime}->set_minute(0);
+            $self->_set(minute => 0);
             $self->_set_modified(1);
         } elsif ($self->_valid_time(min => $min_token)) {
-            $self->{datetime}->set_minute($min_token);
+            $self->_set(minute => $min_token);
             $self->_set_modified(1);
         }
 
@@ -289,9 +301,9 @@ sub _at {
             $self->_set_modified(1);
 
             if ($timeframe =~ /^pm$/i) {
-                $self->{datetime}->add(hours => 12);
+                $self->_add(hour => 12);
                 unless ($min_token) {
-                    $self->{datetime}->set_minute(0);
+                    $self->_set(minute => 0);
                 }
             }
         }
@@ -301,16 +313,16 @@ sub _at {
 
         # noon
         if ($noon_midnight =~ $self->{data}->__at('noon')) {
-            $self->{datetime}->set_hour(12);
-            $self->{datetime}->set_minute(0);
+            $self->_set(hour => 12);
+            $self->_set(minute => 0);
 
             # [0-9] hours before noon
             if ($self->{hours_before}) {
-                $self->{datetime}->subtract(hours => $self->{hours_before});
+                $self->_subtract(hour => $self->{hours_before});
                 $self->_set_modified(1);
             # [0-9] hours after noon
             } elsif ($self->{hours_after}) {
-                $self->{datetime}->add(hours => $self->{hours_after});
+                $self->_add(hour => $self->{hours_after});
                 $self->_set_modified(1);
             }
 
@@ -318,25 +330,27 @@ sub _at {
             delete $self->{hours_before};
         # midnight
         } elsif ($noon_midnight =~ $self->{data}->__at('midnight')) {
-            $self->{datetime}->set_hour(0);
-            $self->{datetime}->set_minute(0);
+            $self->_set(hour => 0);
+            $self->_set(minute => 0);
 
             # [0-9] hours before midnight ...
             if ($self->{hours_before}) {
-                $self->{datetime}->subtract(hours => $self->{hours_before});
+                $self->_subtract(hour => $self->{hours_before});
             # [0-9] hours after midnight ...
             } elsif ($self->{hours_after}) {
-                $self->{datetime}->add(hours => $self->{hours_after});
+                $self->_add(hour => $self->{hours_after});
             }
 
             $self->_set_modified(1);
-            $self->{datetime}->add(days => 1);
+            $self->_add(day => 1);
         }
     }
 }
 
 sub _weekday {
     my $self = shift;
+
+    $self->_add_trace;
 
     foreach my $key_weekday (keys %{$self->{data}->{weekdays}}) {
         # Weekday abbreviation: monday -> mon
@@ -351,11 +365,11 @@ sub _weekday {
             # Set current weekday by adding the day difference
             if ($self->{data}->{weekdays}->{$key_weekday} > $self->{datetime}->wday) {
                 $days_diff = $self->{data}->{weekdays}->{$key_weekday} - $self->{datetime}->wday;
-                $self->{datetime}->add(days => $days_diff);
+                $self->_add(day => $days_diff);
             # Set current weekday by subtracting the difference
             } else {
                 $days_diff = $self->{datetime}->wday - $self->{data}->{weekdays}->{$key_weekday};
-                $self->{datetime}->subtract(days => $days_diff);
+                $self->_subtract(day => $days_diff);
             }
 
             $self->_set_modified(1);
@@ -367,11 +381,13 @@ sub _weekday {
 sub _this_in {
     my $self = shift;
 
+    $self->_add_trace;
+
     $self->_set_modified(1);
 
     # in [0-9] hour(s)
     if (${$self->_token(1)} =~ $self->{data}->__this_in('hour')) {
-        $self->{datetime}->add(hours => ${$self->_token(0)});
+        $self->_add(hour => ${$self->_token(0)});
         $self->_set_modified(2);
 
         return;
@@ -385,7 +401,7 @@ sub _this_in {
         if (any { ${$self->_token(0)} =~ $_ } @{[qr/$key_weekday/i, qr/$weekday_short/i]}) {
             my $days_diff = $self->{data}->{weekdays}->{$key_weekday} - $self->{datetime}->wday;
 
-            $self->{datetime}->add(days => $days_diff);
+            $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(1);
 
@@ -397,7 +413,7 @@ sub _this_in {
             my $weekday = ucfirst lc ${$self->_token(-2)};
             my $days_diff = Decode_Day_of_Week($weekday) - $self->{datetime}->wday;
 
-            $self->{datetime}->add(days => $days_diff);
+            $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(1);
 
@@ -417,10 +433,9 @@ sub _this_in {
                           $self->{data}->{weekdays}->{$weekday}, $often);
 
                         if (check_date($year, $month, $day)) {
-                            $self->{datetime}->set_year($year);
-                            $self->{datetime}->set_month($month);
-                            $self->{datetime}->set_day($day);
-
+                            $self->_set(year => $year);
+                            $self->_set(month => $month);
+                            $self->_set(day => $day);
                             $self->_set_modified(2);
                         }
 
@@ -435,6 +450,8 @@ sub _this_in {
 sub _next {
     my $self = shift;
 
+    $self->_add_trace;
+
     foreach my $key_weekday (keys %{$self->{data}->{weekdays}}) {
         # Weekday abbreviation: monday -> mon
         my $weekday_short = lc substr($key_weekday, 0, 3);
@@ -443,7 +460,7 @@ sub _next {
         if (${$self->_token(0)} =~ /$key_weekday/i || ${$self->_token(0)} eq $weekday_short) {
             my $days_diff = (7 - $self->{datetime}->wday) + Decode_Day_of_Week($key_weekday);
 
-            $self->{datetime}->add(days => $days_diff);
+            $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(1);
 
@@ -455,7 +472,7 @@ sub _next {
             my $weekday = ucfirst lc ${$self->_token(-2)};
             my $days_diff = (7 - $self->{datetime}->wday) + Decode_Day_of_Week($weekday);
 
-            $self->{datetime}->add(days => $days_diff);
+            $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(2);
 
@@ -464,7 +481,7 @@ sub _next {
 
         # ... next month
         if (${$self->_token(0)} =~ $self->{data}->__next('month')) {
-            $self->{datetime}->add(months => 1);
+            $self->_add(month => 1);
 
             # [0-9] day next month
             if (${$self->_token(-2)} =~ $self->{data}->__next('day')) {
@@ -472,7 +489,7 @@ sub _next {
                 $day =~ s/$self->{data}->__next('number')/$1/i;
 
                 if ($self->_valid_date(day => $day)) {
-                    $self->{datetime}->set_day($day);
+                    $self->_set(day => $day);
                     $self->_set_modified(2);
                 }
             }
@@ -488,8 +505,8 @@ sub _next {
         if (any { ${$self->_token(0)} =~ /$_/i } keys %{$self->{data}->{months}}) {
             my $month = $self->{data}->{months}->{ucfirst ${$self->_token(0)}};
 
-            $self->{datetime}->add(years => 1);
-            $self->{datetime}->set_month($month);
+            $self->_add(year => 1);
+            $self->_set(month => $month);
 
             $self->_setyearday;
             $self->{buffer} = '';
@@ -500,7 +517,7 @@ sub _next {
 
         # ... next year
         if (${$self->_token(0)} =~ $self->{data}->__next('year')) {
-            $self->{datetime}->add(years => 1);
+            $self->_add(year => 1);
 
             # [0-9] month next year
             if (${$self->_token(-2)} =~ $self->{data}->__next('month')) {
@@ -508,7 +525,7 @@ sub _next {
                 $month =~ s/$self->{data}->__next('number')/$1/i;
 
                 if ($self->_valid_date(month => $month)) {
-                    $self->{datetime}->set_month($month);
+                    $self->_set(month => $month);
                     $self->_set_modified(2);
                 }
             }
@@ -525,6 +542,8 @@ sub _next {
 sub _last {
     my $self = shift;
 
+    $self->_add_trace;
+
     $self->_set_modified(1);
 
     foreach my $key_weekday (keys %{$self->{data}->{weekdays}}) {
@@ -534,7 +553,7 @@ sub _last {
         # weekday or weekday abbreviation
         if (${$self->_token(0)} =~ /$key_weekday/i || ${$self->_token(0)} eq $weekday_short) {
             my $days_diff = $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$key_weekday});
-            $self->{datetime}->subtract(days => $days_diff);
+            $self->_subtract(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(1);
 
@@ -556,12 +575,12 @@ sub _last {
         } elsif (${$self->_token(-2)} =~ $self->{data}->__last('day')) {
             my $days_diff = (7 + $self->{datetime}->wday);
 
-            $self->{datetime}->subtract(days => $days_diff);
+            $self->_subtract(day => $days_diff);
 
             my $day = ${$self->_token(-3)};
             $day =~ s/$self->{data}->__last('number')/$1/i;
 
-            $self->{datetime}->add(days => $day);
+            $self->_add(day => $day);
             $self->{buffer} = '';
             $self->_set_modified(2);
         }
@@ -571,8 +590,8 @@ sub _last {
     if (any { ${$self->_token(0)} =~ /$_/i } keys %{$self->{data}->{months}}) {
         my $month = $self->{data}->{months}->{ucfirst ${$self->_token(0)}};
 
-        $self->{datetime}->subtract(years => 1);
-        $self->{datetime}->set_month($month);
+        $self->_subtract(year => 1);
+        $self->_set(month => $month);
 
         $self->_setyearday;
         $self->{buffer} = '';
@@ -581,7 +600,7 @@ sub _last {
 
     # ... month
     if (${$self->_token(0)} =~ $self->{data}->__last('month')) {
-        $self->{datetime}->subtract(months => 1);
+        $self->_subtract(month => 1);
         $self->_set_modified(1);
 
         # [0-9] day last month
@@ -590,7 +609,7 @@ sub _last {
             $day =~ s/$self->{data}->__last('number')/$1/i;
 
             if ($self->_valid_date(day => $day)) {
-                $self->{datetime}->set_day($day);
+                $self->_set(day => $day);
                 $self->_set_modified(2);
             }
         }
@@ -601,7 +620,7 @@ sub _last {
 
     # ... year
     if (${$self->_token(0)} =~ $self->{data}->__last('year')) {
-        $self->{datetime}->subtract(years => 1);
+        $self->_subtract(year => 1);
 
         $self->_setyearday;
         $self->_set_modified(1);
@@ -618,15 +637,15 @@ sub _monthdays_limit {
     # Days in month overlap days possible.
     if ($self->{datetime}->day > $actual_monthdays) {
         $self->{datetime}->add(months => 1);
-        $self->{datetime}->set_day($self->{datetime}->day - $actual_monthdays);
+        $self->_set(day => ($self->{datetime}->day - $actual_monthdays));
 
         $self->_set_modified(1);
     # Days in month below lower boundary.
     } elsif ($self->{datetime}->day < 1) {
         $actual_monthdays = Days_in_Month($self->{datetime}->year, ($self->{datetime}->month-1));
 
-        $self->{datetime}->subtract(months => 1);
-        $self->{datetime}->set_day($actual_monthdays - $self->{datetime}->day);
+        $self->_subtract(month => 1);
+        $self->_set(day => ($actual_monthdays - $self->{datetime}->day));
 
         $self->_set_modified(1);
     }
@@ -635,11 +654,13 @@ sub _monthdays_limit {
 sub _day {
     my $self = shift;
 
+    $self->_add_trace;
+
     # Either today, yesterday or tomorrow
     if (${$self->_token(0)} =~ $self->{data}->__day('init')) {
         # yesterday
         if (${$self->_token(0)} =~ $self->{data}->__day('yesterday')) {
-            $self->{datetime}->subtract(days => 1);
+            $self->_subtract(day => 1);
         }
 
         # tomorrow
@@ -647,10 +668,10 @@ sub _day {
             if ($self->{Lang} eq 'de') {
                 # skip if we have a weekday followed by morning
                 if (none { ${$self->_token(-1)} =~ $_ } keys %{$self->{data}->{weekdays}}) {
-                    $self->{datetime}->add(days => 1);
+                    $self->_add(day => 1);
                 }
             } else {
-                $self->{datetime}->add(days => 1);
+                $self->_add(day => 1);
             }
         }
 
@@ -660,17 +681,17 @@ sub _day {
         if ($self->{hours_before}) {
             my $hour = 24 - $self->{hours_before};
             if ($self->_valid_time(hour => $hour)) {
-                $self->{datetime}->set_hour($hour);
+                $self->_set(hour => $hour);
             }
 
             if (${$self->_token(2)} !~ $self->{data}->__day('noonmidnight')) {
-                $self->{datetime}->subtract(days => 1);
+                $self->_subtract(day => 1);
             }
         # [0-9] hours after yesterday/tomorrow
         } elsif ($self->{hours_after}) {
             my $hour = 0 + $self->{hours_after};
             if ($self->_valid_time(hour => $hour)) {
-                $self->{datetime}->set_hour($hour);
+                $self->_set(hour => $hour);
             }
         }
     }
@@ -680,7 +701,7 @@ sub _day {
         my ($subtract) = $self->{datetime}->hour =~ /\-(.*)/;
         my $hour = 12 - $subtract;
         if ($self->_valid_time(hour => $hour)) {
-            $self->{datetime}->set_hour($hour);
+            $self->_set(hour => $hour);
         }
     }
 }
@@ -690,7 +711,7 @@ sub _setyearday {
 
     # day
     if (${$self->_token(-2)} =~ $self->{data}->__setyearday('day')) {
-        $self->{datetime}->set_month(1);
+        $self->_set(month => 1);
 
         # [0-9] day
         my $days = ${$self->_token(-3)};
@@ -699,7 +720,7 @@ sub _setyearday {
         # calculate year, month & day
         my ($year, $month, $day) = Add_Delta_Days($self->{datetime}->year, 1, 1, $days - 1);
 
-        $self->{datetime}->set_day($day);
+        $self->_set(day => $day);
         $self->{datetime}->set_month($month);
         $self->{datetime}->set_year($year);
     }
@@ -720,8 +741,8 @@ sub _setmonthday {
                                                                  $often);
 
             $self->{datetime}->set_year($year);
-            $self->{datetime}->set_month($month);
-            $self->{datetime}->set_day($day);
+            $self->_set(month => $month);
+            $self->_set(day => $day);
         }
     }
 }
@@ -733,10 +754,37 @@ sub _setweekday {
     my $weekday = ucfirst(lc($self->{tokens}->[$index]));
     my $days_diff = $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$weekday});
 
-    $self->{datetime}->subtract(days => $days_diff);
+    $self->_subtract(day => $days_diff);
     $self->{buffer} = '';
 
     $self->_set_modified(1);
+}
+
+sub _add {
+    my ($self, $unit, $value) = @_;
+
+    $self->{modified}{$unit}++;
+
+    $unit .= 's' unless $unit =~ /s$/;
+    $self->{datetime}->add($unit => $value);
+}
+
+sub _subtract {
+    my ($self, $unit, $value) = @_;
+
+    $self->{modified}{$unit}++;
+
+    $unit .= 's' unless $unit =~ /s$/;
+    $self->{datetime}->subtract($unit => $value);
+}
+
+sub _set {
+    my ($self, $unit, $value) = @_;
+
+    $self->{modified}{$unit}++;
+
+    my $setter = 'set_' . $unit;
+    $self->{datetime}->$setter($value);
 }
 
 sub _valid_date {
@@ -745,13 +793,13 @@ sub _valid_date {
     my %set = map { $_ => $self->{datetime}->$_ } qw(year month day);
     $set{$type} = $value;
 
-   if (check_date($set{year}, $set{month}, $set{day})) {
-       return 1;
-   } else {
-       $self->_set_failure;
-       $self->_set_error("('$value' is not a valid $type)");
-       return 0;
-   }
+    if (check_date($set{year}, $set{month}, $set{day})) {
+        return 1;
+    } else {
+        $self->_set_failure;
+        $self->_set_error("('$value' is not a valid $type)");
+        return 0;
+    }
 }
 
 sub _valid_time {

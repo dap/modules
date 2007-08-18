@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.11';
+our $VERSION = '1.00';
 
 our (%init, %data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime, %months,
      %number, %at, %this_in, %next, %last, %day, %setyearday);
@@ -124,11 +124,12 @@ that the parser doesn't differentiate between lower/upper case):
 
 =head2 Simple
 
+ 5am
+ 4pm
  thursday
  november
  friday 13:00
  mon 2:35
- 4pm
  6 in the morning
  sat 7 in the evening
  yesterday
@@ -151,10 +152,19 @@ that the parser doesn't differentiate between lower/upper case):
 
  25 seconds ago
  10 minutes ago
- 3 years ago
- 5 months before now
  7 hours ago
+ 40 days ago
+ 2 weeks ago
+ 5 months ago
+ 3 years ago
+ 7 days before now
  7 days from now
+ 4 weeks before now
+ 4 weeks from now
+ 13 months before now
+ 13 months from now
+ 2 years before now
+ 2 years from now
  in 3 hours
  1 year ago tomorrow
  3 months ago saturday at 5:00pm
@@ -170,7 +180,8 @@ that the parser doesn't differentiate between lower/upper case):
 
 =head2 Specific Dates
 
- January 5
+ January 11
+ 11 January
  dec 25
  may 27th
  October 2006

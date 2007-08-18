@@ -1,9 +1,32 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.36 Thu Jun  7 13:42:35 CEST 2007
+
+ - Fixed version numbers which were treated as floating point numbers,
+   not as v-string. [rt #27350 - Andres J. König <andreas.koenig@anima.de>]
+
+ - Fixed _set_datetime() which failed whenever a 31st day didn't exist
+   in the current month [rt #27360 - Chia-liang Kao <clkao@clkao.org>]
+
+ - Reversed the order of the day/month/year setter calls within
+   parse_datetime(). [mike <pulsation@gmail.com>]
+
+ - Added a 'prefer_future' option to turn ambigious weekdays/months
+   to their futuristic equivalents - implemented by counting how often
+   an unit was being modified by the appropriate setter call within the
+   Base class. [Shawn M. Moore <sartak@gmail.com>]
+
+ - Extended the test-suite to include more exhaustive tests and accordingly
+   updated the EXAMPLES in the language metadata classes.
+
+ - Introduced the public method trace() which will show which methods were
+   called within the Base class and how often certain units were modified
+   by according Datetime setter calls.
+
 0.35 Wed May 23 21:00:39 CEST 2007
 
  - Implemented next [monthname] & last [monthname] parsing and
-   added according tests. [Shawn M. Moore <sartak@gmail>]
+   added according tests. [Shawn M. Moore <sartak@gmail.com>]
 
  - Added tests for the constant daytime values.
 

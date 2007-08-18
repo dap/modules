@@ -1,2 +1,2 @@
-- Add tests for timespans/durations.
+- Add tests for timespans/durations & the 'prefer_future' option.
 - Enhance german language metadata class to properly reflect language. (partly done)

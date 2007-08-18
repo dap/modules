@@ -33,22 +33,27 @@ METHODS
     are options and not necessarily required.
 
      $parser = DateTime::Format::Natural->new(
-               lang    => '[en|de]',
-               format  => 'mm/dd/yy',
-               daytime => { morning   => 06,
-                            afternoon => 13,
-                            evening   => 20,
-                          },
+               lang          => '[en|de]',
+               format        => 'mm/dd/yy',
+               prefer_future => '[0|1]'
+               daytime       => { morning   => 06,
+                                  afternoon => 13,
+                                  evening   => 20,
+                                },
      );
 
-    lang
+    * "lang"
         Contains the language selected, currently limited to "en" (english)
         & "de" (german). Defaults to '"en"'.
 
-    format
+    * "format"
         Specifies the format of numeric dates, defaults to '"d/m/y"'.
 
-    daytime
+    * "prefer_future (experimental)"
+        Turns ambigious weekdays/months to their futuristic relatives.
+        Accepts a boolean, defaults to 0.
+
+    * "daytime"
         A hash consisting of specific hours given for peculiar daytimes.
         Daytimes may be selectively changed.
 
@@ -62,10 +67,10 @@ METHODS
            debug  => 1,
      );
 
-    string
+    * "string"
         The date string.
 
-    debug
+    * "debug"
         Boolean value indicating debugging mode.
 
         If debugging is enabled, each token that is analysed will be output
@@ -76,7 +81,7 @@ METHODS
   parse_datetime_duration
     Creates one or more "DateTime" object(s) from a human readable date/time
     string which may contain timespans/durations. 'Same' interface & options
-    as parse_datetime(), but must be explicitly called in list context.
+    as "parse_datetime()", but must be explicitly called in list context.
 
      @dt = $parser->parse_datetime_duration($date_string);
 
@@ -91,6 +96,10 @@ METHODS
 
   error
     Returns the error message if the parsing didn't succeed.
+
+  trace
+    Returns a trace of methods which we're called within the Base class and
+    a summary how often certain units were modified.
 
 EXAMPLES
     See the modules "DateTime::Format::Natural::Lang::*" for a overview of
@@ -113,6 +122,8 @@ CREDITS
      Cory Watson
      Urs Stotz
      Shawn M. Moore
+     Andreas J. König
+     Chia-liang Kao
 
 SEE ALSO
     DateTime, Date::Calc, <http://datetime.perl.org>

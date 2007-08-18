@@ -11,7 +11,9 @@ use constant LANG_DEFAULT => 'en';
 my $debug               = 0;
 my $format;
 my $lang                = LANG_DEFAULT;
+my $prefer_future       = 0;
 my @supported_languages = qw(de en);
+my $trace               = 0;
 my %valid_languages     = map { $_ => 1 } @supported_languages;
 
 parse_switches() if @ARGV;
@@ -24,16 +26,20 @@ sub parse_switches {
                           f|format=s
                           h|help
                           l|lang=s
+                          p|prefer_future
                           s|supported
+                          t|trace
                           V|version)) or usage();
 
     usage()     if $opts{h};
     version()   if $opts{V};
     supported() if $opts{s};
 
-    $debug  ||= $opts{d};
-    $lang     = $opts{l} || LANG_DEFAULT;
-    $format ||= $opts{f};
+    $debug         ||= $opts{d};
+    $lang            = $opts{l} || LANG_DEFAULT;
+    $format        ||= $opts{f};
+    $prefer_future ||= $opts{p};
+    $trace           = $opts{t};
 }
 
 sub usage {
@@ -44,6 +50,7 @@ Usage: $0 [switches]
   -h, --help             help screen
   -l, --language code    language (country code)
   -s, --supported        list of supported languages
+  -t, --trace            print trace after processing
   -V, --version          print version
 USAGE
     exit;
@@ -64,7 +71,11 @@ unless ($valid_languages{$lang}) {
     $lang = LANG_DEFAULT;
 }
 
-my $parse = DateTime::Format::Natural->new(lang => $lang, format => $format);
+my $parse = DateTime::Format::Natural->new(
+            lang          => $lang,
+            format        => $format,
+            prefer_future => $prefer_future,
+);
 
 while (1) {
     print 'Input date string: ';
@@ -78,6 +89,10 @@ while (1) {
         }
     } else {
         Carp::croak $parse->error, "\n";
+    }
+
+    if ($trace) {
+        print $parse->trace, "\n";
     }
 }
 
@@ -93,6 +108,7 @@ dateparse - frontend to DateTime::Format::Natural
    -h, --help             help screen
    -l, --language code    language (country code)
    -s, --supported        list of supported languages
+   -t, --trace            print trace after processing
    -V, --version          print version
 
 =head1 AUTHOR

@@ -5,9 +5,9 @@ use warnings;
 use base qw(DateTime::Format::Natural::Base);
 
 use Carp ();
-use List::MoreUtils qw(any none);
+use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.35';
+our $VERSION = '0.36';
 
 sub new {
     my $class = shift;
@@ -21,12 +21,12 @@ sub new {
 sub _init {
     my ($self, %opts) = @_;
 
-    $self->{Format}        = $opts{format}  || 'd/m/y';
-    $self->{Lang}          = $opts{lang}    || 'en';
+    $self->{Format}        = $opts{format}        || 'd/m/y';
+    $self->{Lang}          = $opts{lang}          || 'en';
+    $self->{Prefer_future} = $opts{prefer_future} || 0;
     $self->{Opts}{daytime} = $opts{daytime};
 
     $self->_init_check;
-    $self->_init_vars;
 
     my $mod  = __PACKAGE__.'::Lang::'.uc($self->{Lang});
     eval "use $mod"; die $@ if $@;
@@ -39,17 +39,19 @@ sub _init {
 sub _init_check {
     my $self = shift;
 
-    my %re = (format => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
-              lang   => qr!^(?:en|de)$!);
+    my %re = (format        => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
+              lang          => qr!^(?:en|de)$!,
+              prefer_future => qr!^(?:0|1)$!);
 
-    my %msg = (format => 'format string has no valid format',
-               lang   => 'language is not supported');
+    my %msg = (format        => 'format string has no valid format',
+               lang          => 'language is not supported',
+               prefer_future => 'must be a boolean');
 
     my $error;
     foreach my $lookup (keys %re) {
         my $param = ucfirst $lookup;
         unless ($self->{$param} =~ $re{$lookup}) {
-            $error = "parameter '$param': $msg{$lookup}";
+            $error = "parameter '$lookup': $msg{$lookup}";
             last;
         }
     }
@@ -59,6 +61,9 @@ sub _init_check {
 
 sub _init_vars {
     my $self = shift;
+
+    delete $self->{modified};
+    delete $self->{postprocess};
 
     $self->{buffer} = '';
 }
@@ -75,7 +80,7 @@ sub parse_datetime {
     my %count; $count{$_}++ foreach @count;
 
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
-        $self->{tokens_count} = 1;
+        $self->{count}{tokens} = 1;
 
         my $separator =  $self->{Format};
         $separator    =~ tr/a-zA-Z//d;
@@ -97,15 +102,16 @@ sub parse_datetime {
         my $year = $bits[$separated_indices->{y}];
            $year = "$century$year" if length $year == 2;
 
-        $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
-        $self->{datetime}->set_month($bits[$separated_indices->{m}]);
         $self->{datetime}->set_year ($year);
+        $self->{datetime}->set_month($bits[$separated_indices->{m}]);
+        $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
 
         $self->_set_modified(1);
     } else {
         @{$self->{tokens}} = split ' ', $date_string;
         $self->{data}->__init('tokens')->($self);
-        $self->{tokens_count} = scalar @{$self->{tokens}};
+        $self->{count}{tokens} = scalar @{$self->{tokens}};
+        @{$self->{tokenscopy}} = @{$self->{tokens}};
 
         $self->_process;
     }
@@ -128,8 +134,11 @@ sub _parse_init {
         $self->{datetime} = DateTime->now(time_zone => 'floating');
     }
 
+    $self->_init_vars;
+
     $self->_unset_failure;
     $self->_unset_error;
+    $self->_unset_trace;
     $self->_unset_modified;
 }
 
@@ -155,7 +164,7 @@ sub parse_datetime_duration {
 sub success {
     my $self = shift;
 
-    return ($self->_get_modified >= $self->{tokens_count})
+    return ($self->_get_modified >= $self->{count}{tokens})
         && !$self->_get_failure ? 1 : 0;
 }
 
@@ -170,6 +179,18 @@ sub error {
     return $error;
 }
 
+sub trace {
+    my $self = shift;
+
+    my @units = grep { $_ ne 'total' } keys %{$self->{modified}};
+    my @modified;
+    foreach my $unit (@units) {
+        push @modified, "$unit: $self->{modified}{$unit}";
+    }
+
+    return join "\n", @{$self->{trace}}, @modified;
+}
+
 sub _process {
     my $self = shift;
 
@@ -179,21 +200,22 @@ sub _process {
 
         $self->_debug_head;
 
-        $self->_process_numify;
-        $self->_process_second;
-        $self->_process_ago;
-        $self->_process_now;
-        $self->_process_daytime;
-        $self->_process_year;
-        $self->_process_months;
-        $self->_process_at;
-        $self->_process_number;
-        $self->_process_weekday;
-        $self->_process_this_in;
-        $self->_process_next;
-        $self->_process_last;
-        $self->_process_day;
-        $self->_process_monthdays_limit;
+        $self->_dispatch(qw(_process_numify
+                            _process_second
+                            _process_ago
+                            _process_now
+                            _process_daytime
+                            _process_year
+                            _process_months
+                            _process_at
+                            _process_number
+                            _process_weekday
+                            _process_this_in
+                            _process_next
+                            _process_last
+                            _process_day
+                            _process_monthdays_limit
+                            _post_process_options));
     }
 }
 
@@ -201,6 +223,31 @@ sub _debug_head {
     my $self = shift;
 
     print ${$self->_token(0)}, "\n" if $self->{Debug};
+}
+
+sub _post_process_options {
+    my $self = shift;
+
+    if ($self->{Prefer_future}) {
+        my %modified = map { $_ => 1 } grep { $_ ne 'total' } keys %{$self->{modified}};
+
+        if ($self->{count}{tokens} == 1
+            && (any { $self->{tokenscopy}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
+            && scalar keys %modified == 1
+            && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
+        ) {
+            $self->{postprocess}{day} = 7;
+        } elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokenscopy}} } keys %{$self->{data}->{months}})
+            && (all { /^(?:day|month)$/ } keys %modified)
+            && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
+            && (exists $self->{modified}{day}
+                  ? $self->{modified}{day} == 1
+                    ? 1 : 0
+                  : 1)
+        ) {
+            $self->{postprocess}{year} = 1;
+        }
+    }
 }
 
 sub _process_numify {
@@ -248,7 +295,7 @@ sub _process_year {
 
     foreach my $token (@{$self->{tokens}}) {
         if (my ($year) = $token =~ /^(\d{4})$/) {
-            $self->{datetime}->set_year($year);
+            $self->_set(year => $year);
             $self->_set_modified(1);
         }
     }
@@ -369,17 +416,28 @@ sub _token {
       : \$str;
 }
 
-sub _get_error      { $_[0]->{error}             }
-sub _set_error      { $_[0]->{error} = $_[1]     }
-sub _unset_error    { $_[0]->{error} = ''        }
+sub _dispatch {
+    my ($self, @methods) = @_;
 
-sub _get_failure    { $_[0]->{failure}           }
-sub _set_failure    { $_[0]->{failure} = 1       }
-sub _unset_failure  { $_[0]->{failure} = 0       }
+    foreach my $method (@methods) {
+        $self->$method if @{$self->{tokens}};
+    }
+}
 
-sub _get_modified   { $_[0]->{modified} || 0     }
-sub _set_modified   { $_[0]->{modified} += $_[1] }
-sub _unset_modified { $_[0]->{modified}  = 0     }
+sub _add_trace      { push @{$_[0]->{trace}}, (caller(1))[3] }
+sub _unset_trace    { @{$_[0]->{trace}} = ()                 }
+
+sub _get_error      { $_[0]->{error}         }
+sub _set_error      { $_[0]->{error} = $_[1] }
+sub _unset_error    { $_[0]->{error} = ''    }
+
+sub _get_failure    { $_[0]->{failure}     }
+sub _set_failure    { $_[0]->{failure} = 1 }
+sub _unset_failure  { $_[0]->{failure} = 0 }
+
+sub _get_modified   { $_[0]->{modified}{total} || 0     }
+sub _set_modified   { $_[0]->{modified}{total} += $_[1] }
+sub _unset_modified { $_[0]->{modified}{total}  = 0     }
 
 sub _get_datetime_object {
     my $self = shift;
@@ -403,6 +461,11 @@ sub _get_datetime_object {
                            hour   => $self->{hour},
                            minute => $self->{min},
                            second => $self->{sec});
+
+    foreach my $unit (keys %{$self->{postprocess}}) {
+        $dt->add("${unit}s" => $self->{postprocess}{$unit});
+    }
+
     return $dt;
 }
 
@@ -410,16 +473,14 @@ sub _get_datetime_object {
 sub _set_datetime {
     my ($self, $year, $month, $day, $hour, $min, $sec) = @_;
 
-    $self->{datetime} = DateTime->now(time_zone => 'floating');
-
+    $self->{datetime} = DateTime->new(time_zone => 'floating',
+                                      year      => $year,
+                                      month     => $month,
+                                      day       => $day,
+                                      hour      => $hour,
+                                      minute    => $min,
+                                      second    => $sec);
     $self->{nodatetimeset} = 1;
-
-    $self->{datetime}->set_year($year);
-    $self->{datetime}->set_month($month);
-    $self->{datetime}->set_day($day);
-    $self->{datetime}->set_hour($hour);
-    $self->{datetime}->set_minute($min);
-    $self->{datetime}->set_second($sec);
 }
 
 1;
@@ -463,26 +524,32 @@ Creates a new C<DateTime::Format::Natural> object. Arguments to C<new()> are opt
 not necessarily required.
 
  $parser = DateTime::Format::Natural->new(
-           lang    => '[en|de]',
-           format  => 'mm/dd/yy',
-           daytime => { morning   => 06,
-                        afternoon => 13,
-                        evening   => 20,
-                      },
+           lang          => '[en|de]',
+           format        => 'mm/dd/yy',
+           prefer_future => '[0|1]'
+           daytime       => { morning   => 06,
+                              afternoon => 13,
+                              evening   => 20,
+                            },
  );
 
 =over 4
 
-=item lang
+=item * C<lang>
 
 Contains the language selected, currently limited to C<en> (english) & C<de> (german).
 Defaults to 'C<en>'.
 
-=item format
+=item * C<format>
 
 Specifies the format of numeric dates, defaults to 'C<d/m/y>'.
 
-=item daytime
+=item * C<prefer_future (experimental)>
+
+Turns ambigious weekdays/months to their futuristic relatives. Accepts a boolean,
+defaults to 0.
+
+=item * C<daytime>
 
 A hash consisting of specific hours given for peculiar daytimes. Daytimes may be
 selectively changed.
@@ -502,11 +569,11 @@ Creates a C<DateTime> object from a human readable date/time string.
 
 =over 4
 
-=item string
+=item * C<string>
 
 The date string.
 
-=item debug
+=item * C<debug>
 
 Boolean value indicating debugging mode.
 
@@ -520,7 +587,7 @@ Returns a L<DateTime> object.
 =head2 parse_datetime_duration
 
 Creates one or more C<DateTime> object(s) from a human readable date/time string
-which may contain timespans/durations. 'Same' interface & options as parse_datetime(),
+which may contain timespans/durations. 'Same' interface & options as C<parse_datetime()>,
 but must be explicitly called in list context.
 
  @dt = $parser->parse_datetime_duration($date_string);
@@ -538,6 +605,11 @@ string given.
 =head2 error
 
 Returns the error message if the parsing didn't succeed.
+
+=head2 trace
+
+Returns a trace of methods which we're called within the Base class and
+a summary how often certain units were modified.
 
 =head1 EXAMPLES
 
@@ -560,6 +632,8 @@ valuable suggestions & patches:
  Cory Watson
  Urs Stotz
  Shawn M. Moore
+ Andreas J. König
+ Chia-liang Kao
 
 =head1 SEE ALSO
 

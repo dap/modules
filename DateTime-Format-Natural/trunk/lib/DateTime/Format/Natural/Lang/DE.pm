@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '0.11';
+our $VERSION = '1.00';
 
 our (%init, %data_weekdays, %data_months, %timespan, %main, %ago, %now, %daytime,
      %months, %at, %this_in, %next, %last, %day, %setyearday);
@@ -133,11 +133,12 @@ that the parser doesn't differentiate between lower/upper case):
 
 =head2 Simple
 
+ 5 Uhr
+ 16:00 Uhr
  Donnerstag
  November
  Freitag 13:00
  Mon 2:35
- 16:00 Uhr
  6 am Morgen
  Samstag 7 am Abend
  Gestern
@@ -159,10 +160,19 @@ that the parser doesn't differentiate between lower/upper case):
 
  25 Sekunden her
  10 Minuten her
- 3 Jahre her
- 5 Monate vor jetzt
  7 Stunden her
+ 40 Tage her
+ 2 Wochen her
+ 5 Monate her
+ 3 Jahre her
+ 7 Tage vor jetzt
  7 Tage nach jetzt
+ 4 Wochen vor jetzt
+ 4 Wochen nach jetzt
+ 13 Monate vor jetzt
+ 13 Monate nach jetzt
+ 2 Jahre vor jetzt
+ 2 Jahre nach jetzt
  in 3 Stunden
  1 Jahr her morgen
  3 Monate her Samstag um 17:00
@@ -176,7 +186,8 @@ that the parser doesn't differentiate between lower/upper case):
 
 =head2 Specific Dates
 
- Januar 5
+ Januar 11
+ 11 Januar
  dez 25
  mai 27
  Oktober 2006
