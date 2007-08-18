@@ -11,7 +11,7 @@ Makefile.PL
 MANIFEST			This list of files
 META.yml
 README
-scripts/dateparse.pl
+scripts/dateparse
 t/00-load.t
 t/01-parse_en.t
 t/02-parse_de.t

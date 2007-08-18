@@ -11,7 +11,13 @@ SYNOPSIS
      @dt = $parser->parse_datetime_duration($date_string);
 
      if ($parser->success) {
-         # operate on $dt/@dt
+         # operate on $dt/@dt, for example:
+         printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day,
+                                                  $dt->month,
+                                                  $dt->year,
+                                                  $dt->hour,
+                                                  $dt->min,
+                                                  $dt->sec);
      } else {
          warn $parser->error;
      }

@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.34 Sun May 20 17:09:09 CEST 2007
+
+ - Hopefully fixed "Type of arg 1 to List::MoreUtils::any must be block
+   or sub {} (not list)" errors.
+
+ - Added _init_check() which is being called by _init() to validate
+   the options passed to the constructor new().
+
 0.33 Sat May 19 03:08:29 CEST 2007
 
  - Got mostly rid of the "no warnings 'uninitialized'" statements and

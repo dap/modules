@@ -4,9 +4,10 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Base);
 
+use Carp ();
 use List::MoreUtils qw(any none);
 
-our $VERSION = '0.33';
+our $VERSION = '0.34';
 
 sub new {
     my $class = shift;
@@ -20,20 +21,46 @@ sub new {
 sub _init {
     my ($self, %opts) = @_;
 
-    my $lang = $opts{lang} || 'en';
-    my $mod  = __PACKAGE__.'::Lang::'.uc($lang);
+    $self->{Format}        = $opts{format}  || 'd/m/y';
+    $self->{Lang}          = $opts{lang}    || 'en';
+    $self->{Opts}{daytime} = $opts{daytime};
 
-    eval "use $mod";
-    die $@ if $@;
+    $self->_init_check;
+    $self->_init_vars;
 
-    $self->{data}          = $mod->__new();
-    $self->{format}        = $opts{format} || 'd/m/y';
-    $self->{lang}          = $lang;
-    $self->{opts}{daytime} = $opts{daytime};
+    my $mod  = __PACKAGE__.'::Lang::'.uc($self->{Lang});
+    eval "use $mod"; die $@ if $@;
 
-    $self->{buffer} = '';
+    $self->{data} = $mod->__new();
 
     return $self;
+}
+
+sub _init_check {
+    my $self = shift;
+
+    my %re = (format => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
+              lang   => qr!^(?:en|de)$!);
+
+    my %msg = (format => 'format string has no valid format',
+               lang   => 'language is not supported');
+
+    my $error;
+    foreach my $lookup (keys %re) {
+        my $param = ucfirst $lookup;
+        unless ($self->{$param} =~ $re{$lookup}) {
+            $error = "parameter '$param': $msg{$lookup}";
+            last;
+        }
+    }
+
+    Carp::croak "new(): $error\n" if defined $error;
+}
+
+sub _init_vars {
+    my $self = shift;
+
+    $self->{buffer} = '';
 }
 
 sub parse_datetime {
@@ -44,11 +71,18 @@ sub parse_datetime {
     my $date_string = $self->{Date_string};
     $date_string =~ tr/,//d;
 
-    if ($date_string =~ m!(?:/|\-)!) {
-        my $separator = $date_string =~ m!/! ? '/' : '-';
-           $separator = quotemeta $separator;
+    my @count = $date_string =~ m![-./]!g;
+    my %count; $count{$_}++ foreach @count;
 
-        my @separated_order = split $separator, $self->{format};
+    if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
+        $self->{tokens_count} = 1;
+
+        my $separator =  $self->{Format};
+        $separator    =~ tr/a-zA-Z//d;
+        $separator    =~ tr/a-zA-Z//cs;
+        $separator    =  quotemeta $separator;
+
+        my @separated_order = split $separator, $self->{Format};
         my $separated_index = 0;
 
         my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
@@ -63,25 +97,40 @@ sub parse_datetime {
         my $year = $bits[$separated_indices->{y}];
            $year = "$century$year" if length $year == 2;
 
-        if (@bits == 3) {
-            $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
-            $self->{datetime}->set_month($bits[$separated_indices->{m}]);
-            $self->{datetime}->set_year ($year);
+        $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
+        $self->{datetime}->set_month($bits[$separated_indices->{m}]);
+        $self->{datetime}->set_year ($year);
 
-            $self->{tokens_count} = 3;
-            $self->_set_modified(3);
-
-            return $self->_get_datetime_object;
-        }
+        $self->_set_modified(1);
     } else {
         @{$self->{tokens}} = split ' ', $date_string;
         $self->{data}->__init('tokens')->($self);
         $self->{tokens_count} = scalar @{$self->{tokens}};
+
+        $self->_process;
     }
 
-    $self->_process;
-
     return $self->_get_datetime_object;
+}
+
+sub _parse_init {
+    my $self = shift;
+
+    if (@_ > 1) {
+        my %opts             = @_;
+        $self->{Date_string} = $opts{string};
+        $self->{Debug}       = $opts{debug};
+    } else {
+        ($self->{Date_string}) = @_;
+    }
+
+    unless ($self->{nodatetimeset}) {
+        $self->{datetime} = DateTime->now(time_zone => 'floating');
+    }
+
+    $self->_unset_failure;
+    $self->_unset_error;
+    $self->_unset_modified;
 }
 
 sub parse_datetime_duration {
@@ -106,7 +155,8 @@ sub parse_datetime_duration {
 sub success {
     my $self = shift;
 
-    return ($self->_get_modified >= $self->{tokens_count}) && !$self->_get_failure ? 1 : 0;
+    return ($self->_get_modified >= $self->{tokens_count})
+        && !$self->_get_failure ? 1 : 0;
 }
 
 sub error {
@@ -118,28 +168,6 @@ sub error {
        $error .= $self->_get_error || '(perhaps you have some garbage?)';
 
     return $error;
-}
-
-sub _parse_init {
-    my $self = shift;
-
-    my %opts;
-
-    if (@_ > 1) {
-        %opts                = @_;
-        $self->{Date_string} = $opts{string};
-        $self->{Debug}       = $opts{debug};
-    } else {
-        ($self->{Date_string}) = @_;
-    }
-
-    unless ($self->{nodatetimeset}) {
-        $self->{datetime} = DateTime->now(time_zone => 'floating');
-    }
-
-    $self->_unset_failure;
-    $self->_unset_error;
-    $self->_unset_modified;
 }
 
 sub _process {
@@ -332,7 +360,7 @@ sub _process_monthdays_limit {
 }
 
 sub _token {
-    my ($self, $pos, $type) = @_;
+    my ($self, $pos) = @_;
 
     my $str = '';
 
@@ -411,7 +439,13 @@ DateTime::Format::Natural - Create machine readable date/time with natural parsi
  @dt = $parser->parse_datetime_duration($date_string);
 
  if ($parser->success) {
-     # operate on $dt/@dt
+     # operate on $dt/@dt, for example:
+     printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day,
+                                              $dt->month,
+                                              $dt->year,
+                                              $dt->hour,
+                                              $dt->min,
+                                              $dt->sec);
  } else {
      warn $parser->error;
  }

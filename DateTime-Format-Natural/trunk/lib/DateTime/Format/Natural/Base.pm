@@ -10,7 +10,7 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
                   check_date check_time);
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -113,7 +113,7 @@ sub _daytime {
     $self->{hours_before} ||= 0;
 
     # unless german as language metdata
-    unless ($self->{lang} eq 'de') {
+    unless ($self->{Lang} eq 'de') {
         # [0-9] in the
         if (all { ${$self->_token($_->[0])} =~ $tokens[$_->[1]] } @{[[-3,0],[-2,1],[-1,2]]}) {
             $hour_token = ${$self->_token(-3)};
@@ -129,8 +129,8 @@ sub _daytime {
     if (${$self->_token(0)} =~ $self->{data}->__daytime('morning')) {
         my $hour = ($hour_token
           ? $hour_token
-          : ($self->{opts}{daytime}{morning}
-             ? $self->{opts}{daytime}{morning}
+          : ($self->{Opts}{daytime}{morning}
+             ? $self->{Opts}{daytime}{morning}
              : MORNING - $self->{hours_before}));
 
         if ($self->_valid_time(hour => $hour)) {
@@ -142,8 +142,8 @@ sub _daytime {
     } elsif (${$self->_token(0)} =~ $self->{data}->__daytime('afternoon')) {
         my $hour = ($hour_token
           ? $hour_token + 12 
-          : ($self->{opts}{daytime}{afternoon}
-             ? $self->{opts}{daytime}{afternoon}
+          : ($self->{Opts}{daytime}{afternoon}
+             ? $self->{Opts}{daytime}{afternoon}
              : AFTERNOON - $self->{hours_before}));
 
         if ($self->_valid_time(hour => $hour)) {
@@ -155,8 +155,8 @@ sub _daytime {
     } else {
        my $hour = ($hour_token
           ? $hour_token + 12
-          : ($self->{opts}{daytime}{evening}
-             ? $self->{opts}{daytime}{evening}
+          : ($self->{Opts}{daytime}{evening}
+             ? $self->{Opts}{daytime}{evening}
              : EVENING - $self->{hours_before}));
 
         if ($self->_valid_time(hour => $hour)) {
@@ -177,7 +177,7 @@ sub _months {
 
         foreach my $i qw(0 1) {
             # Month or month abbreviation encountered?
-            if (any { ${$self->_token($i)} =~ $_ } (qr/$key_month/i, qr/$key_month_short/i)) {
+            if (any { ${$self->_token($i)} =~ $_ } @{[qr/$key_month/i, qr/$key_month_short/i]}) {
                 # Set month & flag modification state
                 if ($self->_valid_date(month => $self->{data}->{months}->{$key_month})) {
                     $self->{datetime}->set_month($self->{data}->{months}->{$key_month});
@@ -260,7 +260,7 @@ sub _at {
     }
 
     # german um (engl. at)
-    if ($self->{lang} eq 'de') {
+    if ($self->{Lang} eq 'de') {
         foreach my $token (@{$self->{tokens}}) {
             $self->_set_modified(1) if $token =~ /um/i;
         }
@@ -341,7 +341,7 @@ sub _weekday {
         my $weekday_short = lc substr($key_weekday, 0, 3);
 
         # Either full weekday or abbreviation found
-        if (any { ${$self->_token(0)} =~ $_ } (qr/$key_weekday/i, qr/^$weekday_short$/i)) {
+        if (any { ${$self->_token(0)} =~ $_ } @{[qr/$key_weekday/i, qr/^$weekday_short$/i]}) {
             $key_weekday = ucfirst lc $key_weekday;
 
             my $days_diff;
@@ -380,7 +380,7 @@ sub _this_in {
         my $weekday_short = lc substr($key_weekday, 0, 3);
 
         # weekday or weekday abbreviation
-        if (any { ${$self->_token(0)} =~ $_ } (qr/$key_weekday/i, qr/$weekday_short/i)) {
+        if (any { ${$self->_token(0)} =~ $_ } @{[qr/$key_weekday/i, qr/$weekday_short/i]}) {
             my $days_diff = $self->{data}->{weekdays}->{$key_weekday} - $self->{datetime}->wday;
 
             $self->{datetime}->add(days => $days_diff);
@@ -616,7 +616,7 @@ sub _day {
 
         # tomorrow
         if (${$self->_token(0)} =~ $self->{data}->__day('tomorrow')) {
-            if ($self->{lang} eq 'de') {
+            if ($self->{Lang} eq 'de') {
                 # skip if we have a weekday followed by morning
                 if (none { ${$self->_token(-1)} =~ $_ } keys %{$self->{data}->{weekdays}}) {
                     $self->{datetime}->add(days => 1);
