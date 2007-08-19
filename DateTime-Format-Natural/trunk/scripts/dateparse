@@ -49,6 +49,7 @@ Usage: $0 [switches]
   -f, --format           format of numeric dates
   -h, --help             help screen
   -l, --language code    language (country code)
+  -p, --prefer_future    prefer future
   -s, --supported        list of supported languages
   -t, --trace            print trace after processing
   -V, --version          print version
@@ -107,6 +108,7 @@ dateparse - frontend to DateTime::Format::Natural
    -f, --format           format of numeric dates
    -h, --help             help screen
    -l, --language code    language (country code)
+   -p, --prefer_future    prefer future
    -s, --supported        list of supported languages
    -t, --trace            print trace after processing
    -V, --version          print version

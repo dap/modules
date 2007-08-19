@@ -1,5 +1,14 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.37 Sun Aug 19 11:33:05 CEST 2007
+
+ - Fixed the parsing of unambigious dates such as "next [month]" &
+   "last [month]" while the 'prefer_future' option is enabled.
+ 
+ - Explicitly call methods within the superclass with 'SUPER::'.
+
+ - Documented the 'prefer_future' switch in scripts/dateparse.
+
 0.36 Thu Jun  7 13:42:35 CEST 2007
 
  - Fixed version numbers which were treated as floating point numbers,

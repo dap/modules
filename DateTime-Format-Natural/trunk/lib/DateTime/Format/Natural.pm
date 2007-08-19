@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.36';
+our $VERSION = '0.37';
 
 sub new {
     my $class = shift;
@@ -214,40 +214,16 @@ sub _process {
                             _process_next
                             _process_last
                             _process_day
-                            _process_monthdays_limit
-                            _post_process_options));
+                            _process_monthdays_limit));
     }
+    
+    $self->_post_process_options; 
 }
 
 sub _debug_head {
     my $self = shift;
 
     print ${$self->_token(0)}, "\n" if $self->{Debug};
-}
-
-sub _post_process_options {
-    my $self = shift;
-
-    if ($self->{Prefer_future}) {
-        my %modified = map { $_ => 1 } grep { $_ ne 'total' } keys %{$self->{modified}};
-
-        if ($self->{count}{tokens} == 1
-            && (any { $self->{tokenscopy}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
-            && scalar keys %modified == 1
-            && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
-        ) {
-            $self->{postprocess}{day} = 7;
-        } elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokenscopy}} } keys %{$self->{data}->{months}})
-            && (all { /^(?:day|month)$/ } keys %modified)
-            && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
-            && (exists $self->{modified}{day}
-                  ? $self->{modified}{day} == 1
-                    ? 1 : 0
-                  : 1)
-        ) {
-            $self->{postprocess}{year} = 1;
-        }
-    }
 }
 
 sub _process_numify {
@@ -268,7 +244,7 @@ sub _process_ago {
     my $self = shift;
 
     if (${$self->_token(2)} =~ $self->{data}->__main('ago')) {
-        $self->_ago;
+        $self->SUPER::_ago;
     }
 }
 
@@ -276,7 +252,7 @@ sub _process_now {
     my $self = shift;
 
     if (${$self->_token(3)} =~ $self->{data}->__main('now')) {
-        $self->_now;
+        $self->SUPER::_now;
     }
 }
 
@@ -285,7 +261,7 @@ sub _process_daytime {
 
     foreach my $daytime (@{$self->{data}->__main('daytime')}) {
         if (${$self->_token(0)} =~ $daytime) {
-            $self->_daytime;
+            $self->SUPER::_daytime;
         }
     }
 }
@@ -310,7 +286,7 @@ sub _process_months {
         }
     }
 
-    $self->_months;
+    $self->SUPER::_months;
 }
 
 sub _process_at {
@@ -327,7 +303,7 @@ sub _process_at {
             }
         }
 
-        $self->_at(@matches);
+        $self->SUPER::_at(@matches);
     }
 }
 
@@ -349,7 +325,7 @@ sub _process_number {
             }
         }
 
-        $self->_number($match);
+        $self->SUPER::_number($match);
     }
 }
 
@@ -357,7 +333,7 @@ sub _process_weekday {
     my $self = shift;
 
     if (none { /$self->{data}->__main('weekdays')/ } @{$self->{tokens}}) {
-        $self->_weekday;
+        $self->SUPER::_weekday;
     }
 }
 
@@ -368,7 +344,7 @@ sub _process_this_in {
         $self->{buffer} = 'this_in';
         return;
     } elsif ($self->{buffer} eq 'this_in') {
-        $self->_this_in;
+        $self->SUPER::_this_in;
     }
 }
 
@@ -379,7 +355,7 @@ sub _process_next {
         $self->{buffer} = 'next';
         return;
     } elsif ($self->{buffer} eq 'next') {
-        $self->_next;
+        $self->SUPER::_next;
     }
 }
 
@@ -390,20 +366,45 @@ sub _process_last {
         $self->{buffer} = 'last';
         return;
     } elsif ($self->{buffer} eq 'last') {
-        $self->_last;
+        $self->SUPER::_last;
     }
 }
 
 sub _process_day {
     my $self = shift;
 
-    $self->_day;
+    $self->SUPER::_day;
 }
 
 sub _process_monthdays_limit {
     my $self = shift;
 
-    $self->_monthdays_limit;
+    $self->SUPER::_monthdays_limit;
+}
+
+sub _post_process_options {
+    my $self = shift;
+
+    if ($self->{Prefer_future}) {
+        my %modified = map { $_ => 1 } grep { $_ ne 'total' } keys %{$self->{modified}};
+
+        if ($self->{count}{tokens} == 1
+            && (any { $self->{tokenscopy}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
+            && scalar keys %modified == 1
+            && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
+        ) {
+            $self->{postprocess}{day} = 7;
+        } elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokenscopy}} } keys %{$self->{data}->{months}})
+            && (all { /^(?:day|month)$/ } keys %modified)
+            && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
+            && (exists $self->{modified}{day}
+                  ? $self->{modified}{day} == 1
+                    ? 1 : 0
+                  : 1)
+        ) {
+	    $self->{postprocess}{year} = 1;
+        }
+    }
 }
 
 sub _token {
