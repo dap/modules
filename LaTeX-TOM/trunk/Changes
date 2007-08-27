@@ -1,5 +1,10 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.7 Tue Aug 28 00:12:03 CEST 2007
+
+ - Added formatting tags to the documentation where appropriate
+   and enlisted all methods within the documentation index.
+
 0.6 Wed Mar 14 01:05:09 CET 2007
 
  - Merged development version to stable.

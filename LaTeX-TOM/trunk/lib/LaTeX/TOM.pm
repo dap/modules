@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.6
+# Version 0.7
 #
 # ----------------------------------------------------------------------------
 #
@@ -32,7 +32,7 @@ use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
 
 use base qw(LaTeX::TOM::Parser);
 
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -207,31 +207,33 @@ LaTeX::TOM - A module for parsing, analyzing, and manipulating LaTeX documents.
 
 =head1 SYNOPSIS
 
-  use LaTeX::TOM;
+ use LaTeX::TOM;
 
-  my $parser = LaTeX::TOM->new;
+ $parser = LaTeX::TOM->new;
 
-  my $document = $parser->parseFile('mypaper.tex');
+ $document = $parser->parseFile('mypaper.tex');
 
-  my $latex = $document->toLaTeX;
+ $latex = $document->toLaTeX;
 
-  my $specialnodes = $document->getNodesByCondition(
-    '$node->getNodeType eq \'TEXT\' && 
-     $node->getNodeText =~ /magic string/');
+ $specialnodes = $document->getNodesByCondition(
+     '$node->getNodeType eq \'TEXT\' && 
+      $node->getNodeText =~ /magic string/'
+ );
 
-  my $sections = $document->getNodesByCondition(
-    '$node->getNodeType eq \'COMMAND\' &&
-     $node->getCommandName =~ /section$/');
+ $sections = $document->getNodesByCondition(
+     '$node->getNodeType eq \'COMMAND\' &&
+      $node->getCommandName =~ /section$/'
+ );
 
-  my $indexme = $document->getIndexableText;
+ $indexme = $document->getIndexableText;
 
-  $document->print;
+ $document->print;
 
 =head1 DESCRIPTION
 
 This module provides a parser which parses and interprets (though not fully)
 LaTeX documents and returns a tree-based representation of what it finds.
-This tree is a LaTeX::TOM::Tree.  The tree contains LaTeX::TOM:Node nodes.
+This tree is a C<LaTeX::TOM::Tree>.  The tree contains C<LaTeX::TOM::Node> nodes.
 
 This module should be especially useful to anyone who wants to do processing
 of LaTeX documents that requires extraction of plain-text information, or
@@ -248,32 +250,32 @@ The parser recognizes 3 parameters upon creation.  The parameters, in order, are
 
 =item parse error handling (= B<0> || 1 || 2)
 
-Determines what happens when a parse error is encountered.  0 results in a
-warning.  1 results in a die.  2 results in silence.  Note that particular
+Determines what happens when a parse error is encountered.  C<0> results in a
+warning.  C<1> results in a die.  C<2> results in silence.  Note that particular
 groupings in LaTeX (i.e. newcommands and the like) contain invalid TeX or
-LaTeX, so you nearly always need this parameter to be 0 or 2 to completely
+LaTeX, so you nearly always need this parameter to be C<0> or C<2> to completely
 parse the document.
 
 =item read inputs flag (= 0 || B<1>)
 
-This flag determines whether a scan for \input and \input-like commands is
+This flag determines whether a scan for C<\input> and C<\input-like> commands is
 performed, and the resulting called files parsed and added to the parent
-parse tree.  0 means no, 1 means do it.  Note that this will happen recursively
-if it is turned on.  Also, bibliographies (.bbl files) are detected and
+parse tree.  C<0> means no, C<1> means do it.  Note that this will happen recursively
+if it is turned on.  Also, bibliographies (F<.bbl> files) are detected and
 included.
 
 =item apply mappings flag (= 0 || B<1>)
 
 This flag determines whether (most) user-defined mappings are applied.  This
-means \defs, \newcommands, and \newenvironments.  This is critical for properly
-analyzing the content of the document, as this must be phrased in terms of the
-semantics of the original TeX and LaTeX commands, not ad hoc user macros.  So,
-for instance, do not expect plain-text extraction to work properly with this
+means C<\defs>, C<\newcommands>, and C<\newenvironments>.  This is critical for 
+properly analyzing the content of the document, as this must be phrased in terms 
+of the semantics of the original TeX and LaTeX commands, not ad hoc user macros.  
+So, for instance, do not expect plain-text extraction to work properly with this
 option off.
 
 =back
 
-The parser returns a LaTeX::TOM::Tree ($document in the SYNOPSIS).
+The parser returns a C<LaTeX::TOM::Tree> ($document in the SYNOPSIS).
 
 =head2 LaTeX::TOM::Node
 
@@ -283,60 +285,60 @@ Nodes may be of the following types:
 
 =item TEXT 
 
-TEXT nodes can be thought of as representing the plain-text portions of the
+C<TEXT> nodes can be thought of as representing the plain-text portions of the
 LaTeX document.  This includes math and anything else that is not a recognized
-TeX or LaTeX command, or user-defined command.  In reality, TEXT nodes contain
+TeX or LaTeX command, or user-defined command.  In reality, C<TEXT> nodes contain
 commands that this parser does not yet recognize the semantics of.
 
 =item COMMAND
 
-A COMMAND node represents a TeX command.  It always has child nodes in a tree,
+A C<COMMAND> node represents a TeX command.  It always has child nodes in a tree,
 though the tree might be empty if the command operates on zero parameters. An
 example of a command is
 
-  \textbf{blah}
+ \textbf{blah}
 
-This would parse into a COMMAND node for I<textbf>, which would have a subtree
-containing the TEXT node with text ``blah.''
+This would parse into a C<COMMAND> node for C<textbf>, which would have a subtree
+containing the C<TEXT> node with text ``blah.''
 
 =item ENVIRONMENT
 
-Similarly, TeX environments parse into ENVIRONMENT nodes, which have metadata
+Similarly, TeX environments parse into C<ENVIRONMENT> nodes, which have metadata
 about the environment, along with a subtree representing what is contained in
 the environment.  For example,
 
-  \begin{equation}
-    r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
-  \end{equation}
+ \begin{equation}
+   r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+ \end{equation}
 
-Would parse into an ENVIRONMENT node of the class ``equation'' with a child 
-tree containing the result of parsing ``r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}.''
+Would parse into an C<ENVIRONMENT> node of the class ``equation'' with a child 
+tree containing the result of parsing C<``r = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}.''>
 
 =item GROUP
 
-A GROUP is like an anonymous COMMAND.  Since you can put whatever you want in
-curly-braces ({}) in TeX in order to make semantically isolated regions, this
-separation is preserved by the parser.  A GROUP is just the subtree of the
+A C<GROUP> is like an anonymous C<COMMAND>.  Since you can put whatever you want in
+curly-braces (C<{}>) in TeX in order to make semantically isolated regions, this
+separation is preserved by the parser.  A C<GROUP> is just the subtree of the
 parsed contents of plain curly-braces.
 
-It is important to note that currently only the first GROUP in a series of
-GROUPs following a LaTeX command will actually be parsed into a COMMAND node.
+It is important to note that currently only the first C<GROUP> in a series of
+C<GROUP>s following a LaTeX command will actually be parsed into a C<COMMAND> node.
 The reason is that, for the initial purposes of this module, it was not
-necessary to recognize additional GROUPs as additional parameters to the
-COMMAND.  However, this is something that this module really should do
+necessary to recognize additional C<GROUP>s as additional parameters to the
+C<COMMAND>.  However, this is something that this module really should do
 eventually.  Currently if you want all the parameters to a multi-parametered
-command, you'll need to pick out all the following GROUP nodes yourself.
+command, you'll need to pick out all the following C<GROUP> nodes yourself.
 
 Eventually this will become something like a list which is stored in the 
-COMMAND node, much like XML::DOM's treatment of attributes.  These are, in a
-sense, apart from the rest of the document tree.  Then GROUP nodes will become
+C<COMMAND> node, much like L<XML::DOM>'s treatment of attributes.  These are, in a
+sense, apart from the rest of the document tree.  Then C<GROUP> nodes will become
 much more rare.
 
 =item COMMENT
 
-A COMMENT node is very similar to a TEXT node, except it is specifically for 
-lines beginning with ``%'' (the TeX comment delimeter) or the right-hand 
-portion of a line that has ``%'' at some internal point.
+A C<COMMENT> node is very similar to a C<TEXT> node, except it is specifically for 
+lines beginning with C<``%''> (the TeX comment delimeter) or the right-hand 
+portion of a line that has C<``%''> at some internal point.
 
 =back
 
@@ -354,9 +356,11 @@ section.
 
 =head2 LaTeX::TOM
 
+=head3 new
+
 =over 4
 
-=item new
+=item C<> 
 
 Instantiate a new parser object.
 
@@ -369,15 +373,23 @@ described.
 
 The methods for the parser (aside from the constructor, discussed above) are :
 
+=head3 parseFile (filename)
+
 =over 4
 
-=item parseFile (filename)
+=item C<>
 
-Read in the contents of I<filename> and parse them, returning a LaTeX::TOM:Tree.
+Read in the contents of I<filename> and parse them, returning a C<LaTeX::TOM::Tree>.
 
-=item parse (string)
+=back
 
-Parse the string I<string> and return a LaTeX::TOM::Tree.
+=head3 parse (string)
+
+=over 4
+
+=item C<>
+
+Parse the string I<string> and return a C<LaTeX::TOM::Tree>.
 
 =back
 
@@ -385,53 +397,109 @@ Parse the string I<string> and return a LaTeX::TOM::Tree.
 
 This section contains methods for the Trees returned by the parser.
 
+=head3 copy
+
 =over 4
 
-=item copy
+=item C<>
 
 Duplicate a tree into new memory.
 
-=item print
+=back
+
+=head3 print
+
+=over 4
+
+=item C<>
 
 A debug print of the structure of the tree.
 
-=item plainText
+=back
+
+=head3 plainText
+
+=over 4
+
+=item C<>
 
 Returns an arrayref which is a list of strings representing the text of all
-getNodePlainTextFlag = 1 TEXT nodes, in an inorder traversal.
+C<getNodePlainTextFlag = 1> C<TEXT> nodes, in an inorder traversal.
 
-=item indexableText
+=back
+
+=head3 indexableText
+
+=over 4
+
+=item C<>
 
 A method like the above but which goes one step further; it cleans all of the
 returned text and concatenates it into a single string which one could consider
 having all of the standard information retrieval value for the document,
 making it useful for indexing.
 
-=item toLaTeX
+=back
+
+=head3 toLaTeX
+
+=over 4
+
+=item C<>
 
 Return a string representing the LaTeX encoded by the tree.  This is especially
 useful to get a normal document again, after modifying nodes of the tree.
 
-=item getTopLevelNodes
+=back
 
-Return an arrayref which is a list of LaTeX::TOM::Nodes at the top level of
+=head3 getTopLevelNodes
+
+=over 4
+
+=item C<>
+
+Return an arrayref which is a list of C<LaTeX::TOM::Nodes> at the top level of
 the Tree.
 
-=item getAllNodes
+=back
+
+=head3 getAllNodes
+
+=over 4
+
+=item C<>
 
 Return an arrayref with B<all> nodes of the tree.  This "flattens" the tree.
 
-=item getCommandNodesByName (name)
+=back
 
-Return an arrayref with all COMMAND nodes in the tree which have a name
+=head3 getCommandNodesByName (name)
+
+=over 4
+
+=item C<>
+
+Return an arrayref with all C<COMMAND> nodes in the tree which have a name
 matching I<name>.
 
-=item getEnvironmentsByName (name)
+=back
 
-Return an arrayref with all ENVIRONMENT nodes in the tree which have a class
+=head3 getEnvironmentsByName (name)
+
+=over 4
+
+=item C<>
+
+Return an arrayref with all C<ENVIRONMENT> nodes in the tree which have a class
 matching I<name>.
 
-=item getNodesByCondition (expression)
+=back
+
+=head3 getNodesByCondition (expression)
+
+=over 4
+
+=item C<>
 
 This is a catch-all search method which can be used to pull out nodes that
 match pretty much any perl expression, without manually having to traverse the
@@ -445,106 +513,210 @@ node of the tree.  See the SYNOPSIS for examples.
 
 This section contains the methods for nodes of the parsed Trees.
 
+=head3 getNodeType
+
 =over 4
 
-=item getNodeType
+=item C<>
 
-Returns the type, one of 'TEXT', 'COMMAND', 'ENVIRONMENT', 'GROUP', or 'COMMENT', 
+Returns the type, one of C<TEXT>, C<COMMAND>, C<ENVIRONMENT>, C<GROUP>, or C<COMMENT>, 
 as described above.
 
-=item getNodeText
+=back
 
-Applicable for TEXT or COMMENT nodes; this returns the document text they contain.  
+=head3 getNodeText
+
+=over 4
+
+=item C<>
+
+Applicable for C<TEXT> or C<COMMENT> nodes; this returns the document text they contain.  
 This is undef for other node types.
 
-=item setNodeText
+=back
 
-Set the node text, also for TEXT and COMMENT nodes.
+=head3 setNodeText
 
-=item getNodeStartingPosition
+=over 4
 
-Get the starting character position in the document of this node.  For TEXT
-and COMMENT nodes, this will be where the text begins.  For ENVIRONMENT,
-COMMAND, or GROUP nodes, this will be the position of the I<last> character of
+=item C<>
+
+Set the node text, also for C<TEXT> and C<COMMENT> nodes.
+
+=back
+
+=head3 getNodeStartingPosition
+
+=over 4
+
+=item C<>
+
+Get the starting character position in the document of this node.  For C<TEXT>
+and C<COMMENT> nodes, this will be where the text begins.  For C<ENVIRONMENT>,
+C<COMMAND>, or C<GROUP> nodes, this will be the position of the I<last> character of
 the opening identifier.
 
-=item getNodeEndingPosition
+=back
 
-Same as above, but for last character.  For GROUP, ENVIRONMENT, or COMMAND 
+=head3 getNodeEndingPosition
+
+=over 4
+
+=item C<>
+
+Same as above, but for last character.  For C<GROUP>, C<ENVIRONMENT>, or C<COMMAND> 
 nodes, this will be the I<first> character of the closing identifier.
 
-=item getNodeOuterStartingPosition
+=back
 
-Same as getNodeStartingPosition, but for GROUP, ENVIRONMENT, or COMMAND nodes,
+=head3 getNodeOuterStartingPosition
+
+=over 4
+
+=item C<>
+
+Same as getNodeStartingPosition, but for C<GROUP>, C<ENVIRONMENT>, or C<COMMAND> nodes,
 this returns the I<first> character of the opening identifier.
 
-=item getNodeOuterEndingPosition
+=back
 
-Same as getNodeEndingPosition, but for GROUP, ENVIRONMENT, or COMMAND nodes,
+=head3 getNodeOuterEndingPosition
+
+=over 4
+
+=item C<>
+
+Same as getNodeEndingPosition, but for C<GROUP>, C<ENVIRONMENT>, or C<COMMAND> nodes,
 this returns the I<last> character of the closing identifier.
 
-=item getNodeMathFlag
+=back
 
-This applies to any node type.  It is 1 if the node sets, or is contained
-within, a math mode region.  0 otherwise.  TEXT nodes which have this flag as 1
+=head3 getNodeMathFlag
+
+=over 4
+
+=item C<>
+
+This applies to any node type.  It is C<1> if the node sets, or is contained
+within, a math mode region.  C<0> otherwise.  C<TEXT> nodes which have this flag as C<1>
 can be assumed to be the actual mathematics contained in the document.
 
-=item getNodePlainTextFlag
+=back
 
-This applies only to TEXT nodes.  It is 1 if the node is non-math B<and> is
+=head3 getNodePlainTextFlag
+
+=over 4
+
+=item C<>
+
+This applies only to C<TEXT> nodes.  It is C<1> if the node is non-math B<and> is
 visible (in other words, will end up being a part of the output document). One
-would only want to index TEXT nodes with this property, for information 
+would only want to index C<TEXT> nodes with this property, for information 
 retrieval purposes.
 
-=item getEnvironmentClass
+=back
 
-This applies only to ENVIRONMENT nodes.  Returns what class of environment the
-node represents (the X in \begin{X} and \end{X}).
+=head3 getEnvironmentClass
 
-=item getCommandName
+=over 4
 
-This applies only to COMMAND nodes.  Returns the name of the command (the X in
-\X{...}).
+=item C<>
 
-=item getChildTree
+This applies only to C<ENVIRONMENT> nodes.  Returns what class of environment the
+node represents (the C<X> in C<\begin{X}> and C<\end{X}>).
 
-This applies only to COMMAND, ENVIRONMENT, and GROUP nodes: it returns the
-LaTeX::TOM::Tree which is ``under'' the calling node.
+=back
 
-=item getFirstChild
+=head3 getCommandName
 
-This applies only to COMMAND, ENVIRONMENT, and GROUP nodes: it returns the
+=over 4
+
+=item C<>
+
+This applies only to C<COMMAND> nodes.  Returns the name of the command (the C<X> in
+C<\X{...}>).
+
+=back
+
+=head3 getChildTree
+
+=over 4
+
+=item C<>
+
+This applies only to C<COMMAND>, C<ENVIRONMENT>, and C<GROUP> nodes: it returns the
+C<LaTeX::TOM::Tree> which is ``under'' the calling node.
+
+=back
+
+=head3 getFirstChild
+
+=over 4
+
+=item C<>
+
+This applies only to C<COMMAND>, C<ENVIRONMENT>, and C<GROUP> nodes: it returns the
 first node from the first level of the child subtree.
 
-=item getLastChild
+=back
+
+=head3 getLastChild
+
+=over 4
+
+=item C<>
 
 Same as above, but for the last node of the first level.
 
-=item getPreviousSibling
+=back
+
+=head3 getPreviousSibling
+
+=over 4
+
+=item C<>
 
 Return the prior node on the same level of the tree.
 
-=item getNextSibling 
+=back
+
+=head3 getNextSibling 
+
+=over 4
+
+=item C<>
 
 Same as above, but for following node.
 
-=item getParent
+=back
+
+=head3 getParent
+
+=over 4
+
+=item C<>
 
 Get the parent node of this node in the tree.
 
-=item getNextGroupNode
+=back
+
+=head3 getNextGroupNode
+
+=over 4
+
+=item C<>
 
 This is an interesting function, and kind of a hack because of the way the
 parser makes the current tree.  Basically it will give you the next sibling
-that is a GROUP node, until it either hits the end of the tree level, a TEXT
-node which doesn't match /^\s*$/, or a COMMAND node.
+that is a C<GROUP> node, until it either hits the end of the tree level, a C<TEXT>
+node which doesn't match C</^\s*$/>, or a C<COMMAND> node.
 
-This is useful for finding all GROUPed parameters after a COMMAND node (see
-comments for 'GROUP' in the 'COMPONENTS' / 'LaTeX::TOM::Node' section).  You
-can just have a while loop that calls this method until it gets 'undef', and
+This is useful for finding all C<GROUP>ed parameters after a C<COMMAND> node (see
+comments for C<GROUP> in the C<COMPONENTS> / C<LaTeX::TOM::Node> section).  You
+can just have a while loop that calls this method until it gets C<undef>, and
 you'll know you've found all the parameters to a command.
 
-Note: this may be bad, but TEXT Nodes matching /^\s*\[[0-9]+\]$/ (optional
+Note: this may be bad, but C<TEXT> Nodes matching C</^\s*\[[0-9]+\]$/> (optional
 parameter groups) are treated as if they were 'blank'.
 
 =back
@@ -553,7 +725,7 @@ parameter groups) are treated as if they were 'blank'.
 
 Due to the lack of tree-modification methods, currently this module is
 mostly useful for minor modifications to the parsed document, for instance,
-altering the text of TEXT nodes but not deleting the nodes.  Of course, the
+altering the text of C<TEXT> nodes but not deleting the nodes.  Of course, the
 user can still do this by breaking abstraction and directly modifying the Tree.
 
 Also note that the parsing is not complete.  This module was not written with
@@ -562,7 +734,7 @@ The intent was instead to be able to analyze and modify the document on a
 logical level with regards to the content; it doesn't care about the document
 formatting and outputting side of TeX/LaTeX.
 
-There is much work still to be done.  See the TODO list in the TOM.pm source.
+There is much work still to be done.  See the F<TODO> list in the F<TOM.pm> source.
 
 =head1 BUGS
 
@@ -570,9 +742,9 @@ Probably plenty.  However, this module has performed fairly well on a set of
 ~1000 research publications from the Computing Research Repository, so I
 deemed it ``good enough'' to use for purposes similar to mine.
 
-Please let me know of parser errors if you discover any.
+Please let the authors know of parser errors if you discover any.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Written by Aaron Krowne <akrowne@vt.edu>
 
