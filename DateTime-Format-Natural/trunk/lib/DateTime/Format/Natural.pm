@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.37';
+our $VERSION = '0.38';
 
 sub new {
     my $class = shift;
@@ -107,7 +107,8 @@ sub parse_datetime {
         $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
 
         $self->_set_modified(1);
-    } else {
+    } 
+    else {
         @{$self->{tokens}} = split ' ', $date_string;
         $self->{data}->__init('tokens')->($self);
         $self->{count}{tokens} = scalar @{$self->{tokens}};
@@ -126,7 +127,8 @@ sub _parse_init {
         my %opts             = @_;
         $self->{Date_string} = $opts{string};
         $self->{Debug}       = $opts{debug};
-    } else {
+    } 
+    else {
         ($self->{Date_string}) = @_;
     }
 
@@ -182,9 +184,8 @@ sub error {
 sub trace {
     my $self = shift;
 
-    my @units = grep { $_ ne 'total' } keys %{$self->{modified}};
     my @modified;
-    foreach my $unit (@units) {
+    foreach my $unit (grep { $_ ne 'total' } keys %{$self->{modified}}) {
         push @modified, "$unit: $self->{modified}{$unit}";
     }
 
@@ -294,7 +295,8 @@ sub _process_at {
 
     if (${$self->_token(0)} =~ /^at$/i) {
         return;
-    } elsif (${$self->_token(0)} =~ $self->{data}->__main('at_intro')) {
+    } 
+    elsif (${$self->_token(0)} =~ $self->{data}->__main('at_intro')) {
         my @matches = ($1, $2, $3, $4);
 
         foreach my $match (@{$self->{data}->__main('at_matches')}) {
@@ -343,7 +345,8 @@ sub _process_this_in {
     if (${$self->_token(0)} =~ $self->{data}->__main('this_in')) {
         $self->{buffer} = 'this_in';
         return;
-    } elsif ($self->{buffer} eq 'this_in') {
+    } 
+    elsif ($self->{buffer} eq 'this_in') {
         $self->SUPER::_this_in;
     }
 }
@@ -354,7 +357,8 @@ sub _process_next {
     if (${$self->_token(0)} =~ $self->{data}->__main('next')) {
         $self->{buffer} = 'next';
         return;
-    } elsif ($self->{buffer} eq 'next') {
+    } 
+    elsif ($self->{buffer} eq 'next') {
         $self->SUPER::_next;
     }
 }
@@ -365,7 +369,8 @@ sub _process_last {
     if (${$self->_token(0)} =~ $self->{data}->__main('last')) {
         $self->{buffer} = 'last';
         return;
-    } elsif ($self->{buffer} eq 'last') {
+    } 
+    elsif ($self->{buffer} eq 'last') {
         $self->SUPER::_last;
     }
 }
@@ -394,7 +399,8 @@ sub _post_process_options {
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
         ) {
             $self->{postprocess}{day} = 7;
-        } elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokenscopy}} } keys %{$self->{data}->{months}})
+        } 
+	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokenscopy}} } keys %{$self->{data}->{months}})
             && (all { /^(?:day|month)$/ } keys %modified)
             && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
             && (exists $self->{modified}{day}

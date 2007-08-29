@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.38 Wed Aug 29 22:07:00 CEST 2007
+
+ - Redone code formatting.
+
 0.37 Sun Aug 19 11:33:05 CEST 2007
 
  - Fixed the parsing of unambigious dates such as "next [month]" &
