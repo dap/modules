@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 sub new {
     my $class = shift;
@@ -38,9 +38,11 @@ sub convert {
                     $dispatched++;
                }
             }
-        } elsif ($type =~ /ENVIRONMENT/) {
+        } 
+	elsif ($type =~ /ENVIRONMENT/) {
             $self->_process_verbatim;
-        } elsif ($type =~ /COMMAND/) {
+        } 
+	elsif ($type =~ /COMMAND/) {
             $self->_unregister_previous('verbatim');
             my $cmd_name = $node->getCommandName;
 
@@ -152,10 +154,12 @@ sub _process_text_verbatim {
 
         if ($len) {
             $text = ' ' x $len . $text;
-        } else {
+        } 
+	else {
             $text =~ s/^(.*)$/\ $1/gm;
         }
-    } else {
+    } 
+    else {
         $self->_pod_scrub_newlines(\$text);
     }
 
@@ -180,7 +184,8 @@ sub _process_text_item {
 
     if ($text =~ /\\item\s*\[(.*?)\]/) {
         $self->_pod_add("=item $1");
-    } else {
+    } 
+    else {
         $self->_pod_add('=item');
     }
 
@@ -296,7 +301,8 @@ sub _pod_add {
 
     if (!$self->{append_following}) {
         push @{$self->{pod}}, $content;
-    } else {
+    } 
+    else {
         $self->_pod_append($content);
         $self->{append_following} = 0;
     }
