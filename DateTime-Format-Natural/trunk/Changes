@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.38_01 Tue Sep  4 18:10:48 CEST 2007
+
+ - Undone use'ing constant with a hashref provided (breaks on
+   older versions of Perl [testers #598724 - David Cantrell <david@cantrell.co.uk>]).
+
 0.38 Wed Aug 29 22:07:00 CEST 2007
 
  - Redone code formatting.
@@ -19,7 +24,7 @@ Revision history for Perl extension DateTime::Format::Natural.
    not as v-string. [rt #27350 - Andres J. König <andreas.koenig@anima.de>]
 
  - Fixed _set_datetime() which failed whenever a 31st day didn't exist
-   in the current month [rt #27360 - Chia-liang Kao <clkao@clkao.org>]
+   in the current month. [rt #27360 - Chia-liang Kao <clkao@clkao.org>]
 
  - Reversed the order of the day/month/year setter calls within
    parse_datetime(). [mike <pulsation@gmail.com>]

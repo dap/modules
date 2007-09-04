@@ -10,13 +10,11 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
                   check_date check_time);
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
-use constant {
-    MORNING   => '08',
-    AFTERNOON => '14',
-    EVENING   => '20',
-};
+use constant MORNING   => '08';
+use constant AFTERNOON => '14';
+use constant EVENING   => '20'; 
 
 sub _ago {
     my $self = shift;

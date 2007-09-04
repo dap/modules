@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.38';
+our $VERSION = '0.38_01';
 
 sub new {
     my $class = shift;
