@@ -10,7 +10,7 @@ use Date::Calc qw(Add_Delta_Days Days_in_Month
                   check_date check_time);
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -21,41 +21,42 @@ sub _ago {
 
     $self->_add_trace;
 
-    my @new_tokens = splice(@{$self->{tokens}}, $self->{index}, 3);
+    my @tokens = $self->_tokens([0,1,2]);
+    $self->_mark_list([0,1,2]);
 
     # seconds ago
-    if ($new_tokens[1] =~ $self->{data}->__ago('second')) {
-        $self->_subtract(second => $new_tokens[0]);
+    if ($tokens[1] =~ $self->{data}->__ago('second')) {
+        $self->_subtract(second => $tokens[0]);
         $self->_set_modified(3);
     } 
     # minutes ago
-    elsif ($new_tokens[1] =~ $self->{data}->__ago('minute')) {
-        $self->_subtract(minute => $new_tokens[0]);
+    elsif ($tokens[1] =~ $self->{data}->__ago('minute')) {
+        $self->_subtract(minute => $tokens[0]);
         $self->_set_modified(3);
     } 
     # hours ago
-    elsif ($new_tokens[1] =~ $self->{data}->__ago('hour')) {
-        $self->_subtract(hour => $new_tokens[0]);
+    elsif ($tokens[1] =~ $self->{data}->__ago('hour')) {
+        $self->_subtract(hour => $tokens[0]);
         $self->_set_modified(3);
     } 
     # days ago
-    elsif ($new_tokens[1] =~ $self->{data}->__ago('day')) {
-        $self->_subtract(day => $new_tokens[0]);
+    elsif ($tokens[1] =~ $self->{data}->__ago('day')) {
+        $self->_subtract(day => $tokens[0]);
         $self->_set_modified(3);
     } 
     # weeks ago
-    elsif ($new_tokens[1] =~ $self->{data}->__ago('week')) {
-        $self->_subtract(day => (7 * $new_tokens[0]));
+    elsif ($tokens[1] =~ $self->{data}->__ago('week')) {
+        $self->_subtract(day => (7 * $tokens[0]));
         $self->_set_modified(3);
     } 
     # months ago
-    elsif ($new_tokens[1] =~ $self->{data}->__ago('month')) {
-        $self->_subtract(month => $new_tokens[0]);
+    elsif ($tokens[1] =~ $self->{data}->__ago('month')) {
+        $self->_subtract(month => $tokens[0]);
         $self->_set_modified(3);
     } 
     # years ago
-    elsif ($new_tokens[1] =~ $self->{data}->__ago('year')) {
-        $self->_subtract(year => $new_tokens[0]);
+    elsif ($tokens[1] =~ $self->{data}->__ago('year')) {
+        $self->_subtract(year => $tokens[0]);
         $self->_set_modified(3);
     }
 }
@@ -65,57 +66,58 @@ sub _now {
 
     $self->_add_trace;
 
-    my @new_tokens = splice(@{$self->{tokens}}, $self->{index}, 4);
+    my @tokens = $self->_tokens([0,1,2,3]);
+    $self->_mark_list([0,1,2,3]);
 
     # days
-    if ($new_tokens[1] =~ $self->{data}->__now('day')) {
+    if ($tokens[1] =~ $self->{data}->__now('day')) {
         # days before now
-        if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-            $self->_subtract(day => $new_tokens[0]);
+        if ($tokens[2] =~ $self->{data}->__now('before')) {
+            $self->_subtract(day => $tokens[0]);
             $self->_set_modified(4);
         } 
         # days from now
-	elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-            $self->_add(day => $new_tokens[0]);
+	elsif ($tokens[2] =~ $self->{data}->__now('from')) {
+            $self->_add(day => $tokens[0]);
             $self->_set_modified(4);
         }
     } 
     # weeks
-    elsif ($new_tokens[1] =~ $self->{data}->__now('week')) {
+    elsif ($tokens[1] =~ $self->{data}->__now('week')) {
         # weeks before now
-        if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-            $self->_subtract(day => (7 * $new_tokens[0]));
+        if ($tokens[2] =~ $self->{data}->__now('before')) {
+            $self->_subtract(day => (7 * $tokens[0]));
             $self->_set_modified(4);
         } 
         # weeks from now
-	elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-            $self->_add(day => (7 * $new_tokens[0]));
+	elsif ($tokens[2] =~ $self->{data}->__now('from')) {
+            $self->_add(day => (7 * $tokens[0]));
             $self->_set_modified(4);
         }
      } 
      # months
-     elsif ($new_tokens[1] =~ $self->{data}->__now('month')) {
+     elsif ($tokens[1] =~ $self->{data}->__now('month')) {
          # months before now
-         if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-             $self->_subtract(month => $new_tokens[0]);
+         if ($tokens[2] =~ $self->{data}->__now('before')) {
+             $self->_subtract(month => $tokens[0]);
              $self->_set_modified(4);
          } 
          # months from now
-	 elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-             $self->_add(month => $new_tokens[0]);
+	 elsif ($tokens[2] =~ $self->{data}->__now('from')) {
+             $self->_add(month => $tokens[0]);
              $self->_set_modified(4);
          }
      } 
      # years
-     elsif ($new_tokens[1] =~ $self->{data}->__now('year')) {
+     elsif ($tokens[1] =~ $self->{data}->__now('year')) {
          # years before now
-         if ($new_tokens[2] =~ $self->{data}->__now('before')) {
-             $self->_subtract(year => $new_tokens[0]);
+         if ($tokens[2] =~ $self->{data}->__now('before')) {
+             $self->_subtract(year => $tokens[0]);
              $self->_set_modified(4);
          } 
          # years from now
-	 elsif ($new_tokens[2] =~ $self->{data}->__now('from')) {
-             $self->_add(year => $new_tokens[0]);
+	 elsif ($tokens[2] =~ $self->{data}->__now('from')) {
+             $self->_add(year => $tokens[0]);
              $self->_set_modified(4);
          }
      }
@@ -137,12 +139,14 @@ sub _daytime {
         if (all { ${$self->_token($_->[0])} =~ $tokens[$_->[1]] } @{[[-3,0],[-2,1],[-1,2]]}) {
             $hour_token = ${$self->_token(-3)};
             $self->_set_modified(3);
+	    $self->_mark_list([-3,-2,-1]);
         }
     } 
     # [0-9] am
     elsif (all { ${$self->_token($_->[0])} =~ $tokens[$_->[1]] } @{[[-2,0],[-1,1]]}) {
         $hour_token = ${$self->_token(-2)};
         $self->_set_modified(2);
+	$self->_mark_list([-2,-1]);
     }
 
     # morning
@@ -157,6 +161,7 @@ sub _daytime {
             $self->_set(hour => $hour);
             $self->{hours_before} = 0;
             $self->_set_modified(1);
+	    $self->_mark_single(0);
         }
     } 
     # afternoon
@@ -171,6 +176,7 @@ sub _daytime {
             $self->_set(hour => $hour);
             $self->{hours_before} = 0;
             $self->_set_modified(1);
+	    $self->_mark_single(0);
         }
     } 
     # evening
@@ -185,6 +191,7 @@ sub _daytime {
             $self->_set(hour => $hour);
             $self->{hours_before} = 0;
             $self->_set_modified(1);
+	    $self->_mark_single(0);
         }
     }
 
@@ -215,7 +222,8 @@ sub _months {
                         $self->_set_modified(1);
                     }
 
-                    splice(@{$self->{tokens}}, $self->{index}+$i+1, 1);
+                    #splice(@{$self->{tokens}}, $self->{index}+$i+1, 1);
+		    $self->_mark_single($i+1);
                 } 
                 # Set day for: [0-9] month & remove day from tokens
 		elsif (($day) = ${$self->_token($i-1)} =~ $self->{data}->__months('number')) {
@@ -224,7 +232,8 @@ sub _months {
                         $self->_set_modified(1);
                     }
 
-                    splice(@{$self->{tokens}}, $self->{index}+$i-1, 1);
+                    #splice(@{$self->{tokens}}, $self->{index}+$i-1, 1);
+		    $self->_mark_single($i-1);
                 }
             }
         }
@@ -256,16 +265,19 @@ sub _number {
     # hours
     elsif (${$self->_token(1)} =~ $self->{data}->__number('hour')) {
         $self->_set_modified(1);
+	$self->_mark_single(0);
 
         # [0-9] hours before ...
         if (${$self->_token(2)} =~ $self->{data}->__number('before')) {
             $self->{hours_before} = $often;
             $self->_set_modified(1);
+	    $self->_mark_list([1,2]);
         } 
         # [0-9] hours after ...
 	elsif (${$self->_token(2)} =~ $self->{data}->__number('after')) {
             $self->{hours_after} = $often;
             $self->_set_modified(1);
+	    $self->_mark_list([1,2]);
         }
     } 
     # [0-9] day ...
@@ -273,6 +285,7 @@ sub _number {
         if ($self->_valid_date(day => $often)) {
             $self->_set(day => $often);
             $self->_set_modified(1);
+	    $self->_mark_list([0,1]);
         }
     }
 }
@@ -289,6 +302,7 @@ sub _at {
     # Capture am/pm & set timeframe
     if (!$timeframe && ${$self->_token(1)} && ${$self->_token(1)} =~ /^[ap]m$/i) {
         $timeframe = ${$self->_token(1)};
+	$self->_mark_single(1);
     }
 
     # german um (engl. at)
@@ -326,6 +340,8 @@ sub _at {
                 }
             }
         }
+
+	$self->_mark_single(0);
     } 
     # Either noon or midnight
     elsif ($noon_midnight) {
@@ -340,11 +356,13 @@ sub _at {
             if ($self->{hours_before}) {
                 $self->_subtract(hour => $self->{hours_before});
                 $self->_set_modified(1);
+		$self->_mark_list([0,1,2,3]);
             } 
             # [0-9] hours after noon
 	    elsif ($self->{hours_after}) {
                 $self->_add(hour => $self->{hours_after});
                 $self->_set_modified(1);
+		$self->_mark_list([0,1,2,3]);
             }
 
             $self->_set_modified(1);
@@ -358,10 +376,12 @@ sub _at {
             # [0-9] hours before midnight ...
             if ($self->{hours_before}) {
                 $self->_subtract(hour => $self->{hours_before});
+		$self->_mark_list([0,1,2,3]);
             } 
             # [0-9] hours after midnight ...
 	    elsif ($self->{hours_after}) {
                 $self->_add(hour => $self->{hours_after});
+		$self->_mark_list([0,1,2,3]);
             }
 
             $self->_set_modified(1);
@@ -413,6 +433,7 @@ sub _this_in {
     if (${$self->_token(1)} =~ $self->{data}->__this_in('hour')) {
         $self->_add(hour => ${$self->_token(0)});
         $self->_set_modified(2);
+	$self->_mark_list([-1,0,1]);
 
         return;
     }
@@ -428,6 +449,7 @@ sub _this_in {
             $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(1);
+	    $self->_mark_single(0);
 
             last;
         }
@@ -440,6 +462,7 @@ sub _this_in {
             $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(1);
+	    $self->_mark_list([-2,-1,0]);
 
             last;
         }
@@ -463,7 +486,8 @@ sub _this_in {
                             $self->_set_modified(2);
                         }
 
-                        splice(@{$self->{tokens}}, $self->{index}-3, 4);
+                        #splice(@{$self->{tokens}}, $self->{index}-3, 4);
+			$self->_mark_list([-3,-2,-1,0]);
                     }
                 }
             }
@@ -487,6 +511,7 @@ sub _next {
             $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(1);
+	    $self->_mark_single(0);
 
             last;
         }
@@ -499,6 +524,7 @@ sub _next {
             $self->_add(day => $days_diff);
             $self->{buffer} = '';
             $self->_set_modified(2);
+	    $self->_mark_list([-2,-1,0]);
 
             last;
         }
@@ -516,6 +542,7 @@ sub _next {
                     $self->_set(day => $day);
                     $self->_set_modified(2);
                 }
+		$self->_mark_list([-3,-2,-1,0]);
             }
 
             $self->_setmonthday;
@@ -535,6 +562,7 @@ sub _next {
             $self->_setyearday;
             $self->{buffer} = '';
             $self->_set_modified(2);
+	    $self->_mark_list([-1,0]);
 
             last;
         }
@@ -552,6 +580,7 @@ sub _next {
                     $self->_set(month => $month);
                     $self->_set_modified(2);
                 }
+		$self->_mark_list([-3,-2,-1,0]);
             }
 
             $self->_setyearday;
@@ -592,10 +621,12 @@ sub _last {
         # last week weekday
         if (exists $self->{data}->{weekdays}->{ucfirst lc ${$self->_token(1)}}) {
             $self->_setweekday($self->{index}+1);
+	    $self->_mark_list([-1,0,1]);
         } 
         # weekday last week
 	elsif (exists $self->{data}->{weekdays}->{ucfirst lc ${$self->_token(-2)}}) {
             $self->_setweekday($self->{index}-2);
+	    $self->_mark_list([-1,0,1]);
         } 
         # [0-9] day last week
 	elsif (${$self->_token(-2)} =~ $self->{data}->__last('day')) {
@@ -609,6 +640,7 @@ sub _last {
             $self->_add(day => $day);
             $self->{buffer} = '';
             $self->_set_modified(2);
+	    $self->_mark_list([-2,-1,0,1]);
         }
     }
 
@@ -622,6 +654,7 @@ sub _last {
         $self->_setyearday;
         $self->{buffer} = '';
         $self->_set_modified(2);
+	$self->_mark_list([-1,0]);
     }
 
     # ... month
@@ -638,6 +671,7 @@ sub _last {
                 $self->_set(day => $day);
                 $self->_set_modified(2);
             }
+	    $self->_mark_list([-2,-1,0,1]);
         }
 
         $self->{buffer} = '';

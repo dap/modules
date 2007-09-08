@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.39 Sun Sep  9 00:41:30 CEST 2007
+
+ - Improved handling of dates when no format-string was provided
+   or was unsuitable. [rt #29227 - Shawn M. Moore <sartak@gmail.com>]
+
+ - Implemented mechanisms to mark tokens when processed and added
+   an according getter method for multiple tokens.
+
 0.38_01 Tue Sep  4 18:10:48 CEST 2007
 
  - Undone use'ing constant with a hashref provided (breaks on

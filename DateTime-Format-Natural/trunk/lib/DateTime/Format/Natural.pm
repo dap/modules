@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.38_01';
+our $VERSION = '0.39';
 
 sub new {
     my $class = shift;
@@ -82,29 +82,53 @@ sub parse_datetime {
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
         $self->{count}{tokens} = 1;
 
-        my $separator =  $self->{Format};
-        $separator    =~ tr/a-zA-Z//d;
-        $separator    =~ tr/a-zA-Z//cs;
-        $separator    =  quotemeta $separator;
+        my $separator = quotemeta((keys %count)[0]);
+	my @chunks = split /$separator/, $date_string;
 
-        my @separated_order = split $separator, $self->{Format};
+        my $i = 0;
+	my %length = map { length $_ => $i++ } @chunks;
+
+	my $format = $self->{Format};
+          
+	if (exists $length{4}) {
+            $format = join $separator, ($length{4} == 0 ? qw(yyyy mm dd) : qw(dd mm yyyy)); 	    
+        } 
+	else {
+            $separator = do { $_ = $format;
+                              tr/a-zA-Z//d;
+                              tr/a-zA-Z//cs;
+                              quotemeta; };
+	}
+
+        my @separated_order = split /$separator/, $format;
         my $separated_index = 0;
 
         my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
 
         my @bits = split $separator, $date_string;
 
-        my @time    = localtime;
-        my $century = substr($time[5] + 1900, 0, 2);
+        my $century = substr((localtime)[5] + 1900, 0, 2);
 
-        if ($bits[$separated_indices->{y}] > $century) { $century-- }
+	my ($day, $month, $year) = map { $bits[$separated_indices->{$_}] } qw(d m y);
 
-        my $year = $bits[$separated_indices->{y}];
-           $year = "$century$year" if length $year == 2;
+	if (not defined $day && defined $month && defined $year) {
+	   $self->_set_error("('format' parameter invalid)");
+	   return $self->_get_datetime_object;
+	}
 
-        $self->{datetime}->set_year ($year);
-        $self->{datetime}->set_month($bits[$separated_indices->{m}]);
-        $self->{datetime}->set_day  ($bits[$separated_indices->{d}]);
+        if ($year > $century) { $century-- };
+	if (length $year == 2) { $year = "$century$year" };
+
+	if (not $self->SUPER::_valid_date(day => $day)
+	     && $self->SUPER::_valid_date(month => $month)
+	     && $self->SUPER::_valid_date(year => $year)) {
+	    $self->_set_error("(invalid date)");
+	    return $self->_get_datetime_object;
+	}
+
+        $self->{datetime}->set_year($year);
+        $self->{datetime}->set_month($month);
+        $self->{datetime}->set_day($day);
 
         $self->_set_modified(1);
     } 
@@ -195,12 +219,21 @@ sub trace {
 sub _process {
     my $self = shift;
 
-    for ($self->{index} = 0;
-         $self->{index} < @{$self->{tokens}};
-         $self->{index}++) {
+    $self->{index} = 0;
+    
+    $self->_debug_head;
 
-        $self->_debug_head;
+    my $have_tokens = sub {
+        if ($self->{index} == ($self->{count}{tokens} - 1)) {
+	    return 0;
+	}
+	else {
+	    $self->{index}++;
+	    return 1;
+	}
+    };
 
+    do {
         $self->_dispatch(qw(_process_numify
                             _process_second
                             _process_ago
@@ -216,7 +249,7 @@ sub _process {
                             _process_last
                             _process_day
                             _process_monthdays_limit));
-    }
+    } while ($have_tokens->());
     
     $self->_post_process_options; 
 }
@@ -423,11 +456,39 @@ sub _token {
       : \$str;
 }
 
+sub _tokens {
+    my ($self, $list) = @_;
+
+    my @tokens;
+    foreach my $pos (@$list) {
+        my $token = ${$self->_token($pos)};
+	push @tokens, $token;
+    }
+
+    return @tokens;
+}
+
+sub _mark_single {
+    my ($self, $pos) = @_;
+
+    $self->{marked}{${$self->_token($pos)}} = 1;
+}
+
+sub _mark_list {
+    my ($self, $positions) = @_;
+
+    foreach my $pos (@$positions) {
+        $self->{marked}{${$self->_token($pos)}} = 1;
+    }
+}        
+
 sub _dispatch {
     my ($self, @methods) = @_;
 
+    return if +(values %{$self->{marked}}) == $self->{count}{tokens};
+
     foreach my $method (@methods) {
-        $self->$method if @{$self->{tokens}};
+        $self->$method unless $self->{marked}{${$self->_token(0)}};
     }
 }
 
