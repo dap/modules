@@ -1,0 +1,139 @@
+NAME
+    DateTime::Format::Natural - Create machine readable date/time with
+    natural parsing logic
+
+SYNOPSIS
+     use DateTime::Format::Natural;
+
+     $parser = DateTime::Format::Natural->new;
+
+     $dt = $parser->parse_datetime($date_string);
+     @dt = $parser->parse_datetime_duration($date_string);
+
+     if ($parser->success) {
+         # operate on $dt/@dt, for example:
+         printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day,
+                                                  $dt->month,
+                                                  $dt->year,
+                                                  $dt->hour,
+                                                  $dt->min,
+                                                  $dt->sec);
+     } else {
+         warn $parser->error;
+     }
+
+DESCRIPTION
+    "DateTime::Format::Natural" takes a string with a human readable
+    date/time and creates a machine readable one by applying natural parsing
+    logic.
+
+METHODS
+  new
+    Creates a new "DateTime::Format::Natural" object. Arguments to "new()"
+    are options and not necessarily required.
+
+     $parser = DateTime::Format::Natural->new(
+               lang          => '[en|de]',
+               format        => 'mm/dd/yy',
+               prefer_future => '[0|1]'
+               daytime       => { morning   => 06,
+                                  afternoon => 13,
+                                  evening   => 20,
+                                },
+     );
+
+    * "lang"
+        Contains the language selected, currently limited to "en" (english)
+        & "de" (german). Defaults to '"en"'.
+
+    * "format"
+        Specifies the format of numeric dates, defaults to '"d/m/y"'.
+
+    * "prefer_future (experimental)"
+        Turns ambigious weekdays/months to their futuristic relatives.
+        Accepts a boolean, defaults to 0.
+
+    * "daytime"
+        A hash consisting of specific hours given for peculiar daytimes.
+        Daytimes may be selectively changed.
+
+  parse_datetime
+    Creates a "DateTime" object from a human readable date/time string.
+
+     $dt = $parser->parse_datetime($date_string);
+
+     $dt = $parser->parse_datetime(
+           string => $date_string,
+           debug  => 1,
+     );
+
+    * "string"
+        The date string.
+
+    * "debug"
+        Boolean value indicating debugging mode.
+
+        If debugging is enabled, each token that is analysed will be output
+        to STDOUT with a trailing newline appended.
+
+    Returns a DateTime object.
+
+  parse_datetime_duration
+    Creates one or more "DateTime" object(s) from a human readable date/time
+    string which may contain timespans/durations. 'Same' interface & options
+    as "parse_datetime()", but must be explicitly called in list context.
+
+     @dt = $parser->parse_datetime_duration($date_string);
+
+     @dt = $parser->parse_datetime_duration(
+           string => $date_string,
+           debug  => 1,
+     );
+
+  success
+    Returns a boolean indicating success or failure for parsing the
+    date/time string given.
+
+  error
+    Returns the error message if the parsing didn't succeed.
+
+  trace
+    Returns a trace of methods which we're called within the Base class and
+    a summary how often certain units were modified.
+
+EXAMPLES
+    See the modules "DateTime::Format::Natural::Lang::*" for a overview of
+    valid input.
+
+CREDITS
+    Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's
+    journal entry <http://use.perl.org/~miyagawa/journal/31378> for more
+    information.
+
+    Furthermore, thanks to (in order of appearance) who have contributed
+    valuable suggestions & patches:
+
+     Clayton L. Scott
+     Dave Rolsky
+     CPAN Author 'SEKIMURA'
+     mike (pulsation)
+     Mark Stosberg
+     Tuomas Jormola
+     Cory Watson
+     Urs Stotz
+     Shawn M. Moore
+     Andreas J. König
+     Chia-liang Kao
+
+SEE ALSO
+    DateTime, Date::Calc, <http://datetime.perl.org>
+
+AUTHOR
+    Steven Schubiger <schubiger@cpan.org>
+
+LICENSE
+    This program is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See <http://www.perl.com/perl/misc/Artistic.html>
+
