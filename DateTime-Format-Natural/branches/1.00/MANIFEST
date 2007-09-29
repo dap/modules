@@ -1,6 +1,5 @@
 Build.PL
 Changes
-diff
 INSTALL
 lib/DateTime/Format/Natural.pm
 lib/DateTime/Format/Natural/Base.pm

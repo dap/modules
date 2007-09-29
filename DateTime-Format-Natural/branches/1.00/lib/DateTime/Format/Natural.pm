@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.50';
+our $VERSION = '0.51';
 
 sub new 
 {

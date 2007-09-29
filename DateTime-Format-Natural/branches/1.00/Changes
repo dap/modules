@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.51 Thu Sep 27 17:12:49 CEST 2007
+
+ - Removed no longer necessary 'use_ok()' test for the german language 
+   metadata. [rt #29651 - Andreas J. König <andreas.koenig@anima.de>]
+
 0.50 Thu Sep 27 00:39:08 CEST 2007
 
  - Major redo of flexible language metadata handling.
