@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.40 Sun Sep 23 17:34:48 CEST 2007
+
+ - Empty the marked tokens list on each instance of parse_datetime()/
+   parse_datetime_duration().
+
 0.39 Sun Sep  9 00:41:30 CEST 2007
 
  - Improved handling of dates when no format-string was provided

@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any none);
 
-our $VERSION = '0.39';
+our $VERSION = '0.40';
 
 sub new {
     my $class = shift;
@@ -62,6 +62,7 @@ sub _init_check {
 sub _init_vars {
     my $self = shift;
 
+    delete $self->{marked};
     delete $self->{modified};
     delete $self->{postprocess};
 
