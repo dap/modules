@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.52 Sat Sep 29 17:02:40 CEST 2007
+
+ - Removed all mentions of german language support within the 
+   documentation and the code.
+
+ - Extended documentation to explain the grammar a bit.
+
 0.51 Thu Sep 27 17:12:49 CEST 2007
 
  - Removed no longer necessary 'use_ok()' test for the german language 

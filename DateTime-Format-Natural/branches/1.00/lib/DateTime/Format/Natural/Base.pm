@@ -569,6 +569,13 @@ sub _in_count_hours
     $self->_set_modified(3);
 }
 
+sub _this_second
+{
+    my $self = shift;
+    $self->_add_trace;
+    $self->_set_modified(2);
+}
+
 sub _this_weekday
 {
     my $self = shift;

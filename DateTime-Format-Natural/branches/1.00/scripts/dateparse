@@ -12,13 +12,14 @@ my $debug               = 0;
 my $format;
 my $lang                = LANG_DEFAULT;
 my $prefer_future       = 0;
-my @supported_languages = qw(de en);
+my @supported_languages = qw(en);
 my $trace               = 0;
 my %valid_languages     = map { $_ => 1 } @supported_languages;
 
 parse_switches() if @ARGV;
 
-sub parse_switches {
+sub parse_switches 
+{
     use Getopt::Long qw(:config no_auto_abbrev no_ignore_case);
 
     my %opts;
@@ -42,7 +43,8 @@ sub parse_switches {
     $trace           = $opts{t};
 }
 
-sub usage {
+sub usage 
+{
     print <<USAGE;
 Usage: $0 [switches]
   -d, --debug            debugging mode (experimental)
@@ -57,12 +59,14 @@ USAGE
     exit;
 }
 
-sub version {
+sub version 
+{
     print "  DateTime::Format::Natural $DateTime::Format::Natural::VERSION\n";
     exit;
 }
 
-sub supported {
+sub supported 
+{
     print "$_\n" foreach @supported_languages;
     exit;
 }

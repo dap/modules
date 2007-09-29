@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.51';
+our $VERSION = '0.52';
 
 sub new 
 {
@@ -43,7 +43,7 @@ sub _init_check
     my $self = shift;
 
     my %re = (format        => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
-              lang          => qr!^(?:en|de)$!,
+              lang          => qr!^(?:en)$!,
               prefer_future => qr!^(?:0|1)$!);
 
     my %msg = (format        => 'format string has no valid format',
@@ -439,7 +439,7 @@ Creates a new C<DateTime::Format::Natural> object. Arguments to C<new()> are opt
 not necessarily required.
 
  $parser = DateTime::Format::Natural->new(
-           lang          => '[en|de]',
+           lang          => 'en',
            format        => 'mm/dd/yy',
            prefer_future => '[0|1]'
            daytime       => { morning   => 06,
@@ -526,9 +526,18 @@ Returns the error message if the parsing didn't succeed.
 Returns a trace of methods which we're called within the Base class and
 a summary how often certain units were modified.
 
+=head1 GRAMMAR
+
+The grammar handling has been rewritten to be easily extendable and hence 
+everybody is encouraged to propose sensible new additions and/or changes.
+
+See the classes C<DateTime::Format::Natural::Lang::[language_code]> if
+you're intending to hack a bit on the grammar guts.
+
 =head1 EXAMPLES
 
-See the modules C<DateTime::Format::Natural::Lang::*> for a overview of valid input.
+See the classes C<DateTime::Format::Natural::Lang::[language_code]> for a 
+overview of current valid input.
 
 =head1 CREDITS
 

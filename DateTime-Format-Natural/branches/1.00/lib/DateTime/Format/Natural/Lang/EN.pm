@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 our (%init, 
      %timespan,
@@ -267,6 +267,14 @@ our (%init,
          [ '_next_year' ],
        ],
     ],
+    this_second => [
+       [ 'SCALAR', 'SCALAR' ],
+       [
+         { 0 => 'this', 1 => 'second' },
+	 [ [] ],
+	 [ '_this_second' ],
+       ],
+    ],
     this_weekday => [
        [ 'SCALAR', 'REGEXP' ],
        [
@@ -456,17 +464,17 @@ our (%init,
        [ 
          { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/seconds?/i, 3 => 'ago' }, 
          [ [], [ 1 ] ], 
-         [ '_day_yesterday', '_ago_seconds', '_day_yesterday' ],
+         [ '_day_yesterday', '_ago_seconds' ],
        ],
        [ 
          { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/minutes?/i, 3 => 'ago' }, 
          [ [], [ 1 ] ], 
-         [ '_day_yesterday', '_ago_minutes', '_day_yesterday' ],
+         [ '_day_yesterday', '_ago_minutes' ],
        ],
        [ 
          { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/hours?/i, 3 => 'ago' }, 
          [ [], [ 1 ] ],           
-         [ '_day_yesterday', '_ago_hours', '_day_yesterday' ],
+         [ '_day_yesterday', '_ago_hours' ],
        ],
        [ 
          { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/days?/i, 3 => 'ago' }, 

@@ -33,7 +33,7 @@ METHODS
     are options and not necessarily required.
 
      $parser = DateTime::Format::Natural->new(
-               lang          => '[en|de]',
+               lang          => 'en',
                format        => 'mm/dd/yy',
                prefer_future => '[0|1]'
                daytime       => { morning   => 06,
@@ -101,9 +101,17 @@ METHODS
     Returns a trace of methods which we're called within the Base class and
     a summary how often certain units were modified.
 
+GRAMMAR
+    The grammar handling has been rewritten to be easily extendable and
+    hence everybody is encouraged to propose sensible new additions and/or
+    changes.
+
+    See the classes "DateTime::Format::Natural::Lang::[language_code]" if
+    you're intending to hack a bit on the grammar guts.
+
 EXAMPLES
-    See the modules "DateTime::Format::Natural::Lang::*" for a overview of
-    valid input.
+    See the classes "DateTime::Format::Natural::Lang::[language_code]" for a
+    overview of current valid input.
 
 CREDITS
     Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's
