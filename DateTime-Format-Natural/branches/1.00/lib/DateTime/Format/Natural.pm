@@ -5,11 +5,12 @@ use warnings;
 use base qw(DateTime::Format::Natural::Base);
 
 use Carp ();
-use List::MoreUtils qw(all any none);
+use List::MoreUtils qw(all any);
 
-our $VERSION = '0.40';
+our $VERSION = '0.50';
 
-sub new {
+sub new 
+{
     my $class = shift;
 
     my $self = bless {}, ref($class) || $class;
@@ -18,7 +19,8 @@ sub new {
     return $self;
 }
 
-sub _init {
+sub _init 
+{
     my ($self, %opts) = @_;
 
     $self->{Format}        = $opts{format}        || 'd/m/y';
@@ -36,7 +38,8 @@ sub _init {
     return $self;
 }
 
-sub _init_check {
+sub _init_check 
+{
     my $self = shift;
 
     my %re = (format        => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
@@ -59,17 +62,16 @@ sub _init_check {
     Carp::croak "new(): $error\n" if defined $error;
 }
 
-sub _init_vars {
+sub _init_vars 
+{
     my $self = shift;
 
-    delete $self->{marked};
     delete $self->{modified};
     delete $self->{postprocess};
-
-    $self->{buffer} = '';
 }
 
-sub parse_datetime {
+sub parse_datetime 
+{
     my $self = shift;
 
     $self->_parse_init(@_);
@@ -145,7 +147,8 @@ sub parse_datetime {
     return $self->_get_datetime_object;
 }
 
-sub _parse_init {
+sub _parse_init 
+{
     my $self = shift;
 
     if (@_ > 1) {
@@ -169,7 +172,8 @@ sub _parse_init {
     $self->_unset_modified;
 }
 
-sub parse_datetime_duration {
+sub parse_datetime_duration 
+{
     my $self = shift;
 
     $self->_parse_init(@_);
@@ -188,14 +192,15 @@ sub parse_datetime_duration {
     return @stack;
 }
 
-sub success {
+sub success 
+{
     my $self = shift;
 
-    return ($self->_get_modified >= $self->{count}{tokens})
-        && !$self->_get_failure ? 1 : 0;
+    return $self->{valid_expression} && !$self->_get_failure ? 1 : 0;
 }
 
-sub error {
+sub error 
+{
     my $self = shift;
 
     return '' if $self->success;
@@ -206,7 +211,8 @@ sub error {
     return $error;
 }
 
-sub trace {
+sub trace 
+{
     my $self = shift;
 
     my @modified;
@@ -217,211 +223,83 @@ sub trace {
     return join "\n", @{$self->{trace}}, @modified;
 }
 
-sub _process {
+sub _process 
+{
     my $self = shift;
 
     $self->{index} = 0;
-    
     $self->_debug_head;
 
-    my $have_tokens = sub {
-        if ($self->{index} == ($self->{count}{tokens} - 1)) {
-	    return 0;
-	}
-	else {
-	    $self->{index}++;
-	    return 1;
-	}
-    };
+    $self->{valid_expression} = 0;
 
-    do {
-        $self->_dispatch(qw(_process_numify
-                            _process_second
-                            _process_ago
-                            _process_now
-                            _process_daytime
-                            _process_year
-                            _process_months
-                            _process_at
-                            _process_number
-                            _process_weekday
-                            _process_this_in
-                            _process_next
-                            _process_last
-                            _process_day
-                            _process_monthdays_limit));
-    } while ($have_tokens->());
+    foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
+        my @grammar = @{$self->{data}->__grammar($keyword)};
+        my $types = shift @grammar;
+
+        next if @{$self->{tokens}} > @$types;
+        last if $self->_get_modified >= @{$self->{tokens}};
+
+        foreach my $expression (@grammar) {
+            my $valid_expression = 1;
+            my $definition = $expression->[0];
+            my @positions = keys %$definition;
+            my %regex_stack;
+	    foreach my $pos (@positions) {
+	        if ($types->[$pos] eq 'SCALAR') {
+	            if (defined $definition->{$pos}) {
+                        if (${$self->_token($pos)} =~ /^$definition->{$pos}$/i) {
+		            next;
+		        }
+		        else {
+		            $valid_expression = 0;
+		        }
+		    }
+	        }
+	        elsif ($types->[$pos] eq 'REGEXP') {
+	            if (my (@matches) = ${$self->_token($pos)} =~ $definition->{$pos}) {
+                        foreach my $match (@matches) {
+                            $regex_stack{$pos} = $match if defined $match;
+                        }
+		        next;
+		    }
+		    else {
+		        $valid_expression = 0;
+		    }
+	        }
+	        else {
+	            die "grammar error";
+	        }
+	    }
+	    if ($valid_expression) {
+                $self->{valid_expression} = 1;
+	        my $i;
+                foreach my $positions (@{$expression->[1]}) {
+                    my @values;
+                    foreach my $pos (@$positions) {
+                        $values[$pos] = exists $regex_stack{$pos}
+		          ? $regex_stack{$pos}
+		          : ${$self->_token($pos)};
+                    }                
+                    @values = map { defined $_ ? $_ : () } @values;
+                    my $meth = $expression->[-1]->[$i++];
+                    $self->$meth(@values);
+                }            
+	    }
+        }
+    }
     
     $self->_post_process_options; 
 }
 
-sub _debug_head {
+sub _debug_head 
+{
     my $self = shift;
 
     print ${$self->_token(0)}, "\n" if $self->{Debug};
 }
 
-sub _process_numify {
-    my $self = shift;
-
-    ${$self->_token(0)} =~ s/^(\d{1,2})(?:st|nd|rd|th)$/$1/i;
-}
-
-sub _process_second {
-    my $self = shift;
-
-    if (${$self->_token(0)} =~ $self->{data}->__main('second')) {
-        $self->_set_modified(1);
-    }
-}
-
-sub _process_ago {
-    my $self = shift;
-
-    if (${$self->_token(2)} =~ $self->{data}->__main('ago')) {
-        $self->SUPER::_ago;
-    }
-}
-
-sub _process_now {
-    my $self = shift;
-
-    if (${$self->_token(3)} =~ $self->{data}->__main('now')) {
-        $self->SUPER::_now;
-    }
-}
-
-sub _process_daytime {
-    my $self = shift;
-
-    foreach my $daytime (@{$self->{data}->__main('daytime')}) {
-        if (${$self->_token(0)} =~ $daytime) {
-            $self->SUPER::_daytime;
-        }
-    }
-}
-
-sub _process_year {
-    my $self = shift;
-
-    foreach my $token (@{$self->{tokens}}) {
-        if (my ($year) = $token =~ /^(\d{4})$/) {
-            $self->_set(year => $year);
-            $self->_set_modified(1);
-        }
-    }
-}
-
-sub _process_months {
-    my $self = shift;
-
-    foreach my $match (@{$self->{data}->__main('months')}) {
-        if (any { /^$match$/i } @{$self->{tokens}}) {
-            return;
-        }
-    }
-
-    $self->SUPER::_months;
-}
-
-sub _process_at {
-    my $self = shift;
-
-    if (${$self->_token(0)} =~ /^at$/i) {
-        return;
-    } 
-    elsif (${$self->_token(0)} =~ $self->{data}->__main('at_intro')) {
-        my @matches = ($1, $2, $3, $4);
-
-        foreach my $match (@{$self->{data}->__main('at_matches')}) {
-            if (any { /^$match$/i } @{$self->{tokens}}) {
-                return;
-            }
-        }
-
-        $self->SUPER::_at(@matches);
-    }
-}
-
-sub _process_number {
-    my $self = shift;
-
-    if (${$self->_token(0)} =~ $self->{data}->__main('number_intro')) {
-        my $match = $1;
-
-        foreach my $match (@{$self->{data}->__main('number_matches')}) {
-            if (any { /^$match$/i } @{$self->{tokens}}) {
-                return;
-            }
-        }
-
-        foreach my $weekday (keys %{$self->{data}->{weekdays}}) {
-            if (${$self->_token(1)} =~ /^$weekday$/i) {
-                return;
-            }
-        }
-
-        $self->SUPER::_number($match);
-    }
-}
-
-sub _process_weekday {
-    my $self = shift;
-
-    if (none { /$self->{data}->__main('weekdays')/ } @{$self->{tokens}}) {
-        $self->SUPER::_weekday;
-    }
-}
-
-sub _process_this_in {
-    my $self = shift;
-
-    if (${$self->_token(0)} =~ $self->{data}->__main('this_in')) {
-        $self->{buffer} = 'this_in';
-        return;
-    } 
-    elsif ($self->{buffer} eq 'this_in') {
-        $self->SUPER::_this_in;
-    }
-}
-
-sub _process_next {
-    my $self = shift;
-
-    if (${$self->_token(0)} =~ $self->{data}->__main('next')) {
-        $self->{buffer} = 'next';
-        return;
-    } 
-    elsif ($self->{buffer} eq 'next') {
-        $self->SUPER::_next;
-    }
-}
-
-sub _process_last {
-    my $self = shift;
-
-    if (${$self->_token(0)} =~ $self->{data}->__main('last')) {
-        $self->{buffer} = 'last';
-        return;
-    } 
-    elsif ($self->{buffer} eq 'last') {
-        $self->SUPER::_last;
-    }
-}
-
-sub _process_day {
-    my $self = shift;
-
-    $self->SUPER::_day;
-}
-
-sub _process_monthdays_limit {
-    my $self = shift;
-
-    $self->SUPER::_monthdays_limit;
-}
-
-sub _post_process_options {
+sub _post_process_options 
+{
     my $self = shift;
 
     if ($self->{Prefer_future}) {
@@ -447,50 +325,16 @@ sub _post_process_options {
     }
 }
 
-sub _token {
+sub _token 
+{
     my ($self, $pos) = @_;
 
     my $str = '';
+    my $token = $self->{tokens}->[$self->{index} + $pos];
 
-    return defined $self->{tokens}->[$self->{index} + $pos]
-      ? \$self->{tokens}->[$self->{index} + $pos]
+    return defined $token
+      ? \$token
       : \$str;
-}
-
-sub _tokens {
-    my ($self, $list) = @_;
-
-    my @tokens;
-    foreach my $pos (@$list) {
-        my $token = ${$self->_token($pos)};
-	push @tokens, $token;
-    }
-
-    return @tokens;
-}
-
-sub _mark_single {
-    my ($self, $pos) = @_;
-
-    $self->{marked}{${$self->_token($pos)}} = 1;
-}
-
-sub _mark_list {
-    my ($self, $positions) = @_;
-
-    foreach my $pos (@$positions) {
-        $self->{marked}{${$self->_token($pos)}} = 1;
-    }
-}        
-
-sub _dispatch {
-    my ($self, @methods) = @_;
-
-    return if +(values %{$self->{marked}}) == $self->{count}{tokens};
-
-    foreach my $method (@methods) {
-        $self->$method unless $self->{marked}{${$self->_token(0)}};
-    }
 }
 
 sub _add_trace      { push @{$_[0]->{trace}}, (caller(1))[3] }
@@ -508,7 +352,8 @@ sub _get_modified   { $_[0]->{modified}{total} || 0     }
 sub _set_modified   { $_[0]->{modified}{total} += $_[1] }
 sub _unset_modified { $_[0]->{modified}{total}  = 0     }
 
-sub _get_datetime_object {
+sub _get_datetime_object 
+{
     my $self = shift;
 
     $self->{year}  = $self->{datetime}->year;
@@ -539,7 +384,8 @@ sub _get_datetime_object {
 }
 
 # solely for debugging purpose
-sub _set_datetime {
+sub _set_datetime 
+{
     my ($self, $year, $month, $day, $hour, $min, $sec) = @_;
 
     $self->{datetime} = DateTime->new(time_zone => 'floating',
@@ -606,7 +452,7 @@ not necessarily required.
 
 =item * C<lang>
 
-Contains the language selected, currently limited to C<en> (english) & C<de> (german).
+Contains the language selected, currently limited to C<en> (english).
 Defaults to 'C<en>'.
 
 =item * C<format>

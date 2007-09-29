@@ -4,25 +4,27 @@ use strict;
 use warnings;
 use base qw(Exporter);
 
-our $VERSION = '0.3';
-
+our $VERSION = '0.4';
 our @EXPORT = qw(AUTOLOAD __new);
-
 our $AUTOLOAD;
 
-sub __new {
+sub __new 
+{
     my $class = shift;
 
     no strict 'refs';
 
     my $obj = {};
-    $obj->{weekdays} = \%{$class.'::'.'data_weekdays'};
-    $obj->{months}   = \%{$class.'::'.'data_months'};
+    $obj->{weekdays}        = \%{$class.'::'.'data_weekdays'};
+    $obj->{weekdays_abbrev} = \%{$class.'::'.'data_weekdays_abbrev'};
+    $obj->{months}          = \%{$class.'::'.'data_months'};
+    $obj->{months_abbrev}   = \%{$class.'::'.'data_months_abbrev'};
 
     return bless $obj, ref($class) || $class;
 }
 
-AUTOLOAD {
+AUTOLOAD 
+{
     my ($self, $exp) = @_;
 
     my ($caller) = $AUTOLOAD =~ /(.*)::.*/;
@@ -32,7 +34,12 @@ AUTOLOAD {
     if (substr($sub, 0, 2) eq '__') {
        $sub =~ s/^__//;
        no strict 'refs';
-       return ${$caller.'::'.$sub}{$exp};
+       if (defined $exp && length $exp) {
+           return ${$caller.'::'.$sub}{$exp};
+       }
+       else {
+           return \%{$caller.'::'.$sub};
+       }
     }
 }
 

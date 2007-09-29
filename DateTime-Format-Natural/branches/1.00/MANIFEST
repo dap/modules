@@ -1,11 +1,10 @@
 Build.PL
 Changes
+diff
 INSTALL
 lib/DateTime/Format/Natural.pm
 lib/DateTime/Format/Natural/Base.pm
-lib/DateTime/Format/Natural/Lang/Authoring.pod
 lib/DateTime/Format/Natural/Lang/Base.pm
-lib/DateTime/Format/Natural/Lang/DE.pm
 lib/DateTime/Format/Natural/Lang/EN.pm
 Makefile.PL
 MANIFEST			This list of files
@@ -14,10 +13,8 @@ README
 scripts/dateparse
 t/00-load.t
 t/01-parse_en.t
-t/02-parse_de.t
-t/03-parse_format.t
-t/04-parse_daytime_en.t
-t/05-parse_daytime_de.t
+t/02-parse_format.t
+t/03-parse_daytime_en.t
 t/pod-coverage.t
 t/pod.t
 TODO

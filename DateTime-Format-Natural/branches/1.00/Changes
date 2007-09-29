@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.50 Thu Sep 27 00:39:08 CEST 2007
+
+ - Major redo of flexible language metadata handling.
+
 0.40 Sun Sep 23 17:34:48 CEST 2007
 
  - Empty the marked tokens list on each instance of parse_datetime()/

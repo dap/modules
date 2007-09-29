@@ -43,8 +43,8 @@ METHODS
      );
 
     * "lang"
-        Contains the language selected, currently limited to "en" (english)
-        & "de" (german). Defaults to '"en"'.
+        Contains the language selected, currently limited to "en" (english).
+        Defaults to '"en"'.
 
     * "format"
         Specifies the format of numeric dates, defaults to '"d/m/y"'.
