@@ -12,7 +12,7 @@ SYNOPSIS
 
      if ($parser->success) {
          # operate on $dt/@dt, for example:
-         printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day,
+         printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day,
                                                   $dt->month,
                                                   $dt->year,
                                                   $dt->hour,
@@ -132,6 +132,7 @@ CREDITS
      Shawn M. Moore
      Andreas J. König
      Chia-liang Kao
+     Jonny Schulz
 
 SEE ALSO
     DateTime, Date::Calc, <http://datetime.perl.org>

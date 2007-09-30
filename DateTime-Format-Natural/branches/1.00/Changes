@@ -1,5 +1,14 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.53 Sun Sep 30 13:55:11 CEST 2007
+
+ - Added grammar definitions & according tests for "[day] at [daytime]".
+
+ - Internally documented the grammar layout.
+
+ - Replaced %s with %d for sprintf() format-strings.
+   [Jonny Schulz <http://www.bloonix.de>]
+
 0.52 Sat Sep 29 17:02:40 CEST 2007
 
  - Removed all mentions of german language support within the 

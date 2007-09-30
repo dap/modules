@@ -90,9 +90,10 @@ while (1) {
 
     if ($parse->success) {
         foreach my $dt (@dt) {
-            printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
+            printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
         }
-    } else {
+    } 
+    else {
         Carp::croak $parse->error, "\n";
     }
 

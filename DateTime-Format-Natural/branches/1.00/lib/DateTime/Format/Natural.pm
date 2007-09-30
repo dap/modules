@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.52';
+our $VERSION = '0.53';
 
 sub new 
 {
@@ -281,7 +281,7 @@ sub _process
 		          : ${$self->_token($pos)};
                     }                
                     @values = map { defined $_ ? $_ : () } @values;
-                    my $meth = $expression->[-1]->[$i++];
+                    my $meth = 'SUPER::'.$expression->[-1]->[$i++];
                     $self->$meth(@values);
                 }            
 	    }
@@ -363,11 +363,11 @@ sub _get_datetime_object
     $self->{min}   = $self->{datetime}->minute;
     $self->{sec}   = $self->{datetime}->second;
 
-    $self->{sec}   = sprintf("%02i", $self->{sec});
-    $self->{min}   = sprintf("%02i", $self->{min});
-    $self->{hour}  = sprintf("%02i", $self->{hour});
-    $self->{day}   = sprintf("%02i", $self->{day});
-    $self->{month} = sprintf("%02i", $self->{month});
+    $self->{sec}   = sprintf("%02d", $self->{sec});
+    $self->{min}   = sprintf("%02d", $self->{min});
+    $self->{hour}  = sprintf("%02d", $self->{hour});
+    $self->{day}   = sprintf("%02d", $self->{day});
+    $self->{month} = sprintf("%02d", $self->{month});
 
     my $dt = DateTime->new(year   => $self->{year},
                            month  => $self->{month},
@@ -416,7 +416,7 @@ DateTime::Format::Natural - Create machine readable date/time with natural parsi
 
  if ($parser->success) {
      # operate on $dt/@dt, for example:
-     printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day,
+     printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day,
                                               $dt->month,
                                               $dt->year,
                                               $dt->hour,
@@ -558,6 +558,7 @@ valuable suggestions & patches:
  Shawn M. Moore
  Andreas J. König
  Chia-liang Kao
+ Jonny Schulz
 
 =head1 SEE ALSO
 

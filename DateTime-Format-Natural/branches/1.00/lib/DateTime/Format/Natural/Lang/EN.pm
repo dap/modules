@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
 our (%init, 
      %timespan,
@@ -58,6 +58,14 @@ our (%init,
     $RE{weekday} = qr/^($days_re)$/i;
 }
 
+# <keyword> => [
+#    [ <PERL TYPE DECLARATION>, ... ], ---------------------> declares how the tokens will be evaluated
+#    [
+#      { <token index> => <token value>, ... }, ------------> declares the index <-> value map 
+#      [ [ <index(es) of token(s) to be passed> ], ... ], --> declares which tokens will be passed to the dispatch handler(s)
+#      [ <name of subroutine to dispatch to>, ... ], -------> declares the dispatch handler(s)
+#    ],
+
 %grammar = (    
     day => [
        [ 'SCALAR' ],
@@ -106,6 +114,39 @@ our (%init,
 	 { 0 => 'midnight' },
          [ [] ],
          [ '_daytime_midnight' ],
+       ],
+    ],
+    daytime_noon_midnight_at => [
+       [ 'SCALAR', 'SCALAR', 'SCALAR' ],
+       [
+         { 0 => 'yesterday', 1 => 'at', 2 => 'noon' },
+	 [ [], [] ],
+	 [ '_day_yesterday', '_daytime_noon' ],
+       ],
+       [
+         { 0 => 'yesterday', 1 => 'at', 2 => 'midnight' },
+	 [ [], [] ],
+	 [ '_day_yesterday', '_daytime_midnight' ],
+       ],
+       [
+         { 0 => 'today', 1 => 'at', 2 => 'noon' },
+	 [ [], [] ],
+	 [ '_day_today', '_daytime_noon' ],
+       ],
+       [
+         { 0 => 'today', 1 => 'at', 2 => 'midnight' },
+	 [ [], [] ],
+	 [ '_day_today', '_daytime_midnight' ],
+       ],
+       [
+         { 0 => 'tomorrow', 1 => 'at', 2 => 'noon' },
+	 [ [], [] ],
+	 [ '_day_tomorrow', '_daytime_noon' ],
+       ],
+       [
+         { 0 => 'tomorrow', 1 => 'at', 2 => 'midnight' },
+	 [ [], [] ],
+	 [ '_day_tomorrow', '_daytime_midnight' ],
        ],
     ],
     this_daytime => [
@@ -914,9 +955,14 @@ that the parser doesn't differentiate between lower/upper case):
  6 hours after noon
  9 hours before midnight
  12 hours after midnight
+ yesterday at noon
+ yesterday at midnight
+ today at noon
+ today at midnight
+ tomorrow at noon
+ tomorrow at midnight
  yesterday at 16:00
  today at 6:00
- tomorrow at 12
  tomorrow at 12
  wednesday at 14:30
  2nd friday in august

@@ -31,6 +31,6 @@ sub compare_strings
 
     my $dt = $parse->parse_datetime(string => $string);
 
-    my $res_string = sprintf("%02s.%02s.%4s %02s:%02s:%02s", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
+    my $res_string = sprintf("%02d.%02d.%4d %02d:%02d:%02d", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
     is($res_string, $result, $string);
 }
