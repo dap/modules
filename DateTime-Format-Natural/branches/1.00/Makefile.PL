@@ -13,6 +13,7 @@ WriteMakefile
                            'Test::More' => 0,
                            'DateTime' => 0,
                            'Date::Calc' => 0,
+                           'Term::ReadLine' => 0,
                            'List::MoreUtils' => 0
                          }
         )

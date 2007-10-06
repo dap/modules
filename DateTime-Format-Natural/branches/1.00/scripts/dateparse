@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 
-use Carp ();
-use DateTime::Format::Natural;
+use DateTime::Format::Natural ();
+use Term::ReadLine ();
 
 use constant LANG_DEFAULT => 'en';
 
@@ -76,16 +76,30 @@ unless ($valid_languages{$lang}) {
     $lang = LANG_DEFAULT;
 }
 
-my $parse = DateTime::Format::Natural->new(
-            lang          => $lang,
-            format        => $format,
-            prefer_future => $prefer_future,
-);
+my $term = Term::ReadLine->new('dateparse');
+my $prompt = 'dateparse> ';
 
-while (1) {
-    print 'Input date string: ';
-    chomp(my $input = <STDIN>);
+while (defined(my $input = $term->readline($prompt))) {
+    $term->addhistory($input) if $input =~ /\S/;
+    last if $input =~ /^(?:quit|exit)$/;
+    
+    if ($input =~ /^(?:\?|help)$/i) {
+        print <<EOT;
 
+Commands
+ ?, help		this help screen
+ exit, quit	  	leave dateparse
+ everything else        datetime string
+
+EOT
+        next;
+    }
+
+    my $parse = DateTime::Format::Natural->new(
+                lang          => $lang,
+                format        => $format,
+                prefer_future => $prefer_future,
+    );
     my @dt = $parse->parse_datetime_duration(string => $input, debug => $debug);
 
     if ($parse->success) {
@@ -94,7 +108,7 @@ while (1) {
         }
     } 
     else {
-        Carp::croak $parse->error, "\n";
+        warn $parse->error, "\n";
     }
 
     if ($trace) {
@@ -108,7 +122,7 @@ dateparse - frontend to DateTime::Format::Natural
 
 =head1 SYNOPSIS
 
- Usage: ./dateparse [switches]
+ Usage: dateparse [switches]
    -d, --debug            debugging mode (experimental)
    -f, --format           format of numeric dates
    -h, --help             help screen

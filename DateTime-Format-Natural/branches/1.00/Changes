@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.54 Fri Oct  5 23:30:28 CEST 2007
+
+ - Added Term::ReadLine support to 'dateparse'.
+
+ - Updated t/* to ensure that all results are being marked successful.
+
+ - Fixed formatted dates, which never succeeded previously.
+
 0.53 Sun Sep 30 13:55:11 CEST 2007
 
  - Added grammar definitions & according tests for "[day] at [daytime]".

@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Base);
 use Carp ();
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.53';
+our $VERSION = '0.54';
 
 sub new 
 {
@@ -133,6 +133,7 @@ sub parse_datetime
         $self->{datetime}->set_month($month);
         $self->{datetime}->set_day($day);
 
+        $self->_set_valid_exp;
         $self->_set_modified(1);
     } 
     else {
@@ -168,6 +169,7 @@ sub _parse_init
 
     $self->_unset_failure;
     $self->_unset_error;
+    $self->_unset_valid_exp;
     $self->_unset_trace;
     $self->_unset_modified;
 }
@@ -196,7 +198,7 @@ sub success
 {
     my $self = shift;
 
-    return $self->{valid_expression} && !$self->_get_failure ? 1 : 0;
+    return $self->_get_valid_exp && !$self->_get_failure ? 1 : 0;
 }
 
 sub error 
@@ -230,7 +232,7 @@ sub _process
     $self->{index} = 0;
     $self->_debug_head;
 
-    $self->{valid_expression} = 0;
+    $self->_unset_valid_exp;
 
     foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
         my @grammar = @{$self->{data}->__grammar($keyword)};
@@ -240,7 +242,7 @@ sub _process
         last if $self->_get_modified >= @{$self->{tokens}};
 
         foreach my $expression (@grammar) {
-            my $valid_expression = 1;
+            my $valid_expression = 1; 
             my $definition = $expression->[0];
             my @positions = keys %$definition;
             my %regex_stack;
@@ -271,7 +273,7 @@ sub _process
 	        }
 	    }
 	    if ($valid_expression) {
-                $self->{valid_expression} = 1;
+                $self->_set_valid_exp;
 	        my $i;
                 foreach my $positions (@{$expression->[1]}) {
                     my @values;
@@ -347,6 +349,10 @@ sub _unset_error    { $_[0]->{error} = ''    }
 sub _get_failure    { $_[0]->{failure}     }
 sub _set_failure    { $_[0]->{failure} = 1 }
 sub _unset_failure  { $_[0]->{failure} = 0 }
+
+sub _get_valid_exp   { $_[0]->{valid_expression}     }
+sub _set_valid_exp   { $_[0]->{valid_expression} = 1 }
+sub _unset_valid_exp { $_[0]->{valid_expression} = 0 }
 
 sub _get_modified   { $_[0]->{modified}{total} || 0     }
 sub _set_modified   { $_[0]->{modified}{total} += $_[1] }
