@@ -3,13 +3,13 @@ package DateTime::Format::Natural::Base;
 use strict;
 use warnings;
 
-use DateTime;
+use DateTime ();
 use Date::Calc qw(Add_Delta_Days
                   Decode_Day_of_Week
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';

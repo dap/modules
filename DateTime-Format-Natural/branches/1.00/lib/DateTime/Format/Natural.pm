@@ -5,9 +5,11 @@ use warnings;
 use base qw(DateTime::Format::Natural::Base);
 
 use Carp ();
+use DateTime ();
+use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.54';
+our $VERSION = '0.55';
 
 sub new 
 {
@@ -310,7 +312,8 @@ sub _post_process_options
         if ($self->{count}{tokens} == 1
             && (any { $self->{tokenscopy}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
             && scalar keys %modified == 1
-            && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
+            && (exists $self->{modified}{day} && $self->{modified}{day} == 1
+	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) < DateTime->now->wday)
         ) {
             $self->{postprocess}{day} = 7;
         } 

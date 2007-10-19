@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.55 Wed Oct 17 15:24:25 CEST 2007
+
+ - Changed behavior of the 'prefer_future' option concerning weekdays.
+   [rt #29068 - Jesse Vincent <jesse@bestpractical.com>]
+
 0.54 Fri Oct  5 23:30:28 CEST 2007
 
  - Added Term::ReadLine support to 'dateparse'.
