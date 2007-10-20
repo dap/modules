@@ -9,7 +9,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -69,6 +69,38 @@ sub _ago_years
     $self->_add_trace;
     $self->_subtract(year => shift);
     $self->_set_modified(3);
+}
+
+sub _now_minutes_before
+{
+    my $self = shift;
+    $self->_add_trace;
+    $self->_subtract(minute => shift);
+    $self->_set_modified(4);
+}
+
+sub _now_minutes_from
+{
+    my $self = shift;
+    $self->_add_trace;
+    $self->_add(minute => shift);
+    $self->_set_modified(4);
+}
+
+sub _now_hours_before
+{
+    my $self = shift;
+    $self->_add_trace;
+    $self->_subtract(hour => shift);
+    $self->_set_modified(4);
+}
+
+sub _now_hours_from
+{
+    my $self = shift;
+    $self->_add_trace;
+    $self->_add(hour => shift);
+    $self->_set_modified(4);
 }
 
 sub _now_days_before 
@@ -560,12 +592,30 @@ sub _count_month_next_year
     $self->_set_modified(4);
 }
 
+sub _in_count_minutes
+{
+    my $self = shift;
+    $self->_add_trace;
+    my ($minute) = @_;
+    $self->_add(minute => $minute);
+    $self->_set_modified(3);
+}
+
 sub _in_count_hours
 {
     my $self = shift;
     $self->_add_trace;
     my ($hour) = @_;
     $self->_add(hour => $hour);
+    $self->_set_modified(3);
+}
+
+sub _in_count_days
+{
+    my $self = shift;
+    $self->_add_trace;
+    my ($day) = @_;
+    $self->_add(day => $day);
     $self->_set_modified(3);
 }
 

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 our (%init, 
      %timespan,
@@ -66,7 +66,15 @@ our (%init,
 #      [ <name of subroutine to dispatch to>, ... ], -------> declares the dispatch handler(s)
 #    ],
 
-%grammar = (    
+%grammar = (   
+    now => [
+       [ 'SCALAR' ],
+       [
+         { 0 => 'now' },
+	 [ [] ],
+	 [ '_day_today' ],
+       ],
+    ],
     day => [
        [ 'SCALAR' ],
        [
@@ -171,50 +179,83 @@ our (%init,
        [ 'SCALAR', 'SCALAR' ],
        [
 	 { 0 => 'yesterday', 1 => 'morning' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_yesterday', '_daytime_morning' ],
        ],
        [
 	 { 0 => 'yesterday', 1 => 'afternoon' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_yesterday', '_daytime_afternoon' ],
        ],
        [
 	 { 0 => 'yesterday', 1 => 'evening' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_yesterday', '_daytime_evening' ],
        ],
        [
 	 { 0 => 'today', 1 => 'morning' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_today', '_daytime_morning' ],
        ],
        [
 	 { 0 => 'today', 1 => 'afternoon' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_today', '_daytime_afternoon' ],
        ],
        [
 	 { 0 => 'today', 1 => 'evening' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_today', '_daytime_evening' ],
        ],
        [
 	 { 0 => 'tomorrow', 1 => 'morning' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_tomorrow', '_daytime_morning' ],
        ],
        [
 	 { 0 => 'tomorrow', 1 => 'afternoon' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_tomorrow', '_daytime_afternoon' ],
        ],
        [
 	 { 0 => 'tomorrow', 1 => 'evening' },
-         [ [ 0 ], [ 1 ] ],
+         [ [ 0 ], [] ],
          [ '_day_tomorrow', '_daytime_evening' ],
        ]
-    ],    
+    ],
+    at_daytime => [
+       [ 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => $RE{time_am}, 1 => 'yesterday' },
+	 [ [ 0 ], [] ],
+	 [ '_time', '_day_yesterday' ],
+       ],
+       [
+         { 0 => $RE{time_am}, 1 => 'today' },
+	 [ [ 0 ], [] ],
+	 [ '_time', '_day_today' ],
+       ],
+       [
+         { 0 => $RE{time_am}, 1 => 'tomorrow' },
+	 [ [ 0 ], [] ],
+	 [ '_time', '_day_tomorrow' ],
+       ],
+       [
+         { 0 => $RE{time_pm}, 1 => 'yesterday' },
+	 [ [ 0 ], [] ],
+	 [ '_at_pm', '_day_yesterday' ],
+       ],
+       [
+         { 0 => $RE{time_pm}, 1 => 'today' },
+	 [ [ 0 ], [] ],
+	 [ '_at_pm', '_day_today' ],
+       ],
+       [
+         { 0 => $RE{time_pm}, 1 => 'tomorrow' },
+	 [ [ 0 ], [] ],
+	 [ '_at_pm', '_day_tomorrow' ],
+       ],
+    ],
     month => [
        [ 'REGEXP' ],
        [
@@ -551,8 +592,28 @@ our (%init,
          [ '_ago_months', '_weekday', '_at_pm' ],
        ],  
     ],
-    now => [
+    now_variant => [
        [ 'REGEXP', 'REGEXP', 'SCALAR', 'SCALAR' ],
+       [
+         { 0 => $RE{number}, 1 => qr/minutes?/i, 2 => 'before', 3 => 'now' },
+	 [ [ 0 ] ],
+	 [ '_now_minutes_before' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/minutes?/i, 2 => 'from', 3 => 'now' },
+	 [ [ 0 ] ],
+	 [ '_now_minutes_from' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/hours?/i, 2 => 'before', 3 => 'now' },
+	 [ [ 0 ] ],
+	 [ '_now_hours_before' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/hours?/i, 2 => 'from', 3 => 'now' },
+	 [ [ 0 ] ],
+	 [ '_now_hours_from' ],
+       ],
        [ 
          { 0 => $RE{number}, 1 => qr/days?/i,  2 => 'before', 3 => 'now' }, 
          [ [ 0 ] ], 
@@ -678,6 +739,14 @@ our (%init,
          [ '_count_month_next_year' ],
        ],
     ],
+    in_count_minutes => [
+       [ 'SCALAR', 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/minutes?/i },
+	 [ [ 1 ] ],
+	 [ '_in_count_minutes' ],
+       ]
+    ],
     in_count_hours => [
        [ 'SCALAR', 'REGEXP', 'SCALAR' ],
        [
@@ -685,6 +754,14 @@ our (%init,
          [ [ 1 ] ],
          [ '_in_count_hours' ],
        ], 
+    ],
+    in_count_days => [
+       [ 'SCALAR', 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/days?/i },
+	 [ [ 1 ] ],
+	 [ '_in_count_days' ],
+       ],
     ],
     weekday_this_week => [
        [ 'REGEXP', 'SCALAR', 'SCALAR' ],
@@ -843,6 +920,7 @@ that the parser doesn't differentiate between lower/upper case):
 
 =head2 Simple
 
+ now
  today
  yesterday
  tomorrow
@@ -879,8 +957,14 @@ that the parser doesn't differentiate between lower/upper case):
  this month
  6 am
  5am
+ 5am yesterday
+ 5am today
+ 5am tomorrow
  8 pm
  4pm
+ 4pm yesterday
+ 4pm today
+ 4pm tomorrow
  sunday 11:00
  mon 2:35
  13:45
@@ -925,6 +1009,8 @@ that the parser doesn't differentiate between lower/upper case):
  yesterday 3 years ago
  fri 3 months ago at 5am
  wednesday 1 month ago at 8pm
+ 8 hours before now
+ 8 hours from now
  7 days before now
  7 days from now
  4 weeks before now
@@ -944,7 +1030,9 @@ that the parser doesn't differentiate between lower/upper case):
  tuesday next week
  3rd day next month
  10th month next year
+ in 42 minutes
  in 3 hours
+ in 5 days
  wednesday this week
  3rd tuesday this november
  3 hours before tomorrow

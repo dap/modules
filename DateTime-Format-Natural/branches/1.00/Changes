@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.56 Sat Oct 20 20:02:24 CEST 2007
+
+ - Extended grammar to reflect some suggestions.
+   [rt #30147 - Jason May <jason.a.may@gmail.com>]
+
 0.55 Wed Oct 17 15:24:25 CEST 2007
 
  - Changed behavior of the 'prefer_future' option concerning weekdays.
@@ -391,3 +396,4 @@ Revision history for Perl extension DateTime::Format::Natural.
 0.01 Sun Oct 22 22:15:54 CEST 2006
 
  - Initial version.
+Sat Oct 20 20:02:24 CEST 2007
