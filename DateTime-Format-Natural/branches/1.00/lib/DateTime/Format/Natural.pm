@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.56';
+our $VERSION = '0.57';
 
 sub new 
 {
@@ -163,7 +163,7 @@ sub _parse_init
         ($self->{Date_string}) = @_;
     }
 
-    unless ($self->{nodatetimeset}) {
+    unless ($self->{running_tests}) {
         $self->{datetime} = DateTime->now(time_zone => 'floating');
     }
 
@@ -404,7 +404,7 @@ sub _set_datetime
                                       hour      => $hour,
                                       minute    => $min,
                                       second    => $sec);
-    $self->{nodatetimeset} = 1;
+    $self->{running_tests} = 1;
 }
 
 1;
@@ -468,7 +468,7 @@ Defaults to 'C<en>'.
 
 Specifies the format of numeric dates, defaults to 'C<d/m/y>'.
 
-=item * C<prefer_future (experimental)>
+=item * C<prefer_future>
 
 Turns ambigious weekdays/months to their futuristic relatives. Accepts a boolean,
 defaults to 0.
@@ -568,6 +568,8 @@ valuable suggestions & patches:
  Andreas J. König
  Chia-liang Kao
  Jonny Schulz
+ Jesse Vincent
+ Jason May
 
 =head1 SEE ALSO
 

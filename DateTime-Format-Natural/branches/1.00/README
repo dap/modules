@@ -49,7 +49,7 @@ METHODS
     * "format"
         Specifies the format of numeric dates, defaults to '"d/m/y"'.
 
-    * "prefer_future (experimental)"
+    * "prefer_future"
         Turns ambigious weekdays/months to their futuristic relatives.
         Accepts a boolean, defaults to 0.
 
@@ -133,6 +133,8 @@ CREDITS
      Andreas J. König
      Chia-liang Kao
      Jonny Schulz
+     Jesse Vincent
+     Jason May
 
 SEE ALSO
     DateTime, Date::Calc, <http://datetime.perl.org>
