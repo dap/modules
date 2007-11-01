@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.58 Thu Nov  1 19:54:41 CET 2007
+
+ - Deprecated broken 'debug' parameter to parse_datetime*().
+
+ - Fixed some parameters within scripts/dateparse which were
+   erroneously declarated.
+
 0.57 Thu Oct 25 21:21:56 CEST 2007
 
  - Added tests for durations (i.e., the method parse_datetime_duration()).

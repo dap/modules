@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.57';
+our $VERSION = '0.58';
 
 sub new 
 {
@@ -157,7 +157,7 @@ sub _parse_init
     if (@_ > 1) {
         my %opts             = @_;
         $self->{Date_string} = $opts{string};
-        $self->{Debug}       = $opts{debug};
+        (undef)              = $opts{debug}; # legacy
     } 
     else {
         ($self->{Date_string}) = @_;
@@ -232,9 +232,6 @@ sub _process
     my $self = shift;
 
     $self->{index} = 0;
-    $self->_debug_head;
-
-    $self->_unset_valid_exp;
 
     foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
         my @grammar = @{$self->{data}->__grammar($keyword)};
@@ -293,13 +290,6 @@ sub _process
     }
     
     $self->_post_process_options; 
-}
-
-sub _debug_head 
-{
-    my $self = shift;
-
-    print ${$self->_token(0)}, "\n" if $self->{Debug};
 }
 
 sub _post_process_options 
@@ -392,7 +382,7 @@ sub _get_datetime_object
     return $dt;
 }
 
-# solely for debugging purpose
+# solely for testing purpose
 sub _set_datetime 
 {
     my ($self, $year, $month, $day, $hour, $min, $sec) = @_;
@@ -485,24 +475,13 @@ selectively changed.
 Creates a C<DateTime> object from a human readable date/time string.
 
  $dt = $parser->parse_datetime($date_string);
-
- $dt = $parser->parse_datetime(
-       string => $date_string,
-       debug  => 1,
- );
+ $dt = $parser->parse_datetime(string => $date_string);
 
 =over 4
 
 =item * C<string>
 
 The date string.
-
-=item * C<debug>
-
-Boolean value indicating debugging mode.
-
-If debugging is enabled, each token that is analysed will be output to STDOUT
-with a trailing newline appended.
 
 =back
 
@@ -515,11 +494,7 @@ which may contain timespans/durations. 'Same' interface & options as C<parse_dat
 but must be explicitly called in list context.
 
  @dt = $parser->parse_datetime_duration($date_string);
-
- @dt = $parser->parse_datetime_duration(
-       string => $date_string,
-       debug  => 1,
- );
+ @dt = $parser->parse_datetime_duration(string => $date_string);
 
 =head2 success
 

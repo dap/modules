@@ -61,20 +61,10 @@ METHODS
     Creates a "DateTime" object from a human readable date/time string.
 
      $dt = $parser->parse_datetime($date_string);
-
-     $dt = $parser->parse_datetime(
-           string => $date_string,
-           debug  => 1,
-     );
+     $dt = $parser->parse_datetime(string => $date_string);
 
     * "string"
         The date string.
-
-    * "debug"
-        Boolean value indicating debugging mode.
-
-        If debugging is enabled, each token that is analysed will be output
-        to STDOUT with a trailing newline appended.
 
     Returns a DateTime object.
 
@@ -84,11 +74,7 @@ METHODS
     as "parse_datetime()", but must be explicitly called in list context.
 
      @dt = $parser->parse_datetime_duration($date_string);
-
-     @dt = $parser->parse_datetime_duration(
-           string => $date_string,
-           debug  => 1,
-     );
+     @dt = $parser->parse_datetime_duration(string => $date_string);
 
   success
     Returns a boolean indicating success or failure for parsing the

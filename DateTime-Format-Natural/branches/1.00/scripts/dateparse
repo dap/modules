@@ -8,7 +8,6 @@ use Term::ReadLine ();
 
 use constant LANG_DEFAULT => 'en';
 
-my $debug               = 0;
 my $format;
 my $lang                = LANG_DEFAULT;
 my $prefer_future       = 0;
@@ -23,8 +22,7 @@ sub parse_switches
     use Getopt::Long qw(:config no_auto_abbrev no_ignore_case);
 
     my %opts;
-    GetOptions(\%opts, qw(d|debug
-                          f|format=s
+    GetOptions(\%opts, qw(f|format=s
                           h|help
                           l|lang=s
                           p|prefer_future
@@ -36,7 +34,6 @@ sub parse_switches
     version()   if $opts{V};
     supported() if $opts{s};
 
-    $debug         ||= $opts{d};
     $lang            = $opts{l} || LANG_DEFAULT;
     $format        ||= $opts{f};
     $prefer_future ||= $opts{p};
@@ -47,11 +44,10 @@ sub usage
 {
     print <<USAGE;
 Usage: $0 [switches]
-  -d, --debug            debugging mode (experimental)
   -f, --format           format of numeric dates
-  -h, --help             help screen
-  -l, --language code    language (country code)
-  -p, --prefer_future    prefer future
+  -h, --help             this help screen
+  -l, --lang             language code
+  -p, --prefer_future    use futuristic dates (when possible)
   -s, --supported        list of supported languages
   -t, --trace            print trace after processing
   -V, --version          print version
@@ -100,7 +96,7 @@ EOT
                 format        => $format,
                 prefer_future => $prefer_future,
     );
-    my @dt = $parse->parse_datetime_duration(string => $input, debug => $debug);
+    my @dt = $parse->parse_datetime_duration(string => $input);
 
     if ($parse->success) {
         foreach my $dt (@dt) {
@@ -123,11 +119,10 @@ dateparse - frontend to DateTime::Format::Natural
 =head1 SYNOPSIS
 
  Usage: dateparse [switches]
-   -d, --debug            debugging mode (experimental)
    -f, --format           format of numeric dates
-   -h, --help             help screen
-   -l, --language code    language (country code)
-   -p, --prefer_future    prefer future
+   -h, --help             this help screen
+   -l, --lang             language code
+   -p, --prefer_future    use futuristic dates (when possible)
    -s, --supported        list of supported languages
    -t, --trace            print trace after processing
    -V, --version          print version
