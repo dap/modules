@@ -1,5 +1,10 @@
 Revision history for Perl extension Config::Inetd.
 
+0.26 Fri Nov  9 22:47:46 CET 2007
+
+ - Bail out within 'methods.t' when no system-wide 
+   configuration (i.e. 'inetd.conf') is being found.
+
 0.25 Sun Mar 19 22:49:56 CET 2006
 
  - Added INSTALL containing install instructions.

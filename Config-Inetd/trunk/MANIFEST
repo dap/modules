@@ -7,7 +7,7 @@ MANIFEST			This list of files
 META.yml
 README
 t/00-load.t
-t/inetd.conf
+t/data/inetd.conf
 t/methods.t
 t/pod-coverage.t
 t/pod.t

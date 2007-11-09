@@ -10,10 +10,11 @@ use Tie::File ();
 
 our ($VERSION, $INETD_CONF, $conf_tied);
 
-$VERSION = '0.25';
+$VERSION = '0.26';
 $INETD_CONF = '/etc/inetd.conf';
 
-sub new {
+sub new 
+{
     my ($self, $conf_file) = @_;
     $conf_file ||= $INETD_CONF;
 
@@ -25,7 +26,8 @@ sub new {
     return bless(\%data, $class);
 }
 
-sub _tie_conf {
+sub _tie_conf 
+{
     my ($conf, $file) = @_;
     
     $conf_tied = tie(@$conf, 'Tie::File', $file, mode => O_RDWR, autochomp => 0)
@@ -34,7 +36,8 @@ sub _tie_conf {
       or Carp::croak "Couldn't lock $file: $!";
 }   
 
-sub _parse_enabled {         
+sub _parse_enabled 
+{         
     _filter_conf(\@_);
     
     my %is_enabled;
@@ -45,7 +48,8 @@ sub _parse_enabled {
     return \%is_enabled;
 }
 
-sub is_enabled {
+sub is_enabled 
+{
     my ($self, $serv, $prot) = @_;
     Carp::croak 'usage: $inetd->is_enabled($service => $protocol)'
       unless $serv && $prot;
@@ -54,7 +58,8 @@ sub is_enabled {
       ? $self->{ENABLED}{$serv}{$prot} : undef;
 }
 
-sub enable {
+sub enable 
+{
     my ($self, $serv, $prot) = @_;
     Carp::croak 'usage: $inetd->enable($service => $protocol)'
       unless $serv && $prot;
@@ -69,7 +74,8 @@ sub enable {
     return 0;
 }
 
-sub disable {
+sub disable 
+{
     my ($self, $serv, $prot) = @_;
     Carp::croak 'usage: $inetd->disable($service => $protocol)'
       unless $serv && $prot;
@@ -84,7 +90,8 @@ sub disable {
     return 0; 
 }
 
-sub dump_enabled {
+sub dump_enabled 
+{
     my ($self) = @_;
     Carp::croak 'usage: $inetd->dump_enabled' unless ref $self;
       
@@ -94,7 +101,8 @@ sub dump_enabled {
     return @conf;
 }
 
-sub dump_disabled {
+sub dump_disabled 
+{
     my ($self) = @_;
     Carp::croak 'usage: $inetd->dump_disabled' unless ref $self;
     
@@ -104,7 +112,8 @@ sub dump_disabled {
     return @conf;
 }
 
-sub _filter_conf {
+sub _filter_conf 
+{
     my ($conf, @regexps) = @_;
      
     unshift @regexps, '(?:stream|dgram|raw|rdm|seqpacket)';
@@ -117,7 +126,8 @@ sub _filter_conf {
     }
 }
 
-sub _split_serv_prot {
+sub _split_serv_prot 
+{
     my ($entry) = @_;
      
     my ($serv, $prot) = (split /\s+/, $entry)[0,2];
@@ -128,7 +138,8 @@ sub _split_serv_prot {
     return ($serv, $prot);
 }
 
-sub DESTROY { 
+sub DESTROY 
+{
     my ($self) = @_;
     
     $conf_tied->flock(LOCK_UN);
