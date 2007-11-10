@@ -1,5 +1,12 @@
 Revision history for Perl extension Config::Inetd.
 
+0.27 Sat Nov 10 22:04:05 CET 2007
+
+ - Fixed permissions for 't/data/inetd.conf' which didn't allow 
+   to write to the file and hence caused all tests to fail.
+
+ - Undo the bailing out within 'methods.t'.
+
 0.26 Fri Nov  9 22:47:46 CET 2007
 
  - Bail out within 'methods.t' when no system-wide 

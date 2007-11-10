@@ -8,10 +8,6 @@ use File::Spec;
 use FindBin qw($Bin);
 use Test::More tests => 6;
 
-if (!-e $Config::Inetd::INETD_CONF) {
-    BAIL_OUT('no system-wide inetd.conf found');
-}
-
 my $inetd = Config::Inetd->new(File::Spec->catfile($Bin, 'data/inetd.conf'));
 
 is($inetd->dump_enabled, 8, '$inetd->dump_enabled()');
