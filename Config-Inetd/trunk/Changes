@@ -2,8 +2,8 @@ Revision history for Perl extension Config::Inetd.
 
 0.27 Sat Nov 10 22:04:05 CET 2007
 
- - Fixed permissions for 't/data/inetd.conf' which didn't allow 
-   to write to the file and hence caused all tests to fail.
+ - Fixed permissions for 't/data/inetd.conf' by inlining 
+   the data and copying it to a temporary file while testing.
 
  - Undo the bailing out within 'methods.t'.
 
