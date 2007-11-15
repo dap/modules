@@ -1,5 +1,14 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.59 Thu Nov 15 23:54:25 CET 2007
+
+ - Made the 'prefer_future' parameter a bit more context-sensitive 
+   with regard to incremental of the current year. 
+   [rt #30763 - Shawn M. Moore <sartak@gmail.com>]
+
+ - Updated the "SEE ALSO" sections within the documentation 
+   to refer back to the main package.
+
 0.58 Thu Nov  1 19:54:41 CET 2007
 
  - Deprecated broken 'debug' parameter to parse_datetime*().

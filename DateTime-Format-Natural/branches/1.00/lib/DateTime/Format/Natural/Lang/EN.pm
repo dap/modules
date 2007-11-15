@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 
 our (%init, 
      %timespan,
@@ -1082,7 +1082,7 @@ that the parser doesn't differentiate between lower/upper case):
 
 =head1 SEE ALSO
 
-L<DateTime::Format::Natural>, L<DateTime>, L<Date::Calc>, L<http://datetime.perl.org>
+L<DateTime::Format::Natural>
 
 =head1 AUTHOR
 

@@ -9,7 +9,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.06';
+our $VERSION = '1.07';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -902,7 +902,7 @@ C<DateTime::Format::Natural>.
 
 =head1 SEE ALSO
 
-L<DateTime::Format::Natural>, L<DateTime>, L<Date::Calc>, L<http://datetime.perl.org>
+L<DateTime::Format::Natural>
 
 =head1 AUTHOR
 

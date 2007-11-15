@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.58';
+our $VERSION = '0.59';
 
 sub new 
 {
@@ -314,6 +314,7 @@ sub _post_process_options
                   ? $self->{modified}{day} == 1
                     ? 1 : 0
                   : 1)
+	    && ($self->{datetime}->day_of_year < DateTime->now->day_of_year) 
         ) {
 	    $self->{postprocess}{year} = 1;
         }

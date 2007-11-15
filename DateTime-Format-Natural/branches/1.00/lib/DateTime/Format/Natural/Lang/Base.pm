@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 our @EXPORT = qw(AUTOLOAD __new);
 our $AUTOLOAD;
 
@@ -61,7 +61,7 @@ C<DateTime::Format::Natural::Lang::> classes.
 
 =head1 SEE ALSO
 
-L<DateTime::Format::Natural::Lang::>, L<DateTime>, L<Date::Calc>, L<http://datetime.perl.org>
+L<DateTime::Format::Natural>
 
 =head1 AUTHOR
 
