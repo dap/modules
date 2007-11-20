@@ -36,6 +36,7 @@ METHODS
                lang          => 'en',
                format        => 'mm/dd/yy',
                prefer_future => '[0|1]'
+               time_zone     => 'floating',
                daytime       => { morning   => 06,
                                   afternoon => 13,
                                   evening   => 20,
@@ -52,6 +53,10 @@ METHODS
     * "prefer_future"
         Turns ambigious weekdays/months to their futuristic relatives.
         Accepts a boolean, defaults to 0.
+
+    * "time_zone"
+        The time zone to use when parsing and for output. Accepts any time
+        zone recognized by DateTime. Defaults to 'floating'.
 
     * "daytime"
         A hash consisting of specific hours given for peculiar daytimes.

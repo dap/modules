@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.59';
+our $VERSION = '0.60';
 
 sub new 
 {
@@ -28,6 +28,7 @@ sub _init
     $self->{Format}        = $opts{format}        || 'd/m/y';
     $self->{Lang}          = $opts{lang}          || 'en';
     $self->{Prefer_future} = $opts{prefer_future} || 0;
+    $self->{Time_zone}     = $opts{time_zone}     || 'floating';
     $self->{Opts}{daytime} = $opts{daytime};
 
     $self->_init_check;
@@ -60,8 +61,13 @@ sub _init_check
             last;
         }
     }
-
     Carp::croak "new(): $error\n" if defined $error;
+    
+    # time zone can't easily be checked by a regex
+    eval {
+        DateTime::TimeZone->new(name => $self->{Time_zone});
+    };
+    Carp::croak "new(): $@\n" if $@;
 }
 
 sub _init_vars 
@@ -112,7 +118,9 @@ sub parse_datetime
 
         my @bits = split $separator, $date_string;
 
-        my $century = substr((localtime)[5] + 1900, 0, 2);
+        my $century = $self->{datetime}
+                    ? int($self->{datetime}->year / 100)
+                    : substr((localtime)[5] + 1900, 0, 2);
 
 	my ($day, $month, $year) = map { $bits[$separated_indices->{$_}] } qw(d m y);
 
@@ -164,7 +172,7 @@ sub _parse_init
     }
 
     unless ($self->{running_tests}) {
-        $self->{datetime} = DateTime->now(time_zone => 'floating');
+        $self->{datetime} = DateTime->now(time_zone => $self->{Time_zone});
     }
 
     $self->_init_vars;
@@ -303,7 +311,7 @@ sub _post_process_options
             && (any { $self->{tokenscopy}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
             && scalar keys %modified == 1
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1
-	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) < DateTime->now->wday)
+	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) < DateTime->now(time_zone => $self->{Time_zone})->wday)
         ) {
             $self->{postprocess}{day} = 7;
         } 
@@ -333,48 +341,50 @@ sub _token
       : \$str;
 }
 
-sub _add_trace      { push @{$_[0]->{trace}}, (caller(1))[3] }
-sub _unset_trace    { @{$_[0]->{trace}} = ()                 }
+sub _add_trace       { push @{$_[0]->{trace}}, (caller(1))[3] }
+sub _unset_trace     { @{$_[0]->{trace}} = ()                 }
 
-sub _get_error      { $_[0]->{error}         }
-sub _set_error      { $_[0]->{error} = $_[1] }
-sub _unset_error    { $_[0]->{error} = ''    }
+sub _get_error       { $_[0]->{error}         }
+sub _set_error       { $_[0]->{error} = $_[1] }
+sub _unset_error     { $_[0]->{error} = ''    }
 
-sub _get_failure    { $_[0]->{failure}     }
-sub _set_failure    { $_[0]->{failure} = 1 }
-sub _unset_failure  { $_[0]->{failure} = 0 }
+sub _get_failure     { $_[0]->{failure}     }
+sub _set_failure     { $_[0]->{failure} = 1 }
+sub _unset_failure   { $_[0]->{failure} = 0 }
 
 sub _get_valid_exp   { $_[0]->{valid_expression}     }
 sub _set_valid_exp   { $_[0]->{valid_expression} = 1 }
 sub _unset_valid_exp { $_[0]->{valid_expression} = 0 }
 
-sub _get_modified   { $_[0]->{modified}{total} || 0     }
-sub _set_modified   { $_[0]->{modified}{total} += $_[1] }
-sub _unset_modified { $_[0]->{modified}{total}  = 0     }
+sub _get_modified    { $_[0]->{modified}{total} || 0     }
+sub _set_modified    { $_[0]->{modified}{total} += $_[1] }
+sub _unset_modified  { $_[0]->{modified}{total}  = 0     }
 
 sub _get_datetime_object 
 {
     my $self = shift;
 
-    $self->{year}  = $self->{datetime}->year;
-    $self->{month} = $self->{datetime}->month;
-    $self->{day}   = $self->{datetime}->day_of_month;
-    $self->{hour}  = $self->{datetime}->hour;
-    $self->{min}   = $self->{datetime}->minute;
-    $self->{sec}   = $self->{datetime}->second;
+    $self->{Time_zone} = $self->{datetime}->time_zone->name;
+    $self->{year}      = $self->{datetime}->year;
+    $self->{month}     = $self->{datetime}->month;
+    $self->{day}       = $self->{datetime}->day_of_month;
+    $self->{hour}      = $self->{datetime}->hour;
+    $self->{min}       = $self->{datetime}->minute;
+    $self->{sec}       = $self->{datetime}->second;
 
-    $self->{sec}   = sprintf("%02d", $self->{sec});
-    $self->{min}   = sprintf("%02d", $self->{min});
-    $self->{hour}  = sprintf("%02d", $self->{hour});
-    $self->{day}   = sprintf("%02d", $self->{day});
-    $self->{month} = sprintf("%02d", $self->{month});
+    $self->{sec}       = sprintf("%02d", $self->{sec});
+    $self->{min}       = sprintf("%02d", $self->{min});
+    $self->{hour}      = sprintf("%02d", $self->{hour});
+    $self->{day}       = sprintf("%02d", $self->{day});
+    $self->{month}     = sprintf("%02d", $self->{month});
 
-    my $dt = DateTime->new(year   => $self->{year},
-                           month  => $self->{month},
-                           day    => $self->{day},
-                           hour   => $self->{hour},
-                           minute => $self->{min},
-                           second => $self->{sec});
+    my $dt = DateTime->new(time_zone => $self->{Time_zone},
+                           year      => $self->{year},
+                           month     => $self->{month},
+                           day       => $self->{day},
+                           hour      => $self->{hour},
+                           minute    => $self->{min},
+                           second    => $self->{sec});
 
     foreach my $unit (keys %{$self->{postprocess}}) {
         $dt->add("${unit}s" => $self->{postprocess}{$unit});
@@ -386,9 +396,9 @@ sub _get_datetime_object
 # solely for testing purpose
 sub _set_datetime 
 {
-    my ($self, $year, $month, $day, $hour, $min, $sec) = @_;
+    my ($self, $year, $month, $day, $hour, $min, $sec, $tz) = @_;
 
-    $self->{datetime} = DateTime->new(time_zone => 'floating',
+    $self->{datetime} = DateTime->new(time_zone => $tz || 'floating',
                                       year      => $year,
                                       month     => $month,
                                       day       => $day,
@@ -442,6 +452,7 @@ not necessarily required.
            lang          => 'en',
            format        => 'mm/dd/yy',
            prefer_future => '[0|1]'
+           time_zone     => 'floating',
            daytime       => { morning   => 06,
                               afternoon => 13,
                               evening   => 20,
@@ -463,6 +474,11 @@ Specifies the format of numeric dates, defaults to 'C<d/m/y>'.
 
 Turns ambigious weekdays/months to their futuristic relatives. Accepts a boolean,
 defaults to 0.
+
+=item * C<time_zone>
+
+The time zone to use when parsing and for output. Accepts any time zone
+recognized by L<DateTime>. Defaults to 'floating'.
 
 =item * C<daytime>
 
