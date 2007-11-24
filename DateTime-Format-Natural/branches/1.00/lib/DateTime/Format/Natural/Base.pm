@@ -9,7 +9,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -172,8 +172,8 @@ sub _daytime_in_the_morning
     my $self = shift;
     $self->_add_trace;
     my ($hour) = @_;
-    if ($self->_valid_time(hour => $hour + 12)) {
-        $self->_set(hour => $hour);
+    if ($self->_valid_time(hour => $hour)) {
+        $self->_set(hour => $hour); 
         $self->_set(minute => 0);
         $self->_set(second => 0);
     }

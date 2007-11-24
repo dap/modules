@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 our (%init, 
      %timespan,
@@ -179,47 +179,47 @@ our (%init,
        [ 'SCALAR', 'SCALAR' ],
        [
 	 { 0 => 'yesterday', 1 => 'morning' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_yesterday', '_daytime_morning' ],
        ],
        [
 	 { 0 => 'yesterday', 1 => 'afternoon' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_yesterday', '_daytime_afternoon' ],
        ],
        [
 	 { 0 => 'yesterday', 1 => 'evening' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_yesterday', '_daytime_evening' ],
        ],
        [
 	 { 0 => 'today', 1 => 'morning' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_today', '_daytime_morning' ],
        ],
        [
 	 { 0 => 'today', 1 => 'afternoon' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_today', '_daytime_afternoon' ],
        ],
        [
 	 { 0 => 'today', 1 => 'evening' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_today', '_daytime_evening' ],
        ],
        [
 	 { 0 => 'tomorrow', 1 => 'morning' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_tomorrow', '_daytime_morning' ],
        ],
        [
 	 { 0 => 'tomorrow', 1 => 'afternoon' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_tomorrow', '_daytime_afternoon' ],
        ],
        [
 	 { 0 => 'tomorrow', 1 => 'evening' },
-         [ [ 0 ], [] ],
+         [ [], [] ],
          [ '_day_tomorrow', '_daytime_evening' ],
        ]
     ],

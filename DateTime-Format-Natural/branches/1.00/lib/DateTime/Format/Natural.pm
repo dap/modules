@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.60';
+our $VERSION = '0.61';
 
 sub new 
 {
@@ -37,8 +37,6 @@ sub _init
     eval "use $mod"; die $@ if $@;
 
     $self->{data} = $mod->__new();
-
-    return $self;
 }
 
 sub _init_check 
@@ -150,7 +148,6 @@ sub parse_datetime
         @{$self->{tokens}} = split ' ', $date_string;
         $self->{data}->__init('tokens')->($self);
         $self->{count}{tokens} = scalar @{$self->{tokens}};
-        @{$self->{tokenscopy}} = @{$self->{tokens}};
 
         $self->_process;
     }
@@ -208,7 +205,7 @@ sub success
 {
     my $self = shift;
 
-    return $self->_get_valid_exp && !$self->_get_failure ? 1 : 0;
+    return ($self->_get_valid_exp && !$self->_get_failure) ? 1 : 0;
 }
 
 sub error 
@@ -241,7 +238,7 @@ sub _process
 
     $self->{index} = 0;
 
-    foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
+    PARSE: foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
         my @grammar = @{$self->{data}->__grammar($keyword)};
         my $types = shift @grammar;
 
@@ -292,7 +289,8 @@ sub _process
                     @values = map { defined $_ ? $_ : () } @values;
                     my $meth = 'SUPER::'.$expression->[-1]->[$i++];
                     $self->$meth(@values);
-                }            
+                }
+	        last PARSE;
 	    }
         }
     }
@@ -308,14 +306,15 @@ sub _post_process_options
         my %modified = map { $_ => 1 } grep { $_ ne 'total' } keys %{$self->{modified}};
 
         if ($self->{count}{tokens} == 1
-            && (any { $self->{tokenscopy}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
+            && (any { $self->{tokens}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
             && scalar keys %modified == 1
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1
-	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) < DateTime->now(time_zone => $self->{Time_zone})->wday)
+	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) 
+	     < DateTime->now(time_zone => $self->{Time_zone})->wday)
         ) {
             $self->{postprocess}{day} = 7;
         } 
-	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokenscopy}} } keys %{$self->{data}->{months}})
+	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } keys %{$self->{data}->{months}})
             && (all { /^(?:day|month)$/ } keys %modified)
             && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
             && (exists $self->{modified}{day}
