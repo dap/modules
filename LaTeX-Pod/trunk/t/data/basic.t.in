@@ -1,0 +1,63 @@
+\documentclass[10pt]{article}
+
+\pagestyle{headings}
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\flushleft
+
+\section{1}
+
+\item[1] \mbox{}\
+\begin{verbatim}
+abc
+\end{verbatim}
+
+\subsection{1}
+
+\begin{verbatim}
+def
+\end{verbatim}
+
+\subsection{2}
+
+\item[2] \mbox{}\
+\begin{verbatim}
+ ghi
+\end{verbatim}
+
+\subsubsection{1}
+
+\item[3] \mbox{}\
+\begin{verbatim}
+jkl
+\end{verbatim}
+
+\subsubsection{2}
+
+\begin{verbatim}
+mno
+\end{verbatim}
+
+\section{2}
+
+\begin{verbatim}
+ pqr
+\end{verbatim}
+
+\subsection{1}
+
+\begin{verbatim}
+stu
+\end{verbatim}
+
+\section{3}
+
+\begin{verbatim}
+vwx
+\end{verbatim}
+
+\end{document}

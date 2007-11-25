@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.14 Sun Nov 25 14:21:54 CET 2007
+
+ - Added test which tests basic conversion.
+
 0.13 Sat Sep  1 17:26:49 CEST 2007
 
  - Redone code formatting. 

@@ -6,9 +6,10 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
-sub new {
+sub new 
+{
     my $class = shift;
 
     my $self = bless {}, ref($class) || $class;
@@ -17,7 +18,8 @@ sub new {
     return $self;
 }
 
-sub convert {
+sub convert 
+{
     my $self = shift;
 
     my $nodes = $self->_init_tom;
@@ -57,7 +59,8 @@ sub convert {
     return $self->_pod_finalize;
 }
 
-sub _init {
+sub _init 
+{
     my ($self, $file) = @_;
 
     croak "$file: $!" unless -f $file;
@@ -87,7 +90,8 @@ sub _init {
     );
 }
 
-sub _init_tom {
+sub _init_tom 
+{
     my $self = shift;
 
     # silently discard warnings about unparseable latex
@@ -98,7 +102,8 @@ sub _init_tom {
     return $nodes;
 }
 
-sub _process_directives {
+sub _process_directives 
+{
     my $self = shift;
 
     foreach my $node qw(directive docauthor) {
@@ -121,7 +126,8 @@ sub _process_directives {
     return 0;
 }
 
-sub _process_text_title {
+sub _process_text_title 
+{
     my $self = shift;
 
     if ($self->_is_set_previous('item')) {
@@ -138,7 +144,8 @@ sub _process_text_title {
     $self->_register_previous('title');
 }
 
-sub _process_text_verbatim {
+sub _process_text_verbatim 
+{
     my $self = shift;
 
     my $text = $self->{current_node}->getNodeText;
@@ -173,7 +180,8 @@ sub _process_text_verbatim {
     $self->_register_previous('verbatim');
 }
 
-sub _process_text_item {
+sub _process_text_item 
+{
     my $self = shift;
 
     unless ($self->_is_set_previous('item')) {
@@ -195,7 +203,8 @@ sub _process_text_item {
     $self->_register_previous('item');
 }
 
-sub _process_text {
+sub _process_text 
+{
     my $self = shift;
 
     my $text = $self->{current_node}->getNodeText;
@@ -208,7 +217,8 @@ sub _process_text {
     $self->_register_previous('text');
 }
 
-sub _process_verbatim {
+sub _process_verbatim 
+{
     my $self = shift;
 
     $self->_unregister_previous('verbatim');
@@ -218,7 +228,8 @@ sub _process_verbatim {
     }
 }
 
-sub _process_item {
+sub _process_item 
+{
     my $self = shift;
 
     unless ($self->{current_node}->getCommandName eq 'mbox') {
@@ -230,7 +241,8 @@ sub _process_item {
     }
 }
 
-sub _process_chapter {
+sub _process_chapter 
+{
     my $self = shift;
 
     $self->{title_inc}++;
@@ -239,14 +251,16 @@ sub _process_chapter {
     $self->_register_node('title');
 }
 
-sub _process_section {
+sub _process_section 
+{
     my $self = shift;
 
     $self->_pod_add('=head'.$self->{title_inc}.' ');
     $self->_register_node('title');
 }
 
-sub _process_subsection {
+sub _process_subsection 
+{
     my $self = shift;
 
     my $sub_often;
@@ -260,7 +274,8 @@ sub _process_subsection {
     $self->_register_node('title');
 }
 
-sub _process_spec_chars {
+sub _process_spec_chars 
+{
     my ($self, $text) = @_;
 
     my %umlauts = (a => 'ä',
@@ -281,7 +296,8 @@ sub _process_spec_chars {
     $$text =~ s/\\newline//g;
 }
 
-sub _process_tags {
+sub _process_tags 
+{
     my ($self, $tag) = @_;
 
     my $text = $self->{current_node}->getNodeText;
@@ -296,7 +312,8 @@ sub _process_tags {
     $self->_unregister_node($tag);
 }
 
-sub _pod_add {
+sub _pod_add 
+{
     my ($self, $content) = @_;
 
     if (!$self->{append_following}) {
@@ -308,33 +325,38 @@ sub _pod_add {
     }
 }
 
-sub _pod_append {
+sub _pod_append 
+{
     my ($self, $content) = @_;
 
     $self->{pod}->[-1] .= $content;
 }
 
-sub _pod_scrub_newlines {
+sub _pod_scrub_newlines 
+{
     my ($self, $text) = @_;
 
     $$text =~ s/^\n*//;
     $$text =~ s/\n*$//;
 }
 
-sub _pod_scrub_whitespaces {
+sub _pod_scrub_whitespaces 
+{
     my ($self, $text) = @_;
 
     $$text =~ s/^\s*//;
     $$text =~ s/\s*$//;
 }
 
-sub _pod_get {
+sub _pod_get 
+{
     my $self = shift;
 
     return $self->{pod};
 }
 
-sub _pod_finalize {
+sub _pod_finalize 
+{
     my $self = shift;
 
     $self->_pod_add('=cut');
@@ -342,31 +364,36 @@ sub _pod_finalize {
     return join "\n\n", @{$self->_pod_get};
 }
 
-sub _register_node {
+sub _register_node 
+{
     my ($self, $item) = @_;
 
     $self->{node}{$item} = 1;
 }
 
-sub _is_set_node {
+sub _is_set_node 
+{
     my ($self, $item) = @_;
 
     return $self->{node}{$item} ? 1 : 0;
 }
 
-sub _unregister_node {
+sub _unregister_node 
+{
     my ($self, $item) = @_;
 
     delete $self->{node}{$item};
 }
 
-sub _register_previous {
+sub _register_previous 
+{
     my ($self, $item) = @_;
 
     $self->{previous}{$item} = 1;
 }
 
-sub _is_set_previous {
+sub _is_set_previous 
+{
     my ($self, $item) = @_;
 
     my @items = ref($item) eq 'ARRAY' ? @$item : ($item);
@@ -380,7 +407,8 @@ sub _is_set_previous {
     return 0;
 }
 
-sub _unregister_previous {
+sub _unregister_previous 
+{
     my ($self, $item) = @_;
 
     my @items = ref($item) eq 'ARRAY' ? @$item : ($item);

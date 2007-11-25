@@ -8,5 +8,8 @@ META.yml
 README
 scripts/latex2pod
 t/00-load.t
+t/basic.t
+t/data/basic.t.in
 t/pod-coverage.t
 t/pod.t
+TODO
