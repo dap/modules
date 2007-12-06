@@ -2,11 +2,10 @@ package DateTime::Format::Natural::Lang::Base;
 
 use strict;
 use warnings;
-use base qw(Exporter);
 
-our $VERSION = '0.5';
-our @EXPORT = qw(AUTOLOAD __new);
-our $AUTOLOAD;
+our ($VERSION, $AUTOLOAD);
+
+$VERSION = '0.6';
 
 sub __new 
 {
@@ -17,8 +16,10 @@ sub __new
     my $obj = {};
     $obj->{weekdays}        = \%{$class.'::'.'data_weekdays'};
     $obj->{weekdays_abbrev} = \%{$class.'::'.'data_weekdays_abbrev'};
+    $obj->{weekdays_all}    = \%{$class.'::'.'data_weekdays_all'};
     $obj->{months}          = \%{$class.'::'.'data_months'};
     $obj->{months_abbrev}   = \%{$class.'::'.'data_months_abbrev'};
+    $obj->{months_all}      = \%{$class.'::'.'data_months_all'};
 
     return bless $obj, ref($class) || $class;
 }

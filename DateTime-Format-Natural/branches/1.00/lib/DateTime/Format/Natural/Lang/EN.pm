@@ -4,15 +4,17 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.06';
+our $VERSION = '1.07';
 
 our (%init, 
      %timespan,
      %RE,
      %data_weekdays, 
      %data_weekdays_abbrev, 
+     %data_weekdays_all,
      %data_months, 
      %data_months_abbrev,
+     %data_months_all,
      %grammar);
 
 %init = ('tokens' => sub {});
@@ -35,6 +37,11 @@ our (%init,
         substr($_, 0, 3) => $_ 
     } keys %data_weekdays;
 
+    %data_weekdays_all = (%data_weekdays, %data_weekdays_abbrev);
+    
+    my $days_re = join '|', (keys %data_weekdays, keys %data_weekdays_abbrev);
+    $RE{weekday} = qr/^($days_re)$/i;
+
     $i = 1;  
 
     %data_months = map { 
@@ -45,17 +52,10 @@ our (%init,
         substr($_, 0, 3) => $_ 
     } keys %data_months;
 
-    my $months_re = join '|', keys %data_months;
-    my @abbrev = keys %data_months;
-    $_ = substr($_, 0, 3) foreach @abbrev;
-    $months_re .= '|' . join '|', @abbrev;
-    $RE{month} = qr/^($months_re)$/i;
+    %data_months_all = (%data_months, %data_months_abbrev);
 
-    my $days_re = join '|', keys %data_weekdays;
-    @abbrev = keys %data_weekdays;
-    $_ = substr($_, 0, 3) foreach @abbrev;
-    $days_re .= '|' . join '|', @abbrev;
-    $RE{weekday} = qr/^($days_re)$/i;
+    my $months_re = join '|', (keys %data_months, keys %data_months_abbrev);
+    $RE{month} = qr/^($months_re)$/i;
 }
 
 # <keyword> => [

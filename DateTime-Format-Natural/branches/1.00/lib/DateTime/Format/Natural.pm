@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.61';
+our $VERSION = '0.62';
 
 sub new 
 {
@@ -306,7 +306,7 @@ sub _post_process_options
         my %modified = map { $_ => 1 } grep { $_ ne 'total' } keys %{$self->{modified}};
 
         if ($self->{count}{tokens} == 1
-            && (any { $self->{tokens}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays}})
+            && (any { $self->{tokens}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays_all}})
             && scalar keys %modified == 1
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1
 	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) 
@@ -314,7 +314,7 @@ sub _post_process_options
         ) {
             $self->{postprocess}{day} = 7;
         } 
-	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } keys %{$self->{data}->{months}})
+	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } keys %{$self->{data}->{months_all}})
             && (all { /^(?:day|month)$/ } keys %modified)
             && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
             && (exists $self->{modified}{day}

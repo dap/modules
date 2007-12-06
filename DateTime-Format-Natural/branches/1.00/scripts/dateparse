@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 
-use DateTime::Format::Natural ();
-use Term::ReadLine ();
+use DateTime::Format::Natural;
+use Term::ReadLine;
 
 use constant LANG_DEFAULT => 'en';
 

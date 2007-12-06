@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.62 Mon Dec  3 21:06:05 CET 2007
+
+ - Added support for abbreviated week-/monthnames when 'prefer_future'
+   option is enabled. [rt #31254 - Shawn M. Moore <sartak@gmail.com>]
+
+ - Deprecated export of subs within Lang/Base.pm to Lang/EN.pm
+   (the ISA relationship is sufficient).
+
 0.61 Sat Nov 24 10:32:31 CET 2007
 
  - Improved code efficiency a bit & removed some dead code.
