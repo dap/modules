@@ -5,7 +5,7 @@ use warnings;
 
 our ($VERSION, $AUTOLOAD);
 
-$VERSION = '0.6';
+$VERSION = '0.7';
 
 sub __new 
 {
@@ -16,10 +16,10 @@ sub __new
     my $obj = {};
     $obj->{weekdays}        = \%{$class.'::'.'data_weekdays'};
     $obj->{weekdays_abbrev} = \%{$class.'::'.'data_weekdays_abbrev'};
-    $obj->{weekdays_all}    = \%{$class.'::'.'data_weekdays_all'};
+    $obj->{weekdays_all}    = \@{$class.'::'.'data_weekdays_all'};
     $obj->{months}          = \%{$class.'::'.'data_months'};
     $obj->{months_abbrev}   = \%{$class.'::'.'data_months_abbrev'};
-    $obj->{months_all}      = \%{$class.'::'.'data_months_all'};
+    $obj->{months_all}      = \@{$class.'::'.'data_months_all'};
 
     return bless $obj, ref($class) || $class;
 }

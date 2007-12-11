@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.62';
+our $VERSION = '0.62_01';
 
 sub new 
 {
@@ -236,8 +236,6 @@ sub _process
 {
     my $self = shift;
 
-    $self->{index} = 0;
-
     PARSE: foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
         my @grammar = @{$self->{data}->__grammar($keyword)};
         my $types = shift @grammar;
@@ -306,7 +304,7 @@ sub _post_process_options
         my %modified = map { $_ => 1 } grep { $_ ne 'total' } keys %{$self->{modified}};
 
         if ($self->{count}{tokens} == 1
-            && (any { $self->{tokens}->[0] =~ /$_/i } keys %{$self->{data}->{weekdays_all}})
+            && (any { $self->{tokens}->[0] =~ /$_/i } @{$self->{data}->{weekdays_all}})
             && scalar keys %modified == 1
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1
 	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) 
@@ -314,7 +312,7 @@ sub _post_process_options
         ) {
             $self->{postprocess}{day} = 7;
         } 
-	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } keys %{$self->{data}->{months_all}})
+	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } @{$self->{data}->{months_all}})
             && (all { /^(?:day|month)$/ } keys %modified)
             && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
             && (exists $self->{modified}{day}
@@ -333,7 +331,7 @@ sub _token
     my ($self, $pos) = @_;
 
     my $str = '';
-    my $token = $self->{tokens}->[$self->{index} + $pos];
+    my $token = $self->{tokens}->[0 + $pos];
 
     return defined $token
       ? \$token

@@ -4,27 +4,27 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 our (%init, 
      %timespan,
      %RE,
      %data_weekdays, 
      %data_weekdays_abbrev, 
-     %data_weekdays_all,
+     @data_weekdays_all,
      %data_months, 
      %data_months_abbrev,
-     %data_months_all,
+     @data_months_all,
      %grammar);
 
 %init = ('tokens' => sub {});
 %timespan = ('literal' => 'to');
 
-%RE = ('number' => qr/^(\d+)$/,
-       'year' => qr/^(\d{4})$/,
-       'time' => qr/^((?:\d{1,2})(?:\:\d{1,2})?)$/,
-       'time_am' => qr/^((?:\d+)(?:\:\d+)?)(?:am)?$/, 
-       'time_pm' => qr/^((?:\d+)(?:\:\d+)?)pm$/,
+%RE = ('number'   => qr/^(\d+)$/,
+       'year'     => qr/^(\d{4})$/,
+       'time'     => qr/^((?:\d{1,2})(?:\:\d{1,2})?)$/,
+       'time_am'  => qr/^((?:\d+)(?:\:\d+)?)(?:am)?$/, 
+       'time_pm'  => qr/^((?:\d+)(?:\:\d+)?)pm$/,
        'day_enum' => qr/^(\d+)(?:st|nd|rd|th)?$/,
        'monthday' => qr/^(\d{1,2})$/);
 {
@@ -37,9 +37,9 @@ our (%init,
         substr($_, 0, 3) => $_ 
     } keys %data_weekdays;
 
-    %data_weekdays_all = (%data_weekdays, %data_weekdays_abbrev);
+    @data_weekdays_all = (keys %data_weekdays, keys %data_weekdays_abbrev);
     
-    my $days_re = join '|', (keys %data_weekdays, keys %data_weekdays_abbrev);
+    my $days_re = join '|', @data_weekdays_all;
     $RE{weekday} = qr/^($days_re)$/i;
 
     $i = 1;  
@@ -52,9 +52,9 @@ our (%init,
         substr($_, 0, 3) => $_ 
     } keys %data_months;
 
-    %data_months_all = (%data_months, %data_months_abbrev);
+    @data_months_all = (keys %data_months, keys %data_months_abbrev);
 
-    my $months_re = join '|', (keys %data_months, keys %data_months_abbrev);
+    my $months_re = join '|', @data_months_all;
     $RE{month} = qr/^($months_re)$/i;
 }
 
