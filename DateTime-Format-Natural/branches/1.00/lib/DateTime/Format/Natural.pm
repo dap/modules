@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.62_01';
+our $VERSION = '0.62_02';
 
 sub new 
 {
@@ -37,6 +37,7 @@ sub _init
     eval "use $mod"; die $@ if $@;
 
     $self->{data} = $mod->__new();
+    $self->{grammar_class} = $mod;
 }
 
 sub _init_check 
@@ -260,18 +261,18 @@ sub _process
 		    }
 	        }
 	        elsif ($types->[$pos] eq 'REGEXP') {
-	            if (my (@matches) = ${$self->_token($pos)} =~ $definition->{$pos}) {
-                        foreach my $match (@matches) {
-                            $regex_stack{$pos} = $match if defined $match;
-                        }
-		        next;
+		    local $1;
+	            if (${$self->_token($pos)} =~ $definition->{$pos}) {
+                        $regex_stack{$pos} = $1 if defined $1;
+                        next;
 		    }
 		    else {
 		        $valid_expression = 0;
 		    }
 	        }
 	        else {
-	            die "grammar error";
+	            die "grammar error at keyword \"$keyword\" within $self->{grammar_class}: ",
+		        "unknown type $types->[$pos]\n";
 	        }
 	    }
 	    if ($valid_expression) {
@@ -283,7 +284,7 @@ sub _process
                         $values[$pos] = exists $regex_stack{$pos}
 		          ? $regex_stack{$pos}
 		          : ${$self->_token($pos)};
-                    }                
+                    }
                     @values = map { defined $_ ? $_ : () } @values;
                     my $meth = 'SUPER::'.$expression->[-1]->[$i++];
                     $self->$meth(@values);

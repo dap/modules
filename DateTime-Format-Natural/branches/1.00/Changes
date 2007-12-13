@@ -1,5 +1,15 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.62_02 Thu Dec 13 12:12:06 CET 2007
+
+ - Localized $1 within the grammar parser (i.e., the method _process()) 
+   before examining whether a regular expression succeeded and if it did, 
+   check whether it did capture some content and save it on the "regex-stack".
+
+ - Enhanced the diagnostic printed when faulty grammar types are encountered.
+
+ - Changed a type definition from 'SCALAR' to 'REGEXP' within EN.pm.  
+
 0.62_01 Tue Dec 11 13:28:31 CET 2007
 
  - No "functional" changes, merely "cosmetic" ones.

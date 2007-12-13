@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
  
-our $VERSION = '1.08';
+our $VERSION = '1.09';
 
 our (%init, 
      %timespan,
@@ -542,7 +542,7 @@ our (%init,
        ],
     ], 
     ago_yesterday => [ 
-       [ 'REGEXP', 'REGEXP', 'SCALAR', 'SCALAR' ],
+       [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
        [ 
          { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/seconds?/i, 3 => 'ago' }, 
          [ [], [ 1 ] ], 
