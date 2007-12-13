@@ -9,9 +9,9 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.62_02';
+our $VERSION = '0.62_03';
 
-sub new 
+sub new
 {
     my $class = shift;
 
@@ -21,7 +21,7 @@ sub new
     return $self;
 }
 
-sub _init 
+sub _init
 {
     my ($self, %opts) = @_;
 
@@ -33,14 +33,14 @@ sub _init
 
     $self->_init_check;
 
-    my $mod  = __PACKAGE__.'::Lang::'.uc($self->{Lang});
+    my $mod = __PACKAGE__.'::Lang::'.uc($self->{Lang});
     eval "use $mod"; die $@ if $@;
 
     $self->{data} = $mod->__new();
     $self->{grammar_class} = $mod;
 }
 
-sub _init_check 
+sub _init_check
 {
     my $self = shift;
 
@@ -61,7 +61,7 @@ sub _init_check
         }
     }
     Carp::croak "new(): $error\n" if defined $error;
-    
+
     # time zone can't easily be checked by a regex
     eval {
         DateTime::TimeZone->new(name => $self->{Time_zone});
@@ -69,7 +69,7 @@ sub _init_check
     Carp::croak "new(): $@\n" if $@;
 }
 
-sub _init_vars 
+sub _init_vars
 {
     my $self = shift;
 
@@ -77,7 +77,7 @@ sub _init_vars
     delete $self->{postprocess};
 }
 
-sub parse_datetime 
+sub parse_datetime
 {
     my $self = shift;
 
@@ -93,22 +93,22 @@ sub parse_datetime
         $self->{count}{tokens} = 1;
 
         my $separator = quotemeta((keys %count)[0]);
-	my @chunks = split /$separator/, $date_string;
+        my @chunks = split /$separator/, $date_string;
 
         my $i = 0;
-	my %length = map { length $_ => $i++ } @chunks;
+        my %length = map { length $_ => $i++ } @chunks;
 
-	my $format = $self->{Format};
-          
-	if (exists $length{4}) {
-            $format = join $separator, ($length{4} == 0 ? qw(yyyy mm dd) : qw(dd mm yyyy)); 	    
-        } 
-	else {
+        my $format = $self->{Format};
+
+        if (exists $length{4}) {
+            $format = join $separator, ($length{4} == 0 ? qw(yyyy mm dd) : qw(dd mm yyyy));
+        }
+        else {
             $separator = do { $_ = $format;
                               tr/a-zA-Z//d;
                               tr/a-zA-Z//cs;
                               quotemeta; };
-	}
+        }
 
         my @separated_order = split /$separator/, $format;
         my $separated_index = 0;
@@ -121,22 +121,22 @@ sub parse_datetime
                     ? int($self->{datetime}->year / 100)
                     : substr((localtime)[5] + 1900, 0, 2);
 
-	my ($day, $month, $year) = map { $bits[$separated_indices->{$_}] } qw(d m y);
+        my ($day, $month, $year) = map { $bits[$separated_indices->{$_}] } qw(d m y);
 
-	if (not defined $day && defined $month && defined $year) {
-	   $self->_set_error("('format' parameter invalid)");
-	   return $self->_get_datetime_object;
-	}
+        if (not defined $day && defined $month && defined $year) {
+            $self->_set_error("('format' parameter invalid)");
+            return $self->_get_datetime_object;
+        }
 
         if ($year > $century) { $century-- };
-	if (length $year == 2) { $year = "$century$year" };
+        if (length $year == 2) { $year = "$century$year" };
 
-	if (not $self->SUPER::_valid_date(day => $day)
-	     && $self->SUPER::_valid_date(month => $month)
-	     && $self->SUPER::_valid_date(year => $year)) {
-	    $self->_set_error("(invalid date)");
-	    return $self->_get_datetime_object;
-	}
+        if (not $self->SUPER::_valid_date(day => $day)
+             && $self->SUPER::_valid_date(month => $month)
+             && $self->SUPER::_valid_date(year => $year)) {
+            $self->_set_error("(invalid date)");
+            return $self->_get_datetime_object;
+        }
 
         $self->{datetime}->set_year($year);
         $self->{datetime}->set_month($month);
@@ -144,7 +144,7 @@ sub parse_datetime
 
         $self->_set_valid_exp;
         $self->_set_modified(1);
-    } 
+    }
     else {
         @{$self->{tokens}} = split ' ', $date_string;
         $self->{data}->__init('tokens')->($self);
@@ -156,7 +156,7 @@ sub parse_datetime
     return $self->_get_datetime_object;
 }
 
-sub _parse_init 
+sub _parse_init
 {
     my $self = shift;
 
@@ -164,7 +164,7 @@ sub _parse_init
         my %opts             = @_;
         $self->{Date_string} = $opts{string};
         (undef)              = $opts{debug}; # legacy
-    } 
+    }
     else {
         ($self->{Date_string}) = @_;
     }
@@ -182,7 +182,7 @@ sub _parse_init
     $self->_unset_modified;
 }
 
-sub parse_datetime_duration 
+sub parse_datetime_duration
 {
     my $self = shift;
 
@@ -202,14 +202,14 @@ sub parse_datetime_duration
     return @stack;
 }
 
-sub success 
+sub success
 {
     my $self = shift;
 
     return ($self->_get_valid_exp && !$self->_get_failure) ? 1 : 0;
 }
 
-sub error 
+sub error
 {
     my $self = shift;
 
@@ -221,7 +221,7 @@ sub error
     return $error;
 }
 
-sub trace 
+sub trace
 {
     my $self = shift;
 
@@ -233,7 +233,7 @@ sub trace
     return join "\n", @{$self->{trace}}, @modified;
 }
 
-sub _process 
+sub _process
 {
     my $self = shift;
 
@@ -245,59 +245,59 @@ sub _process
         last if $self->_get_modified >= @{$self->{tokens}};
 
         foreach my $expression (@grammar) {
-            my $valid_expression = 1; 
+            my $valid_expression = 1;
             my $definition = $expression->[0];
             my @positions = keys %$definition;
             my %regex_stack;
-	    foreach my $pos (@positions) {
-	        if ($types->[$pos] eq 'SCALAR') {
-	            if (defined $definition->{$pos}) {
+            foreach my $pos (@positions) {
+                if ($types->[$pos] eq 'SCALAR') {
+                    if (defined $definition->{$pos}) {
                         if (${$self->_token($pos)} =~ /^$definition->{$pos}$/i) {
-		            next;
-		        }
-		        else {
-		            $valid_expression = 0;
-		        }
-		    }
-	        }
-	        elsif ($types->[$pos] eq 'REGEXP') {
-		    local $1;
-	            if (${$self->_token($pos)} =~ $definition->{$pos}) {
+                            next;
+                        }
+                        else {
+                            $valid_expression = 0;
+                        }
+                    }
+                }
+                elsif ($types->[$pos] eq 'REGEXP') {
+                    local $1;
+                    if (${$self->_token($pos)} =~ $definition->{$pos}) {
                         $regex_stack{$pos} = $1 if defined $1;
                         next;
-		    }
-		    else {
-		        $valid_expression = 0;
-		    }
-	        }
-	        else {
-	            die "grammar error at keyword \"$keyword\" within $self->{grammar_class}: ",
-		        "unknown type $types->[$pos]\n";
-	        }
-	    }
-	    if ($valid_expression) {
+                    }
+                    else {
+                        $valid_expression = 0;
+                    }
+                }
+                else {
+                    die "grammar error at keyword \"$keyword\" within $self->{grammar_class}: ",
+                        "unknown type $types->[$pos]\n";
+                }
+            }
+            if ($valid_expression) {
                 $self->_set_valid_exp;
-	        my $i;
+                my $i;
                 foreach my $positions (@{$expression->[1]}) {
                     my @values;
                     foreach my $pos (@$positions) {
                         $values[$pos] = exists $regex_stack{$pos}
-		          ? $regex_stack{$pos}
-		          : ${$self->_token($pos)};
+                          ? $regex_stack{$pos}
+                          : ${$self->_token($pos)};
                     }
                     @values = map { defined $_ ? $_ : () } @values;
                     my $meth = 'SUPER::'.$expression->[-1]->[$i++];
                     $self->$meth(@values);
                 }
-	        last PARSE;
-	    }
+                last PARSE;
+            }
         }
     }
-    
-    $self->_post_process_options; 
+
+    $self->_post_process_options;
 }
 
-sub _post_process_options 
+sub _post_process_options
 {
     my $self = shift;
 
@@ -308,26 +308,26 @@ sub _post_process_options
             && (any { $self->{tokens}->[0] =~ /$_/i } @{$self->{data}->{weekdays_all}})
             && scalar keys %modified == 1
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1
-	    && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day) 
-	     < DateTime->now(time_zone => $self->{Time_zone})->wday)
+            && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day)
+             < DateTime->now(time_zone => $self->{Time_zone})->wday)
         ) {
             $self->{postprocess}{day} = 7;
-        } 
-	elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } @{$self->{data}->{months_all}})
+        }
+        elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } @{$self->{data}->{months_all}})
             && (all { /^(?:day|month)$/ } keys %modified)
             && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
             && (exists $self->{modified}{day}
                   ? $self->{modified}{day} == 1
                     ? 1 : 0
                   : 1)
-	    && ($self->{datetime}->day_of_year < DateTime->now->day_of_year) 
+            && ($self->{datetime}->day_of_year < DateTime->now->day_of_year)
         ) {
-	    $self->{postprocess}{year} = 1;
+            $self->{postprocess}{year} = 1;
         }
     }
 }
 
-sub _token 
+sub _token
 {
     my ($self, $pos) = @_;
 
@@ -358,7 +358,7 @@ sub _get_modified    { $_[0]->{modified}{total} || 0     }
 sub _set_modified    { $_[0]->{modified}{total} += $_[1] }
 sub _unset_modified  { $_[0]->{modified}{total}  = 0     }
 
-sub _get_datetime_object 
+sub _get_datetime_object
 {
     my $self = shift;
 
@@ -392,7 +392,7 @@ sub _get_datetime_object
 }
 
 # solely for testing purpose
-sub _set_datetime 
+sub _set_datetime
 {
     my ($self, $year, $month, $day, $hour, $min, $sec, $tz) = @_;
 

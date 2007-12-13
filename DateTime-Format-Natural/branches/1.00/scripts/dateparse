@@ -17,7 +17,7 @@ my %valid_languages     = map { $_ => 1 } @supported_languages;
 
 parse_switches() if @ARGV;
 
-sub parse_switches 
+sub parse_switches
 {
     use Getopt::Long qw(:config no_auto_abbrev no_ignore_case);
 
@@ -40,7 +40,7 @@ sub parse_switches
     $trace           = $opts{t};
 }
 
-sub usage 
+sub usage
 {
     print <<USAGE;
 Usage: $0 [switches]
@@ -55,13 +55,13 @@ USAGE
     exit;
 }
 
-sub version 
+sub version
 {
     print "  DateTime::Format::Natural $DateTime::Format::Natural::VERSION\n";
     exit;
 }
 
-sub supported 
+sub supported
 {
     print "$_\n" foreach @supported_languages;
     exit;
@@ -78,13 +78,13 @@ my $prompt = 'dateparse> ';
 while (defined(my $input = $term->readline($prompt))) {
     $term->addhistory($input) if $input =~ /\S/;
     last if $input =~ /^(?:quit|exit)$/;
-    
+
     if ($input =~ /^(?:\?|help)$/i) {
         print <<EOT;
 
 Commands
- ?, help		this help screen
- exit, quit	  	leave dateparse
+ ?, help                this help screen
+ exit, quit             leave dateparse
  everything else        datetime string
 
 EOT
@@ -102,7 +102,7 @@ EOT
         foreach my $dt (@dt) {
             printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
         }
-    } 
+    }
     else {
         warn $parse->error, "\n";
     }

@@ -77,7 +77,7 @@ my %simple = ('now'                   => '24.11.2006 01:13:00',
 
 compare(\%simple);
 
-sub compare 
+sub compare
 {
     my $href = shift;
     foreach my $key (sort keys %$href) {
@@ -85,13 +85,13 @@ sub compare
     }
 }
 
-sub compare_strings 
+sub compare_strings
 {
     my ($string, $result) = @_;
 
     my $parse = DateTime::Format::Natural->new(lang => 'en', time_zone => 'UTC');
     $parse->_set_datetime($year, $month, $day, $hour, $min, $sec, 'Asia/Tokyo');
-    
+
     my $dt = $parse->parse_datetime(string => $string);
 
     my $res_string = sprintf("%02d.%02d.%4d %02d:%02d:%02d", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);

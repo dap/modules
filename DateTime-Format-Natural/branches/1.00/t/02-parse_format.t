@@ -14,7 +14,7 @@ my %specific = ('27/5/1979'  => [ '27.05.1979 01:13:00', 'dd/m/yyyy'  ],
 
 compare(\%specific);
 
-sub compare 
+sub compare
 {
     my $href = shift;
     foreach my $key (sort keys %$href) {
@@ -22,7 +22,7 @@ sub compare
     }
 }
 
-sub compare_strings 
+sub compare_strings
 {
     my ($string, $result, $format) = @_;
 

@@ -14,7 +14,7 @@ my %durations = ('monday to friday' => [ '20.11.2006 01:13:00', '24.11.2006 01:1
 
 compare(\%durations);
 
-sub compare 
+sub compare
 {
     my $href = shift;
     foreach my $key (sort keys %$href) {
@@ -22,7 +22,7 @@ sub compare
     }
 }
 
-sub compare_strings 
+sub compare_strings
 {
     my ($string, $result) = @_;
 
@@ -36,10 +36,10 @@ sub compare_strings
         my $res_string = sprintf("%02d.%02d.%4d %02d:%02d:%02d", $dt[$i]->day, $dt[$i]->month, $dt[$i]->year, $dt[$i]->hour, $dt[$i]->min, $dt[$i]->sec);
         $passed &= $res_string eq $result->[$i];
     }
-        
-    if ($parse->success && $passed && @dt == 2) { 
+
+    if ($parse->success && $passed && @dt == 2) {
         ok($passed, $string);
-    } 
+    }
     else {
         fail($string);
     }

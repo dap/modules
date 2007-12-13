@@ -5,9 +5,9 @@ use warnings;
 
 our ($VERSION, $AUTOLOAD);
 
-$VERSION = '0.7';
+$VERSION = '0.8';
 
-sub __new 
+sub __new
 {
     my $class = shift;
 
@@ -24,7 +24,7 @@ sub __new
     return bless $obj, ref($class) || $class;
 }
 
-AUTOLOAD 
+AUTOLOAD
 {
     my ($self, $exp) = @_;
 

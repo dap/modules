@@ -1,14 +1,19 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.62_03 Thu Dec 13 20:53:11 CET 2007
+
+ - Replaced remaining tabs within the entire source with
+   regular spaces (4).
+
 0.62_02 Thu Dec 13 12:12:06 CET 2007
 
- - Localized $1 within the grammar parser (i.e., the method _process()) 
-   before examining whether a regular expression succeeded and if it did, 
+ - Localized $1 within the grammar parser (i.e., the method _process())
+   before examining whether a regular expression succeeded and if it did,
    check whether it did capture some content and save it on the "regex-stack".
 
  - Enhanced the diagnostic printed when faulty grammar types are encountered.
 
- - Changed a type definition from 'SCALAR' to 'REGEXP' within EN.pm.  
+ - Changed a type definition from 'SCALAR' to 'REGEXP' within EN.pm.
 
 0.62_01 Tue Dec 11 13:28:31 CET 2007
 
@@ -431,7 +436,7 @@ Revision history for Perl extension DateTime::Format::Natural.
  - Actualized the documentation accordingly.
 
 0.03 Tue Oct 24 01:25:03 CEST 2006
- 
+
  - Appended the i(ncasesensitive) Modifier to a few regular expressions.
 
  - Fixed the broken newlines for the example documentation.
@@ -439,9 +444,9 @@ Revision history for Perl extension DateTime::Format::Natural.
 0.02 Mon Oct 23 23:22:41 CEST 2006
 
  - DateTime has been added to the dependencies list.
- 
+
  - natural_parse() returns a DateTime object [Clayton L. Scott <clscott@cpan.org>]
- 
+
  - Extended documentation to include some example human readable time strings.
 
 0.01 Sun Oct 22 22:15:54 CEST 2006

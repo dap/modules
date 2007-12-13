@@ -9,13 +9,13 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.08';
+our $VERSION = '1.09';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
-use constant EVENING   => '20'; 
+use constant EVENING   => '20';
 
-sub _ago_seconds 
+sub _ago_seconds
 {
     my $self = shift;
     $self->_add_trace;
@@ -23,7 +23,7 @@ sub _ago_seconds
     $self->_set_modified(3);
 }
 
-sub _ago_minutes 
+sub _ago_minutes
 {
     my $self = shift;
     $self->_add_trace;
@@ -31,7 +31,7 @@ sub _ago_minutes
     $self->_set_modified(3);
 }
 
-sub _ago_hours 
+sub _ago_hours
 {
     my $self = shift;
     $self->_add_trace;
@@ -39,7 +39,7 @@ sub _ago_hours
     $self->_set_modified(3);
 }
 
-sub _ago_days 
+sub _ago_days
 {
     my $self = shift;
     $self->_add_trace;
@@ -47,7 +47,7 @@ sub _ago_days
     $self->_set_modified(3);
 }
 
-sub _ago_weeks 
+sub _ago_weeks
 {
     my $self = shift;
     $self->_add_trace;
@@ -55,7 +55,7 @@ sub _ago_weeks
     $self->_set_modified(3);
 }
 
-sub _ago_months 
+sub _ago_months
 {
     my $self = shift;
     $self->_add_trace;
@@ -63,7 +63,7 @@ sub _ago_months
     $self->_set_modified(3);
 }
 
-sub _ago_years 
+sub _ago_years
 {
     my $self = shift;
     $self->_add_trace;
@@ -103,7 +103,7 @@ sub _now_hours_from
     $self->_set_modified(4);
 }
 
-sub _now_days_before 
+sub _now_days_before
 {
     my $self = shift;
     $self->_add_trace;
@@ -111,7 +111,7 @@ sub _now_days_before
     $self->_set_modified(4);
 }
 
-sub _now_days_from 
+sub _now_days_from
 {
     my $self = shift;
     $self->_add_trace;
@@ -119,7 +119,7 @@ sub _now_days_from
     $self->_set_modified(4);
 }
 
-sub _now_weeks_before 
+sub _now_weeks_before
 {
     my $self = shift;
     $self->_add_trace;
@@ -127,7 +127,7 @@ sub _now_weeks_before
     $self->_set_modified(4);
 }
 
-sub _now_weeks_from 
+sub _now_weeks_from
 {
     my $self = shift;
     $self->_add_trace;
@@ -135,7 +135,7 @@ sub _now_weeks_from
     $self->_set_modified(4);
 }
 
-sub _now_months_before 
+sub _now_months_before
 {
     my $self = shift;
     $self->_add_trace;
@@ -151,7 +151,7 @@ sub _now_months_from
     $self->_set_modified(4);
 }
 
-sub _now_years_before 
+sub _now_years_before
 {
     my $self = shift;
     $self->_add_trace;
@@ -159,7 +159,7 @@ sub _now_years_before
     $self->_set_modified(4);
 }
 
-sub _now_years_from 
+sub _now_years_from
 {
     my $self = shift;
     $self->_add_trace;
@@ -167,13 +167,13 @@ sub _now_years_from
     $self->_set_modified(4);
 }
 
-sub _daytime_in_the_morning 
+sub _daytime_in_the_morning
 {
     my $self = shift;
     $self->_add_trace;
     my ($hour) = @_;
     if ($self->_valid_time(hour => $hour)) {
-        $self->_set(hour => $hour); 
+        $self->_set(hour => $hour);
         $self->_set(minute => 0);
         $self->_set(second => 0);
     }
@@ -206,7 +206,7 @@ sub _daytime_in_the_evening
     $self->_set_modified(4);
 }
 
-sub _daytime_morning 
+sub _daytime_morning
 {
     my $self = shift;
     $self->_add_trace;
@@ -231,7 +231,7 @@ sub _daytime_noon
     $self->_set_modified(1);
 }
 
-sub _daytime_afternoon 
+sub _daytime_afternoon
 {
     my $self = shift;
     $self->_add_trace;
@@ -342,7 +342,7 @@ sub _day_tomorrow
     $self->_set_modified(1);
 }
 
-sub _month 
+sub _month
 {
     my $self = shift;
     $self->_add_trace;
@@ -352,7 +352,7 @@ sub _month
         $month = $self->{data}->{months_abbrev}->{$month};
     }
     $self->_set(month => $self->{data}->{months}->{$month});
-    $self->_set_modified(1);    
+    $self->_set_modified(1);
 }
 
 sub _month_day_after
@@ -401,7 +401,7 @@ sub _year
 sub _weekday
 {
     my $self = shift;
-    $self->_add_trace;    
+    $self->_add_trace;
     my ($day) = @_;
     $day = ucfirst lc $day;
     if (length $day == 3) {
@@ -412,7 +412,7 @@ sub _weekday
     if ($self->{data}->{weekdays}->{$day} > $self->{datetime}->wday) {
         $days_diff = $self->{data}->{weekdays}->{$day} - $self->{datetime}->wday;
         $self->_add(day => $days_diff);
-    } 
+    }
     # Set current weekday by subtracting the difference
     else {
         $days_diff = $self->{datetime}->wday - $self->{data}->{weekdays}->{$day};
@@ -421,7 +421,7 @@ sub _weekday
     $self->_set_modified(1);
 }
 
-sub _last_day 
+sub _last_day
 {
     my $self = shift;
     $self->_add_trace;
@@ -458,7 +458,7 @@ sub _day_last_week
 sub _count_day_last_week
 {
     my $self = shift;
-    $self->_add_trace;    
+    $self->_add_trace;
     my ($day) = @_;
     my $days_diff = (7 + $self->{datetime}->wday);
     $self->_subtract(day => $days_diff);
@@ -536,7 +536,7 @@ sub _weekday_next_week
     $day = ucfirst lc $day;
     if (length $day == 3) {
         $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }            
+    }
     my $days_diff = (7 - $self->{datetime}->wday + Decode_Day_of_Week($day));
     $self->_add(day => $days_diff);
     $self->_set_modified(3);
@@ -565,7 +565,7 @@ sub _next_month_literal
 }
 
 sub _count_day_next_month
-{           
+{
     my $self = shift;
     $self->_add_trace;
     my ($day) = @_;
@@ -634,7 +634,7 @@ sub _this_weekday
     $day = ucfirst lc $day;
     if (length $day == 3) {
         $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }              
+    }
     my $days_diff = $self->{data}->{weekdays}->{$day} - $self->{datetime}->wday;
     $self->_add(day => $days_diff);
     $self->_set_modified(2);
@@ -643,7 +643,7 @@ sub _this_weekday
 sub _weekday_this_week
 {
     my $self = shift;
-    $self->_add_trace;  
+    $self->_add_trace;
     my ($day) = @_;
     $day = ucfirst lc $day;
     my $days_diff = Decode_Day_of_Week($day) - $self->{datetime}->wday;
@@ -672,10 +672,10 @@ sub _count_weekday_this_month
         $month = $self->{data}->{months_abbrev}->{$month};
     }
     my $year;
-    ($year, $month, $day) = 
-      Nth_Weekday_of_Month_Year($self->{datetime}->year, 
-                                $self->{data}->{months}->{$month}, 
-                                $self->{data}->{weekdays}->{$day}, 
+    ($year, $month, $day) =
+      Nth_Weekday_of_Month_Year($self->{datetime}->year,
+                                $self->{data}->{months}->{$month},
+                                $self->{data}->{weekdays}->{$day},
                                 $count);
     $self->_set(year => $year);
     $self->_set(month => $month);
@@ -732,7 +732,7 @@ sub _at_am
     }
     else {
         if ($self->_valid_time(hour => $time)) {
-	    $self->_set(hour => $time);
+            $self->_set(hour => $time);
             $self->_set(minute => 0);
         }
     }
@@ -745,15 +745,15 @@ sub _at_pm
     $self->_add_trace;
     my ($time) = @_;
     if ($time =~ /:/) {
-        my ($hour, $minute) = split /:/, $time; 
-        if ($self->_valid_time(hour => 12 + $hour, minute => $minute)) {      
+        my ($hour, $minute) = split /:/, $time;
+        if ($self->_valid_time(hour => 12 + $hour, minute => $minute)) {
             $self->_set(hour => 12 + $hour);
             $self->_set(minute => $minute);
         }
     }
     else {
         if ($self->_valid_time(hour => 12 + $time)) {
-	    $self->_set(hour => 12 + $time);
+            $self->_set(hour => 12 + $time);
             $self->_set(minute => 0);
         }
     }
@@ -774,7 +774,7 @@ sub _time
     }
     else {
         if ($self->_valid_time(hour => $time)) {
-	    $self->_set(hour => $time);
+            $self->_set(hour => $time);
             $self->_set(minute => 0);
         }
     }
@@ -791,7 +791,7 @@ sub _today
 sub _count_yearday
 {
     my $self = shift;
-    $self->_add_trace;   
+    $self->_add_trace;
     my ($day) = @_;
     my ($year, $month);
     ($year, $month, $day) = Add_Delta_Days($self->{datetime}->year, 1, 1, $day - 1);
@@ -801,14 +801,14 @@ sub _count_yearday
     $self->_set_modified(2);
 }
 
-sub _count_weekday 
+sub _count_weekday
 {
     my $self = shift;
     $self->_add_trace;
     my ($count, $weekday) = @_;
     $weekday = ucfirst lc $weekday;
-    my ($year, $month, $day) = 
-      Nth_Weekday_of_Month_Year($self->{datetime}->year, 
+    my ($year, $month, $day) =
+      Nth_Weekday_of_Month_Year($self->{datetime}->year,
                                 $self->{datetime}->month,
                                 $self->{data}->{weekdays}->{$weekday},
                                 $count);
@@ -820,7 +820,7 @@ sub _count_weekday
     $self->_set_modified(2);
 }
 
-sub _add 
+sub _add
 {
     my ($self, $unit, $value) = @_;
 
@@ -830,7 +830,7 @@ sub _add
     $self->{datetime}->add($unit => $value);
 }
 
-sub _subtract 
+sub _subtract
 {
     my ($self, $unit, $value) = @_;
 
@@ -840,7 +840,7 @@ sub _subtract
     $self->{datetime}->subtract($unit => $value);
 }
 
-sub _set 
+sub _set
 {
     my ($self, $unit, $value) = @_;
 
@@ -850,7 +850,7 @@ sub _set
     $self->{datetime}->$setter($value);
 }
 
-sub _valid_date 
+sub _valid_date
 {
     my ($self, $type, $value) = @_;
 
@@ -859,7 +859,7 @@ sub _valid_date
 
     if (check_date($set{year}, $set{month}, $set{day})) {
         return 1;
-    } 
+    }
     else {
         $self->_set_failure;
         $self->_set_error("('$value' is not a valid $type)");
@@ -867,7 +867,7 @@ sub _valid_date
     }
 }
 
-sub _valid_time 
+sub _valid_time
 {
     my ($self, $type, $value) = @_;
 
@@ -876,7 +876,7 @@ sub _valid_time
 
     if (check_time($set{hour}, $set{min}, $set{sec})) {
         return 1;
-    } 
+    }
     else {
         $self->_set_failure;
         $self->_set_error("('$value' is not a valid $type)");
