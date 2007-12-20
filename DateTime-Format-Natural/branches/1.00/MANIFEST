@@ -15,6 +15,6 @@ t/01-parse_en.t
 t/02-parse_format.t
 t/03-parse_daytime_en.t
 t/04-parse_durations_en.t
-t/05-time_zone.t
+t/05-time_zone_en.t
 t/pod-coverage.t
 t/pod.t

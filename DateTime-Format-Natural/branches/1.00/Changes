@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.63 Thu Dec 20 15:50:07 CET 2007
+
+ - Merged development version to stable.
+
+ - Renamed time_zone test-file (added 'en' suffix).
+
 0.62_03 Thu Dec 13 20:53:11 CET 2007
 
  - Replaced remaining tabs within the entire source with
