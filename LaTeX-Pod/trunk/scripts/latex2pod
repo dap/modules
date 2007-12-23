@@ -8,7 +8,8 @@ use LaTeX::Pod;
 my $params = parse_switches();
 convert($params);
 
-sub parse_switches {
+sub parse_switches
+{
     use Getopt::Long qw(:config no_ignore_case);
     my %opts;
     GetOptions(\%opts,'h','V') or usage();
@@ -17,7 +18,8 @@ sub parse_switches {
     return { file => $ARGV[0] };
 }
 
-sub usage {
+sub usage
+{
     print <<USAGE;
 Usage: $0 [switches] file
   -h           help screen
@@ -26,13 +28,14 @@ USAGE
     exit;
 }
 
-sub version {
-    my ($name) = ($0 =~ m{.*/(.*)\..*}) || 'latex2pod';
-    print "  $name $LaTeX::Pod::VERSION\n";
+sub version
+{
+    print "  LaTeX::Pod $LaTeX::Pod::VERSION\n";
     exit;
 }
 
-sub convert {
+sub convert
+{
     my $parser = LaTeX::Pod->new($_[0]->{file});
     print $parser->convert;
 }

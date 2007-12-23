@@ -1,12 +1,22 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.15 Sun Dec 23 15:39:50 CET 2007
+
+ - Reworded the documentation.
+
+ - Adjusted code layout of latex2pod to be coherent with
+   the remaining code.
+
+ - Version output emitted by latex2pod includes $VERSION
+   from LaTeX::Pod.
+
 0.14 Sun Nov 25 14:21:54 CET 2007
 
  - Added test which tests basic conversion.
 
 0.13 Sat Sep  1 17:26:49 CEST 2007
 
- - Redone code formatting. 
+ - Redone code formatting.
 
 0.12 Wed Mar 28 03:42:05 CEST 2007
 
@@ -27,9 +37,9 @@ Revision history for Perl extension LaTeX::Pod.
 0.10 Sat Feb 10 01:07:01 CET 2007
 
  - Instead of appending generated Pod to a string while proceeding,
-   every "push" (directive & text) takes up one member in an 
-   encapsulated array. The array is flattened when a string 
-   representation is requested (usually when convert() returns) 
+   every "push" (directive & text) takes up one member in an
+   encapsulated array. The array is flattened when a string
+   representation is requested (usually when convert() returns)
    and a pair of newlines between each member is added.
 
 0.09_01 Sun Jan 28 01:25:29 CET 2007
@@ -44,7 +54,7 @@ Revision history for Perl extension LaTeX::Pod.
    and leading/trailing newlines are attached.
 
  - Fixed minor spelling nit within Pod.pm.
- 
+
  - Added some implementation details to the documentation.
 
 0.08 Thu Jan 11 01:18:38 CET 2007
@@ -89,7 +99,7 @@ Revision history for Perl extension LaTeX::Pod.
 0.03 Die Dec 26 00:20:08 CET 2006
 
  - Fixed umlauts.
- 
+
  - Improved documentation.
 
 0.02 Mon Dec 25 14:34:14 CET 2006

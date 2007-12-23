@@ -5,7 +5,7 @@ NAME
 SYNOPSIS
      use LaTeX::Pod;
 
-     my $parser = LaTeX::Pod->new('/path/to/latex/source');
+     my $parser = LaTeX::Pod->new('/path/to/latex-source');
      print $parser->convert;
 
 DESCRIPTION
@@ -18,7 +18,7 @@ CONSTRUCTOR
     The constructor requires that the path to the latex source must be
     declared:
 
-     $parser = LaTeX::Pod->new('/path/to/latex/source');
+     $parser = LaTeX::Pod->new('/path/to/latex-source');
 
     Returns the parser object.
 
@@ -47,19 +47,20 @@ IMPLEMENTATION DETAILS
     distinction between various types of nodes. As example, an \item
     directive has quite often a separate text which is associated with
     former one. And they can't be detected without some kind of
-    sophisticated "lookbehind", which is what is done.
+    sophisticated "look-behind", which is what is being done.
 
-    The author tried to implement a *context-sensitive* awareness for
-    "LaTeX::Pod". He did so by setting which node has been seen before the
-    current one in order to be able to call the appropriate routine for a
-    LaTeX directive with two or more nodes. Furthermore, "LaTeX::Pod"
+    "LaTeX::Pod" was designed with the intention to be *context-sensitive*
+    aware. This is being achieved by setting which node has been seen before
+    the current one in order to be able to call the appropriate routine for
+    a LaTeX directive with two or more nodes. Furthermore, "LaTeX::Pod"
     registers which node it has previously encountered and unregisters this
     information when it made use of it.
 
-    Considering that the POD language has a limited subset of commands, the
-    overhead of keeping track of node occurences seems almost bearable. The
-    POD processed may consist of too many newlines before undergoing the
-    scrubbing where leading and trailing newlines will be truncated.
+    Considering that the POD documentation format has a limited subset of
+    directives, the overhead of keeping track of node occurences appears to
+    be bearable. The POD computed may consist of too many newlines before
+    undergoing a transformation where leading and trailing newlines will be
+    truncated.
 
 SEE ALSO
     LaTeX::TOM

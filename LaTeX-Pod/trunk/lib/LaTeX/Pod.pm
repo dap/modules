@@ -6,9 +6,9 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
-sub new 
+sub new
 {
     my $class = shift;
 
@@ -18,7 +18,7 @@ sub new
     return $self;
 }
 
-sub convert 
+sub convert
 {
     my $self = shift;
 
@@ -40,11 +40,11 @@ sub convert
                     $dispatched++;
                }
             }
-        } 
-	elsif ($type =~ /ENVIRONMENT/) {
+        }
+        elsif ($type =~ /ENVIRONMENT/) {
             $self->_process_verbatim;
-        } 
-	elsif ($type =~ /COMMAND/) {
+        }
+        elsif ($type =~ /COMMAND/) {
             $self->_unregister_previous('verbatim');
             my $cmd_name = $node->getCommandName;
 
@@ -59,7 +59,7 @@ sub convert
     return $self->_pod_finalize;
 }
 
-sub _init 
+sub _init
 {
     my ($self, $file) = @_;
 
@@ -90,7 +90,7 @@ sub _init
     );
 }
 
-sub _init_tom 
+sub _init_tom
 {
     my $self = shift;
 
@@ -102,7 +102,7 @@ sub _init_tom
     return $nodes;
 }
 
-sub _process_directives 
+sub _process_directives
 {
     my $self = shift;
 
@@ -126,7 +126,7 @@ sub _process_directives
     return 0;
 }
 
-sub _process_text_title 
+sub _process_text_title
 {
     my $self = shift;
 
@@ -144,7 +144,7 @@ sub _process_text_title
     $self->_register_previous('title');
 }
 
-sub _process_text_verbatim 
+sub _process_text_verbatim
 {
     my $self = shift;
 
@@ -161,11 +161,11 @@ sub _process_text_verbatim
 
         if ($len) {
             $text = ' ' x $len . $text;
-        } 
-	else {
+        }
+        else {
             $text =~ s/^(.*)$/\ $1/gm;
         }
-    } 
+    }
     else {
         $self->_pod_scrub_newlines(\$text);
     }
@@ -180,7 +180,7 @@ sub _process_text_verbatim
     $self->_register_previous('verbatim');
 }
 
-sub _process_text_item 
+sub _process_text_item
 {
     my $self = shift;
 
@@ -192,7 +192,7 @@ sub _process_text_item
 
     if ($text =~ /\\item\s*\[(.*?)\]/) {
         $self->_pod_add("=item $1");
-    } 
+    }
     else {
         $self->_pod_add('=item');
     }
@@ -203,7 +203,7 @@ sub _process_text_item
     $self->_register_previous('item');
 }
 
-sub _process_text 
+sub _process_text
 {
     my $self = shift;
 
@@ -217,7 +217,7 @@ sub _process_text
     $self->_register_previous('text');
 }
 
-sub _process_verbatim 
+sub _process_verbatim
 {
     my $self = shift;
 
@@ -228,7 +228,7 @@ sub _process_verbatim
     }
 }
 
-sub _process_item 
+sub _process_item
 {
     my $self = shift;
 
@@ -241,7 +241,7 @@ sub _process_item
     }
 }
 
-sub _process_chapter 
+sub _process_chapter
 {
     my $self = shift;
 
@@ -251,7 +251,7 @@ sub _process_chapter
     $self->_register_node('title');
 }
 
-sub _process_section 
+sub _process_section
 {
     my $self = shift;
 
@@ -259,7 +259,7 @@ sub _process_section
     $self->_register_node('title');
 }
 
-sub _process_subsection 
+sub _process_subsection
 {
     my $self = shift;
 
@@ -274,7 +274,7 @@ sub _process_subsection
     $self->_register_node('title');
 }
 
-sub _process_spec_chars 
+sub _process_spec_chars
 {
     my ($self, $text) = @_;
 
@@ -296,7 +296,7 @@ sub _process_spec_chars
     $$text =~ s/\\newline//g;
 }
 
-sub _process_tags 
+sub _process_tags
 {
     my ($self, $tag) = @_;
 
@@ -312,27 +312,27 @@ sub _process_tags
     $self->_unregister_node($tag);
 }
 
-sub _pod_add 
+sub _pod_add
 {
     my ($self, $content) = @_;
 
     if (!$self->{append_following}) {
         push @{$self->{pod}}, $content;
-    } 
+    }
     else {
         $self->_pod_append($content);
         $self->{append_following} = 0;
     }
 }
 
-sub _pod_append 
+sub _pod_append
 {
     my ($self, $content) = @_;
 
     $self->{pod}->[-1] .= $content;
 }
 
-sub _pod_scrub_newlines 
+sub _pod_scrub_newlines
 {
     my ($self, $text) = @_;
 
@@ -340,7 +340,7 @@ sub _pod_scrub_newlines
     $$text =~ s/\n*$//;
 }
 
-sub _pod_scrub_whitespaces 
+sub _pod_scrub_whitespaces
 {
     my ($self, $text) = @_;
 
@@ -348,14 +348,14 @@ sub _pod_scrub_whitespaces
     $$text =~ s/\s*$//;
 }
 
-sub _pod_get 
+sub _pod_get
 {
     my $self = shift;
 
     return $self->{pod};
 }
 
-sub _pod_finalize 
+sub _pod_finalize
 {
     my $self = shift;
 
@@ -364,35 +364,35 @@ sub _pod_finalize
     return join "\n\n", @{$self->_pod_get};
 }
 
-sub _register_node 
+sub _register_node
 {
     my ($self, $item) = @_;
 
     $self->{node}{$item} = 1;
 }
 
-sub _is_set_node 
+sub _is_set_node
 {
     my ($self, $item) = @_;
 
     return $self->{node}{$item} ? 1 : 0;
 }
 
-sub _unregister_node 
+sub _unregister_node
 {
     my ($self, $item) = @_;
 
     delete $self->{node}{$item};
 }
 
-sub _register_previous 
+sub _register_previous
 {
     my ($self, $item) = @_;
 
     $self->{previous}{$item} = 1;
 }
 
-sub _is_set_previous 
+sub _is_set_previous
 {
     my ($self, $item) = @_;
 
@@ -407,7 +407,7 @@ sub _is_set_previous
     return 0;
 }
 
-sub _unregister_previous 
+sub _unregister_previous
 {
     my ($self, $item) = @_;
 
@@ -428,7 +428,7 @@ LaTeX::Pod - Transform LaTeX source files to POD (Plain old documentation)
 
  use LaTeX::Pod;
 
- my $parser = LaTeX::Pod->new('/path/to/latex/source');
+ my $parser = LaTeX::Pod->new('/path/to/latex-source');
  print $parser->convert;
 
 =head1 DESCRIPTION
@@ -443,7 +443,7 @@ see below for detailed information.
 
 The constructor requires that the path to the latex source must be declared:
 
- $parser = LaTeX::Pod->new('/path/to/latex/source');
+ $parser = LaTeX::Pod->new('/path/to/latex-source');
 
 Returns the parser object.
 
@@ -485,18 +485,18 @@ The current implementation is a bit I<flaky> because C<LaTeX::TOM>, the framewor
 being used for parsing the LaTeX nodes, makes a clear distinction between various
 types of nodes. As example, an \item directive has quite often a separate text which
 is associated with former one. And they can't be detected without some kind of
-sophisticated "lookbehind", which is what is done.
+sophisticated "look-behind", which is what is being done.
 
-The author tried to implement a I<context-sensitive> awareness for C<LaTeX::Pod>. He 
-did so by setting which node has been seen before the current one in order to be able 
-to call the appropriate routine for a LaTeX directive with two or more nodes.
-Furthermore, C<LaTeX::Pod> registers which node it has previously encountered
-and unregisters this information when it made use of it.
+C<LaTeX::Pod> was designed with the intention to be I<context-sensitive> aware.
+This is being achieved by setting which node has been seen before the current one in
+order to be able to call the appropriate routine for a LaTeX directive with two or
+more nodes. Furthermore, C<LaTeX::Pod> registers which node it has previously
+encountered and unregisters this information when it made use of it.
 
-Considering that the POD language has a limited subset of commands, the overhead
-of keeping track of node occurences seems almost bearable. The POD processed
-may consist of too many newlines before undergoing the scrubbing where leading and
-trailing newlines will be truncated.
+Considering that the POD documentation format has a limited subset of directives,
+the overhead of keeping track of node occurences appears to be bearable. The POD
+computed may consist of too many newlines before undergoing a transformation
+where leading and trailing newlines will be truncated.
 
 =head1 SEE ALSO
 
