@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.64 Mon Dec 24 16:19:37 CET 2007
+
+ - Improved the options parsing within scripts/dateparse (by
+   introducing a subroutine to set default values independently).
+
 0.63 Thu Dec 20 15:50:07 CET 2007
 
  - Merged development version to stable.
@@ -39,16 +44,16 @@ Revision history for Perl extension DateTime::Format::Natural.
 
 0.60 Tue Nov 20 16:59:24 CET 2007
 
- - Implemented better timezone handling and added according tests. 
-   [rt #30765 - Shawn M. Moore <sartak@gmail.com>] 
+ - Implemented better timezone handling and added according tests.
+   [rt #30765 - Shawn M. Moore <sartak@gmail.com>]
 
 0.59 Thu Nov 15 23:54:25 CET 2007
 
- - Made the 'prefer_future' parameter a bit more context-sensitive 
-   with regard to incremental of the current year. 
+ - Made the 'prefer_future' parameter a bit more context-sensitive
+   with regard to incremental of the current year.
    [rt #30763 - Shawn M. Moore <sartak@gmail.com>]
 
- - Updated the "SEE ALSO" sections within the documentation 
+ - Updated the "SEE ALSO" sections within the documentation
    to refer back to the main package.
 
 0.58 Thu Nov  1 19:54:41 CET 2007
@@ -91,14 +96,14 @@ Revision history for Perl extension DateTime::Format::Natural.
 
 0.52 Sat Sep 29 17:02:40 CEST 2007
 
- - Removed all mentions of german language support within the 
+ - Removed all mentions of german language support within the
    documentation and the code.
 
  - Extended documentation to explain the grammar a bit.
 
 0.51 Thu Sep 27 17:12:49 CEST 2007
 
- - Removed no longer necessary 'use_ok()' test for the german language 
+ - Removed no longer necessary 'use_ok()' test for the german language
    metadata. [rt #29651 - Andreas J. König <andreas.koenig@anima.de>]
 
 0.50 Thu Sep 27 00:39:08 CEST 2007
@@ -131,7 +136,7 @@ Revision history for Perl extension DateTime::Format::Natural.
 
  - Fixed the parsing of unambigious dates such as "next [month]" &
    "last [month]" while the 'prefer_future' option is enabled.
- 
+
  - Explicitly call methods within the superclass with 'SUPER::'.
 
  - Documented the 'prefer_future' switch in scripts/dateparse.
@@ -167,7 +172,7 @@ Revision history for Perl extension DateTime::Format::Natural.
  - Added tests for the constant daytime values.
 
  - Albeit it's unlikely that someone will ever subclass Lang/Base.pm,
-   a bug in the statement involving bless() within the constructor has 
+   a bug in the statement involving bless() within the constructor has
    been fixed (ref($class) 'check' must come first, otherwise subclassing
    is impossible).
 
@@ -342,7 +347,7 @@ Revision history for Perl extension DateTime::Format::Natural.
 0.19 Mon Nov 27 20:06:17 CET 2006
 
  - Added to DE.pm & EN.pm an AUTOLOAD handler for each of them.
-   The subroutine called prefixed with two underscores will be 
+   The subroutine called prefixed with two underscores will be
    translated to an according variable name without underscores.
    The parameter to the subroutine will function as variable
    lookup key.
