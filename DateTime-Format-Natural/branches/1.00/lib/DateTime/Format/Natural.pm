@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.64';
+our $VERSION = '0.65';
 
 sub new
 {
@@ -104,7 +104,7 @@ sub parse_datetime
             $format = join $separator, ($length{4} == 0 ? qw(yyyy mm dd) : qw(dd mm yyyy));
         }
         else {
-            $separator = do { $_ = $format;
+            $separator = do { local $_ = $format;
                               tr/a-zA-Z//d;
                               tr/a-zA-Z//cs;
                               quotemeta; };

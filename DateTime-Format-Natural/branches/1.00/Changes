@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.65 Fri Dec 28 18:49:40 CET 2007
+
+ - Localized $_ while constructing the format separator.
+   [rt #31968 - Shawn M. Moore <sartak@gmail.com>]
+
 0.64 Mon Dec 24 16:19:37 CET 2007
 
  - Improved the options parsing within scripts/dateparse (by
