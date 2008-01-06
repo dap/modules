@@ -1,5 +1,16 @@
 Revision history for Perl extension Algorithm::MedianSelect::XS.
 
+0.19 Sun Jan  6 14:07:48 CET 2008
+
+ - Added basic test-file which tests the functionality of median().
+
+ - Beautified code layout within XS.xs.
+
+ - Check for odd count of elements within the list supplied to median(),
+   which excludes a list consisting of a single element.
+
+ - Updated documentation.
+
 0.18 Mon Jan 29 08:18:19 CET 2007
 
  - Fixed warning which was output when no algorithm argument

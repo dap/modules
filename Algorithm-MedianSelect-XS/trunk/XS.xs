@@ -5,14 +5,16 @@
 #include "ppport.h"
 
 int
-quick_sort(const long *num1, const long *num2) {
+quick_sort(const long *num1, const long *num2)
+{
     if (*num1 <  *num2) return -1;
     if (*num1 == *num2) return  0;
     if (*num1 >  *num2) return  1;
 }
 
 void
-bubble_sort(long *numbers, int realitems) {
+bubble_sort(long *numbers, int realitems)
+{
     long buffer;
     int is_sorted, i;
 
@@ -28,7 +30,7 @@ bubble_sort(long *numbers, int realitems) {
                 numbers[i]   = numbers[i+1];
                 numbers[i+1] = buffer;
 
-                is_sorted    = 0;
+                is_sorted = 0;
             }
         }
     } while (!is_sorted);
@@ -55,13 +57,16 @@ xs_median(...)
                         numbers[i] = SvIV(element);
                     }
                     realitems = av_len(aref) + 1;
-                } else {
+                }
+                else {
                     croak("median: reference isn't a list reference");
                 }
-            } else {
+            }
+            else {
                 croak("median: requires either list or reference to list");
             }
-        } else {
+        }
+        else {
             for (i = 0; i < items; i++) {
                 numbers[i] = SvIV(ST(i));
             }

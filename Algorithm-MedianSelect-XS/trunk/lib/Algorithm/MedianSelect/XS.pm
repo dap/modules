@@ -4,30 +4,36 @@ use strict;
 use warnings;
 use base qw(Exporter);
 
-use Carp qw(carp);
+use Carp qw(carp croak);
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.18';
+$VERSION = '0.19';
 @EXPORT_OK = qw(median);
 
 require XSLoader;
 XSLoader::load(__PACKAGE__, $VERSION);
 
-sub median {
+sub median
+{
     my $opts = pop if ref $_[-1] eq 'HASH';
     my @nums = @_;
+
+    my $count = ref $nums[0] eq 'ARRAY' ? @{$nums[0]} : @nums;
+    croak "median(): list must have odd count of elements and must have more than one element\n" 
+      if ($count % 2 == 0 or $count == 1);
 
     my $i;
     my %valid_alg = map { $_ => ++$i } qw(bubble quick);
 
     my $algorithm;
 
-    if ($opts->{algorithm} && $valid_alg{$opts->{algorithm}}) {
+    if (exists $opts->{algorithm} && $valid_alg{$opts->{algorithm}}) {
         $algorithm = $opts->{algorithm};
-    } else {
-        carp "$opts->{algorithm} is no valid algorithm, switching to default...\n"
-          if defined $opts->{algorithm} && !exists $opts->{algorithm};
+    }
+    else {
+        carp "'$opts->{algorithm}' is not a valid algorithm, switching to default...\n"
+	  if defined $opts->{algorithm};
 
         $algorithm ||= 'quick';
     }
@@ -50,7 +56,7 @@ Algorithm::MedianSelect::XS - Median finding algorithm
 
  use Algorithm::MedianSelect::XS qw(median);
 
- my @numbers = (1,2,3,5,6,7,9,12,14,19,21);
+ my @numbers = (21, 6, 2, 9, 5, 1, 14, 7, 12, 3, 19);
 
  print median(@numbers);
  print median(\@numbers);
@@ -60,7 +66,7 @@ Algorithm::MedianSelect::XS - Median finding algorithm
 
 =head1 DESCRIPTION
 
-Algorithm::MedianSelect::XS finds the item which is smaller
+C<Algorithm::MedianSelect::XS> finds the item which is smaller
 than half of the integers and bigger than half of the integers.
 
 =head1 FUNCTIONS

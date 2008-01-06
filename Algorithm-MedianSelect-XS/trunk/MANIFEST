@@ -8,6 +8,7 @@ META.yml
 ppport.h
 README
 t/00-load.t
+t/basic.t
 t/pod-coverage.t
 t/pod.t
 XS.xs

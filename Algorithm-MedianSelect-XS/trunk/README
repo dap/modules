@@ -4,7 +4,7 @@ NAME
 SYNOPSIS
      use Algorithm::MedianSelect::XS qw(median);
 
-     my @numbers = (1,2,3,5,6,7,9,12,14,19,21);
+     my @numbers = (21, 6, 2, 9, 5, 1, 14, 7, 12, 3, 19);
 
      print median(@numbers);
      print median(\@numbers);
@@ -13,8 +13,8 @@ SYNOPSIS
      print median(\@numbers, { algorithm => 'quick'  }); # default algorithm
 
 DESCRIPTION
-    Algorithm::MedianSelect::XS finds the item which is smaller than half of
-    the integers and bigger than half of the integers.
+    "Algorithm::MedianSelect::XS" finds the item which is smaller than half
+    of the integers and bigger than half of the integers.
 
 FUNCTIONS
   median
