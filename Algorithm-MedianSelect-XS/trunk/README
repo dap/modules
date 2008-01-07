@@ -4,7 +4,7 @@ NAME
 SYNOPSIS
      use Algorithm::MedianSelect::XS qw(median);
 
-     my @numbers = (21, 6, 2, 9, 5, 1, 14, 7, 12, 3, 19);
+     @numbers = (21, 6, 2, 9, 5, 1, 14, 7, 12, 3, 19);
 
      print median(@numbers);
      print median(\@numbers);

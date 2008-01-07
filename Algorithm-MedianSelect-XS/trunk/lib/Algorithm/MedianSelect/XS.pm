@@ -8,7 +8,7 @@ use Carp qw(carp croak);
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.19';
+$VERSION = '0.20';
 @EXPORT_OK = qw(median);
 
 require XSLoader;
@@ -33,7 +33,7 @@ sub median
     }
     else {
         carp "'$opts->{algorithm}' is not a valid algorithm, switching to default...\n"
-	  if defined $opts->{algorithm};
+          if defined $opts->{algorithm};
 
         $algorithm ||= 'quick';
     }
@@ -56,7 +56,7 @@ Algorithm::MedianSelect::XS - Median finding algorithm
 
  use Algorithm::MedianSelect::XS qw(median);
 
- my @numbers = (21, 6, 2, 9, 5, 1, 14, 7, 12, 3, 19);
+ @numbers = (21, 6, 2, 9, 5, 1, 14, 7, 12, 3, 19);
 
  print median(@numbers);
  print median(\@numbers);

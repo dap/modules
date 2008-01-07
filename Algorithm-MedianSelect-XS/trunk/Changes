@@ -1,5 +1,14 @@
 Revision history for Perl extension Algorithm::MedianSelect::XS.
 
+0.20 Sun Jan  6 17:34:09 CET 2008
+
+ - Renamed basic test-file to median.t.
+
+ - Removed occurence of 'my' within the synopsis part of the
+   documentation.
+
+ - Updated ppport.h.
+
 0.19 Sun Jan  6 14:07:48 CET 2008
 
  - Added basic test-file which tests the functionality of median().
