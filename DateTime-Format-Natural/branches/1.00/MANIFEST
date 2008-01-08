@@ -11,10 +11,10 @@ META.yml
 README
 scripts/dateparse
 t/00-load.t
-t/01-parse_en.t
+t/01-parse.t
 t/02-parse_format.t
-t/03-parse_daytime_en.t
-t/04-parse_durations_en.t
-t/05-time_zone_en.t
+t/03-parse_daytime.t
+t/04-parse_durations.t
+t/05-parse_time_zone.t
 t/pod-coverage.t
 t/pod.t
