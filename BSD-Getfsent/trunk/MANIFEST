@@ -8,5 +8,7 @@ META.yml
 README
 scripts/getfsent.pl
 t/00-load.t
+t/data/getfsent.t.in
+t/getfsent.t
 t/pod-coverage.t
 t/pod.t

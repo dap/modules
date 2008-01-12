@@ -1,5 +1,14 @@
 Revision history for Perl extension BSD::Getfsent.
 
+0.15 Sat Jan 12 14:12:31 CET 2008
+
+ - Added the test-file getfsent.t which tests the getfsent() function.
+
+ - Adjusted the documentation (moved the description section to 
+   functions/getfsent) and reworded some explanation.
+
+ - Beautified the code layout.
+
 0.14 Wed Mar 29 21:04:51 CEST 2006
 
  - Updated Build.PL with newly added dist_author & dist_version_from 
@@ -7,13 +16,13 @@ Revision history for Perl extension BSD::Getfsent.
    create_readme & create_makefile_pl fields to appropriate values.
 
  - Added INSTALL containing install instructions.
- 
+
  - Replaced Filehandle module with IO::File and added warnings pragma.
 
 0.13 2005/03/17
 
  - Suitable Build.PL added.
- 
+
  - Minor additions to the docs.
 
 0.12 2005/02/23
