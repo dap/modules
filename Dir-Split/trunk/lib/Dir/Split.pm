@@ -376,8 +376,7 @@ sub _read_dir
     opendir(my $dir_fh, $dir)
       or Carp::croak "Couldn't open dir $dir: $!";
 
-    @$items = readdir($dir_fh);
-    splice(@$items, 0, 2);
+    @$items = grep !/^\.\.?/, readdir($dir_fh);
 
     closedir($dir_fh)
       or Carp::croak "Couldn't close dir $dir: $!";

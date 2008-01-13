@@ -2,6 +2,9 @@ Revision history for Perl extension Dir::Split.
 
 0.79 Thu Dec 20 21:30:14 CET 2007
 
+ - Fixed a bug (don't remove the first two files from the list,
+   assuming we have '.' and '..', use grep instead).
+
  - Refined documentation (formatting) and code layout.
 
 0.77 Sun Mar 19 22:14:55 CET 2006
