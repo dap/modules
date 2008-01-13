@@ -23,16 +23,16 @@ our ($VERSION,
      $ADJUST,
 
      $UNLINK,                  # external options
-     $TRAVERSE,                
-     $TRAVERSE_UNLINK,    
+     $TRAVERSE,
+     $TRAVERSE_UNLINK,
      $TRAVERSE_RMDIR,
      $TRAVERSE_RMDIR_SOURCE,
 
      @exists,                  # external data
      %failure,
      %track);
-     
-$VERSION = '0.78';
+
+$VERSION = '0.79';
 
 @EXPORT = qw(
     $NOACTION
@@ -41,155 +41,165 @@ $VERSION = '0.78';
     $FAILURE
     $ADJUST
 );
-     
+
 $NOACTION =    0;
-$ACTION   =    1; 
+$ACTION   =    1;
 $EXISTS   =   -1;
 $FAILURE  =   -2;
 $ADJUST   = -255;
 
-sub new {
-    my ($self, @opt) = @_;  
+sub new
+{
+    my ($self, @opt) = @_;
     my $class = ref($self) || $self;
-    
+
     my %blessed;
     %{$blessed{OPT}} = @opt;
-    
+
     return bless(\%blessed, $class);
 }
 
-sub split_dir {
-    my ($self) = @_;
+sub split_dir
+{
+    my $self = shift;
 
     $self->_sanity_input;
     $self->_gather_files;
-    
+
     my $RetVal = $NOACTION;
 
     if ($self->{files}) {
         $RetVal = $ACTION;
-        
+
         $self->_sort_files if $self->{OPT}{mode} eq 'num';
         $self->_suffix;
         $self->_move;
-	
-	$self->_traversed_rmdir 
-	  if $TRAVERSE && $TRAVERSE_RMDIR && $TRAVERSE_UNLINK;
+
+        $self->_traversed_rmdir
+          if $TRAVERSE && $TRAVERSE_RMDIR && $TRAVERSE_UNLINK;
 
         $RetVal = $EXISTS  if @exists;
         $RetVal = $FAILURE if %failure;
     }
-    
+
     return $RetVal;
 }
 
-sub _sanity_input {
-    my ($self) = @_;
-    
-    if ($UNLINK && ($TRAVERSE || $TRAVERSE_UNLINK || 
+sub _sanity_input
+{
+    my $self = shift;
+
+    if ($UNLINK && ($TRAVERSE || $TRAVERSE_UNLINK ||
         $TRAVERSE_RMDIR || $TRAVERSE_RMDIR_SOURCE)) {
         Carp::croak '$UNLINK and $TRAVERSE_* may not be combined';
     }
-     
+
     my %generic = (
         mode        =>       '^(?:num|char)$',
-        source      =>              'defined',    
-        target      =>              'defined',   
-        verbose     =>               '^[01]$',  
-        override    =>               '^[01]$',  
-        identifier  =>                  '\w+',   
-	separator   =>              'defined',  
-	length      =>                  '> 0',
+        source      =>              'defined',
+        target      =>              'defined',
+        verbose     =>               '^[01]$',
+        override    =>               '^[01]$',
+        identifier  =>                  '\w+',
+        separator   =>              'defined',
+        length      =>                  '> 0',
     );
-	
+
     my %num = (
-        file_limit  =>                  '> 0',   
+        file_limit  =>                  '> 0',
         file_sort   =>               '^[+-]$',
-	continue    =>               '^[01]$',
+        continue    =>               '^[01]$',
     );
-	
+
     my %char = (
         case        =>    '^(?:lower|upper)$',
-    ); 
-    
+    );
+
     $self->_validate_input(\%generic);
-	
+
     $self->{OPT}{mode} eq 'num'
       ? $self->_validate_input(\%num)
       : $self->_validate_input(\%char);
 }
 
-sub _validate_input {
+sub _validate_input
+{
     my ($self, $args) = @_;
-    
+
     while (my ($arg, $prove) = each %$args) {
         my $condition = "\$self->{OPT}{\$arg}";
-	   
-	if ($prove ne 'defined' && $prove !~ /\d+$/) {
-	    $condition .= " =~ /$prove/";
-	}
-	my $match = eval "sub { $condition }" 
-	  or die "Couldn't compile $condition: $@";
-	       
-        Carp::croak('Option ', $arg, ' not defined or invalid') 
-	  unless &$match;
-    }
-}    
 
-sub _gather_files {
-    my ($self) = @_;
-    
+        if ($prove ne 'defined' && $prove !~ /\d+$/) {
+            $condition .= " =~ /$prove/";
+        }
+        my $match = eval "sub { $condition }"
+          or die "Couldn't compile $condition: $@";
+
+        Carp::croak('Option ', $arg, ' not defined or invalid')
+          unless &$match;
+    }
+}
+
+sub _gather_files
+{
+    my $self = shift;
+
     if ($TRAVERSE) {
         $self->_traverse(\@{$self->{dirs}}, \@{$self->{files}});
-    } else {
+    }
+    else {
         $self->_read_dir(\@{$self->{files}}, $self->{OPT}{source});
-	
-	# Leave directories behind as we are in ``flat", non-traversal mode. 
+
+        # Leave directories behind as we are in ``flat", non-traversal mode.
         @{$self->{files}} = grep { !-d File::Spec->catfile($self->{OPT}{source}, $_) } @{$self->{files}};
     }
     $track{source}{files} = @{$self->{files}};
 }
 
-sub _sort_files {
-    my ($self) = @_;
-    
-    my $cmp = 
-      $TRAVERSE 
-        ? $self->{OPT}{file_sort} eq '+' 
-	  ? 'lc File::Basename::basename($a) cmp lc File::Basename::basename($b)'
-	  : 'lc File::Basename::basename($b) cmp lc File::Basename::basename($a)'
-	: $self->{OPT}{file_sort} eq '+'
-	  ? 'lc $a cmp lc $b'
-	  : 'lc $b cmp lc $a';
-	  
+sub _sort_files
+{
+    my $self = shift;
+
+    my $cmp =
+      $TRAVERSE
+        ? $self->{OPT}{file_sort} eq '+'
+          ? 'lc File::Basename::basename($a) cmp lc File::Basename::basename($b)'
+          : 'lc File::Basename::basename($b) cmp lc File::Basename::basename($a)'
+        : $self->{OPT}{file_sort} eq '+'
+          ? 'lc $a cmp lc $b'
+          : 'lc $b cmp lc $a';
+
     @{$self->{files}} = sort { eval $cmp } @{$self->{files}};
 }
 
-sub _suffix {
-    my ($self) = @_;
-    
+sub _suffix
+{
+    my $self = shift;
+
     if ($self->{OPT}{mode} eq 'num') {
         $self->_suffix_num_contin if $self->{continue};
         $self->_suffix_num_sum_up;
-    } else { 
+    }
+    else {
         $self->_suffix_char;
     }
 }
 
-sub _suffix_num_contin {
-    my ($self) = @_;
-    
+sub _suffix_num_contin
+{
+    my $self = shift;
+
     my @dirs;
     $self->_read_dir(\@dirs, $self->{OPT}{target});
-    
+
     # Leave files behind as we need to evaluate names of subdirs.
     @dirs = grep { -d File::Spec->catfile($self->{OPT}{target}, $_) } @dirs;
 
     $self->{suffix} = 0;
-      
+
     # Search for the highest numerical suffix of given identifier.
     foreach my $dir (@dirs) {
-        my ($ident_cmp, $suff_cmp) = $dir =~ /(.+) \Q$self->{OPT}{separator}\E (.*)/ox;    
+        my ($ident_cmp, $suff_cmp) = $dir =~ /(.+) \Q$self->{OPT}{separator}\E (.*)/ox;
 
         if ($self->{OPT}{identifier} eq $ident_cmp && $suff_cmp =~ /[0-9]/o) {
             $self->{suffix} = $suff_cmp if ($suff_cmp > $self->{suffix});
@@ -197,197 +207,217 @@ sub _suffix_num_contin {
     }
 }
 
-sub _suffix_num_sum_up {
-    my ($self) = @_;
-    
+sub _suffix_num_sum_up
+{
+    my $self = shift;
+
     # In case, no previous suffix has been found,
     # set to 1, otherwise increment.
     $self->{suffix}++;
-    
+
     if (length $self->{suffix} < $self->{OPT}{length}) {
         $self->{suffix} = sprintf("%0.$self->{OPT}{length}".'d', $self->{suffix});
     }
 }
 
-sub _suffix_char {
-    my ($self) = @_;
-    
-    while (my $file = shift @{$self->{files}}) {
-        my $suffix = $TRAVERSE 
-	  ? File::Basename::basename($file) 
-	  : $file; 
+sub _suffix_char
+{
+    my $self = shift;
 
-	$suffix =~ s/\s//g;
-	$suffix = substr($suffix, 0, $self->{OPT}{length});
-	
+    while (my $file = shift @{$self->{files}}) {
+        my $suffix = $TRAVERSE
+          ? File::Basename::basename($file)
+          : $file;
+
+        $suffix =~ s/\s//g;
+        $suffix = substr($suffix, 0, $self->{OPT}{length});
+
         if ($suffix =~ /\w/) {
-            $suffix = $self->{OPT}{case} eq 'lower' 
-	      ? lc $suffix : uc $suffix;
+            $suffix = $self->{OPT}{case} eq 'lower'
+              ? lc $suffix : uc $suffix;
         }
         push @{$self->{file_suffix}{$suffix}}, $file;
     }
 }
 
-sub _move {
-    my ($self) = @_;
-     
+sub _move
+{
+    my $self = shift;
+
     $track{target}{dirs}  = 0;
     $track{target}{files} = 0;
-    
+
     if ($self->{OPT}{mode} eq 'num') {
         $self->_move_num;
-    } else {
+    }
+    else {
         $self->_move_char;
     }
 }
 
-sub _move_num {
-    my ($self) = @_;
-    
+sub _move_num
+{
+    my $self = shift;
+
     for (; @{$self->{files}}; $self->{suffix}++) {
         $self->{target_path}  = $self->_mkpath;
-	%{$self->{duplicate}} = ();
-	
+        %{$self->{duplicate}} = ();
+
         for (my $copied = 0; $copied < $self->{OPT}{file_limit} && @{$self->{files}}; $copied++) {
-	    $self->{file} = shift @{$self->{files}};
+            $self->{file} = shift @{$self->{files}};
             $self->_copy_unlink;
-	    $self->{duplicate}{File::Basename::basename($self->{file})}++;
+            $self->{duplicate}{File::Basename::basename($self->{file})}++;
         }
     }
 }
 
-sub _move_char {
-    my ($self) = @_;
-    
+sub _move_char
+{
+    my $self = shift;
+
     foreach my $suffix (sort keys %{$self->{file_suffix}}) {
         $self->{suffix}       = $suffix;
         $self->{target_path}  = $self->_mkpath;
-	%{$self->{duplicate}} = ();
+        %{$self->{duplicate}} = ();
 
-	while ($self->{file} = shift @{$self->{file_suffix}{$suffix}}) {
+        while ($self->{file} = shift @{$self->{file_suffix}{$suffix}}) {
             $self->_copy_unlink;
-	    $self->{duplicate}{File::Basename::basename($self->{file})}++;
+            $self->{duplicate}{File::Basename::basename($self->{file})}++;
         }
     }
 }
 
-sub _mkpath {
-    my ($self) = @_;
-    
+sub _mkpath
+{
+    my $self = shift;
+
     my $target_path = File::Spec->catfile
       ($self->{OPT}{target}, "$self->{OPT}{identifier}$self->{OPT}{separator}$self->{suffix}");
-    
+
     return $target_path if -e $target_path;
-    
+
     if (File::Path::mkpath($target_path, $self->{OPT}{verbose})) {
         $track{target}{dirs}++;
-    } else {
+    }
+    else {
         Carp::croak "Dir $target_path couldn't be created: $!";
     }
-      
+
     return $target_path;
 }
 
-sub _copy_unlink {
-    my ($self) = @_;
-    
+sub _copy_unlink
+{
+    my $self = shift;
+
     if ($TRAVERSE) {
         $self->{source_file} = $self->{file};
         $self->{target_file} = File::Spec->catfile($self->{target_path}, File::Basename::basename($self->{file}));
-    } else {
+    }
+    else {
         $self->{source_file} = File::Spec->catfile($self->{OPT}{source}, $self->{file});
         $self->{target_file} = File::Spec->catfile($self->{target_path}, $self->{file});
     }
-    
-    $self->{target_file} .= "_$self->{duplicate}{File::Basename::basename($self->{file})}" 
+
+    $self->{target_file} .= "_$self->{duplicate}{File::Basename::basename($self->{file})}"
       if $self->{duplicate}{File::Basename::basename($self->{file})};
-    
+
     if ($self->_copy) {
         $track{target}{files}++;
         $self->_unlink;
-    }  
+    }
 }
 
-sub _copy {
-    my ($self) = @_;
+sub _copy
+{
+    my $self = shift;
 
     if ($self->_exists_and_not_override) {
         push @exists, $self->{target_file};
-	return 0;
+        return 0;
     }
-    
+
     if (!(File::Copy::copy $self->{source_file}, $self->{target_file})) {
         push @{$failure{copy}}, $self->{target_file};
-        return 0;    
-    } else { 
-        return 1; 
+        return 0;
+    }
+    else {
+        return 1;
     }
 }
 
-sub _unlink {
-    my ($self) = @_;
+sub _unlink
+{
+    my $self = shift;
 
     if (!$UNLINK && !$TRAVERSE) {
         return;
-    } elsif ($TRAVERSE) {
+    }
+    elsif ($TRAVERSE) {
         return unless $TRAVERSE_UNLINK;
-    }            
+    }
     unless (unlink $self->{source_file}) {
         push @{$failure{unlink}}, $self->{source_file};
     }
 }
 
-sub _exists_and_not_override {
-    my ($self) = @_;
-    
+sub _exists_and_not_override
+{
+    my $self = shift;
+
     return (-e $self->{target_file} && !$self->{OPT}{override})
       ? 1 : 0;
 }
 
-sub _read_dir {
+sub _read_dir
+{
     my ($self, $items, $dir) = @_;
-    
+
     opendir(my $dir_fh, $dir)
       or Carp::croak "Couldn't open dir $dir: $!";
-      
-    @$items = readdir($dir_fh); 
+
+    @$items = readdir($dir_fh);
     splice(@$items, 0, 2);
-    
-    closedir($dir_fh) 
+
+    closedir($dir_fh)
       or Carp::croak "Couldn't close dir $dir: $!";
 }
 
 1;
 __DATA__
 
-sub _traverse {
+sub _traverse
+{
     local ($self, $dirs, $files) = @_;
 
-    my %opts = (  
+    my %opts = (
         wanted       =>    $self->can('_eval_files'),
-	postprocess  =>    $self->can('_eval_dirs'),
+        postprocess  =>    $self->can('_eval_dirs'),
     );
 
     File::Find::finddepth(\%opts, $self->{OPT}{source});
-} 
+}
 
-sub _eval_files {
-    my ($self) = @_;    
+sub _eval_files
+{
+    my $self = shift;
     push @$files, $File::Find::name if -f $File::Find::name;
 }
 
-sub _eval_dirs {
-    my ($self) = @_;    
+sub _eval_dirs
+{
+    my $self = shift;
     push @$dirs, $File::Find::dir;
-} 
+}
 
-sub _traversed_rmdir {
-    my ($self) = @_;
-    
+sub _traversed_rmdir
+{
+    my $self = shift;
+
     if ($TRAVERSE_RMDIR && $TRAVERSE_UNLINK) {
-        for my $dir (@{$self->{dirs}}) {
-	    next if $dir eq $self->{OPT}{source} && !$TRAVERSE_RMDIR_SOURCE;
-	    File::Path::rmtree($dir, 1, 1);    
+        foreach my $dir (@{$self->{dirs}}) {
+            next if $dir eq $self->{OPT}{source} && !$TRAVERSE_RMDIR_SOURCE;
+            File::Path::rmtree($dir, 1, 1);
         }
     }
 }
@@ -410,21 +440,21 @@ Dir::Split - Split files of a directory to subdirectories
 
      verbose     =>        1,
      override    =>        0,
-     
+
      identifier  =>    'sub',
      file_limit  =>        2,
      file_sort   =>      '+',
-     
+
      separator   =>      '-',
      continue    =>        1,
      length      =>        5,
  );
- 
- $retval = $dir->split_dir; 
+
+ $retval = $dir->split_dir;
 
 =head1 DESCRIPTION
 
-Dir::Split moves files to either numbered or characteristic subdirectories.
+C<Dir::Split> moves files to either numbered or characteristic subdirectories.
 
 =head2 numeric splitting
 
@@ -464,7 +494,7 @@ Object constructor.
      continue    =>        1,
      length      =>        5,
  );
- 
+
  $dir = Dir::Split->new(%args);
 
 =head2 split_dir
@@ -472,11 +502,11 @@ Object constructor.
 Splits files to subdirectories.
 
  $retval = $dir->split_dir;
- 
-Checking the return value will provide further insight, what action split_dir() has
-taken. See B<OPTIONS / debug> on how to become aware of errors.
 
-B<RETURN VALUES>
+Checking the return value will provide further insight, what action split_dir() has
+taken. See (OPTIONS / debug) on how to become aware of errors.
+
+=head3 Return Values
 
   1 / $ACTION           Files splitted
 
@@ -494,7 +524,7 @@ B<RETURN VALUES>
 
 Split files to subdirectories with a numeric suffix.
 
- %args = (  
+ %args = (
      mode    =>    'num',
 
      source  =>    '/source',
@@ -502,7 +532,7 @@ Split files to subdirectories with a numeric suffix.
 
      verbose     =>        1,
      override    =>        0,
-     
+
      identifier  =>    'sub',
      file_limit  =>        2,
      file_sort   =>      '+',
@@ -514,28 +544,27 @@ Split files to subdirectories with a numeric suffix.
 
 =over 4
 
-=item B<mode>
+=item * C<mode>
 
 I<num> for numeric.
 
-=item B<source>
+=item * C<source>
 
 source directory.
 
-=item B<target>
+=item * C<target>
 
 target directory.
 
-=item B<verbose>
+=item * C<verbose>
 
-if enabled, mkpath will output the pathes on creating
-subdirectories.
+if enabled, mkpath will output the paths on creating subdirectories.
 
  MODES
    1  enabled
    0  disabled
 
-=item B<override>
+=item * C<override>
 
 overriding of existing files.
 
@@ -543,15 +572,15 @@ overriding of existing files.
    1  enabled
    0  disabled
 
-=item B<identifier>
+=item * C<identifier>
 
 prefix of each subdirectory created.
 
-=item B<file_limit>
+=item * C<file_limit>
 
 limit of files per subdirectory.
 
-=item B<file_sort>
+=item * C<file_sort>
 
 sort order of files.
 
@@ -559,11 +588,11 @@ sort order of files.
    +  ascending
    -  descending
 
-=item B<separator>
+=item * C<separator>
 
 suffix separator.
 
-=item B<continue>
+=item * C<continue>
 
 numbering continuation.
 
@@ -576,7 +605,7 @@ within target directory which match the given identifier and separator,
 then the suffix numbering will be continued. Disabling numbering continuation
 may interfere with existing files / directories.
 
-=item B<length>
+=item * C<length>
 
 character length of the suffix.
 
@@ -591,7 +620,7 @@ Split files to subdirectories with a characteristic suffix. Files
 are assigned to subdirectories which suffixes equal the specified,
 leading character(s) of the filenames.
 
- %args = (  
+ %args = (
      mode    =>    'char',
 
      source  =>    '/source',
@@ -599,9 +628,9 @@ leading character(s) of the filenames.
 
      verbose     =>         1,
      override    =>         0,
-     
+
      identifier  =>     'sub',
-     
+
      separator   =>       '-',
      case        =>   'upper',
      length      =>         1,
@@ -609,19 +638,19 @@ leading character(s) of the filenames.
 
 =over 4
 
-=item B<mode>
+=item * C<mode>
 
 I<char> for characteristic.
 
-=item B<source>
+=item * C<source>
 
 source directory.
 
-=item B<target>
+=item * C<target>
 
 target directory.
 
-=item B<verbose>
+=item * C<verbose>
 
 if enabled, mkpath will output the pathes on creating
 subdirectories.
@@ -630,7 +659,7 @@ subdirectories.
    1  enabled
    0  disabled
 
-=item B<override>
+=item * C<override>
 
 overriding of existing files.
 
@@ -638,15 +667,15 @@ overriding of existing files.
    1  enabled
    0  disabled
 
-=item B<identifier>
+=item * C<identifier>
 
 prefix of each subdirectory created.
 
-=item B<separator>
+=item * C<separator>
 
 suffix separator.
 
-=item B<case>
+=item * C<case>
 
 lower / upper case of the suffix.
 
@@ -654,7 +683,7 @@ lower / upper case of the suffix.
    lower
    upper
 
-=item B<length>
+=item * C<length>
 
 character length of the suffix.
 
@@ -670,15 +699,15 @@ Whitespaces in suffixes will be removed.
 
 =head1 OPTIONS
 
-=head2 tracking
+=head2 Tracking
 
 C<%Dir::Split::track> keeps count of how many files the source and directories / files
 the target consists of. It may be useful, if the amount of files that could not be transferred 
 due to existing ones, has to be counted. Each time a new splitting is attempted, 
 the track will be reseted.
 
- %Dir::Split::track = (  
-     source  =>    {  files  =>    512  
+ %Dir::Split::track = (
+     source  =>    {  files  =>    512
      },
      target  =>    {  dirs   =>    128,
                       files  =>    512,
@@ -687,20 +716,20 @@ the track will be reseted.
 
 Above example: directory consisting of 512 files successfully splitted to 128 directories.
 
-=head2 debug
+=head2 Debug
 
-B<existing>
+B<Existing>
 
-If C<split_dir()> returns $EXISTS, this implys that the B<override> option is disabled and
+If C<split_dir()> returns C<$EXISTS>, this implys that the B<override> option is disabled and
 files weren't moved due to existing files within the target subdirectories; they will have
 their paths appearing in C<@Dir::Split::exists>.
 
  file    @Dir::Split::exists    # Existing files, not attempted to
                                 # be overwritten.
 
-B<failures>
+B<Failures>
 
-If C<split_dir()> returns $FAILURE, this most often implys that the B<override> option is enabled
+If C<split_dir()> returns C<$FAILURE>, this most often implys that the B<override> option is enabled
 and existing files could not be overwritten. Files that could not be copied / unlinked,
 will have their paths appearing in the according keys in C<%Dir::Split::failure>.
 
@@ -710,18 +739,18 @@ will have their paths appearing in the according keys in C<%Dir::Split::failure>
          @{$Dir::Split::failure{unlink}}    # Files that could be copied but not unlinked,
                                             # rather seldom.
 
-It is recommended to evaluate those arrays on $FAILURE.
+It is recommended to evaluate those arrays on C<$FAILURE>.
 
 A C<@Dir::Split::exists> array may coexist.
 
-=head2 unlinking
+=head2 Unlinking
 
 Files in a flat source directory may be unlinked by setting:
 
  # Unlink files in flat source
  $Dir::Split::UNLINK = 1;
 
-=head2 traversing
+=head2 Traversing
 
 Traversal processing of files may be activated by setting:
 
@@ -730,7 +759,7 @@ Traversal processing of files may be activated by setting:
 
 No depth limit e.g. all underlying directories / files will be evaluated.
 
-B<options>
+B<Options>
 
  # Unlink files in source
  $Dir::Split::TRAVERSE_UNLINK = 1;
@@ -746,13 +775,13 @@ this option requires the C<$Dir::Split::TRAVERSE_UNLINK> to be set.
  # Remove the source directory itself
  $Dir::Split::TRAVERSE_RMDIR_SOURCE = 1;
 
-It is not recommended to turn on the latter options C<$Dir::Split::TRAVERSE_UNLINK>, 
-C<$Dir::Split::TRAVERSE_RMDIR> and C<$Dir::Split::TRAVERSE_RMDIR_SOURCE>, 
+It is not recommended to turn on the latter options C<$Dir::Split::TRAVERSE_UNLINK>,
+C<$Dir::Split::TRAVERSE_RMDIR> and C<$Dir::Split::TRAVERSE_RMDIR_SOURCE>,
 unless one is aware of the consequences they imply.
 
 =head1 EXAMPLES
 
-Assuming F</source> contains 5 files:
+Assuming the source directory contains these files:
 
  +- _123
  +- abcd
@@ -760,9 +789,9 @@ Assuming F</source> contains 5 files:
  +- ijkl
  +- mnop
 
-After splitting the directory tree in F</target> will look as following:
+After splitting the source directory tree to the target, it would result in:
 
-B<numeric splitting>
+=head2 numeric splitting
 
  +- sub-00001
  +-- _123
@@ -773,7 +802,7 @@ B<numeric splitting>
  +- sub-00003
  +-- mnop
 
-B<characteristic splitting>
+=head2 characteristic splitting
 
  +- sub-_
  +-- _123
@@ -796,9 +825,9 @@ Steven Schubiger <schubiger@cpan.org>
 
 =head1 LICENSE
 
-This program is free software; you may redistribute it and/or 
+This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>	    
+See L<http://www.perl.com/perl/misc/Artistic.html>
 
 =cut

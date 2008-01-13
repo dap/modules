@@ -1,4 +1,4 @@
-#! /usr/bin/perl
+#!/usr/bin/perl
 
 use strict;
 use warnings;
@@ -9,30 +9,30 @@ our ($dir, %Form, %Form_opt, $retval);
 $retval = $ADJUST;
 
 #
-# Modify following lines accordingly to whether 
+# Modify following lines accordingly to whether
 # numeric or characteristic splitting shall be
-# processed.
+# performed.
 #
 
-my %num_options = (  
+my %num_options = (
    mode    =>    'num',
 
    source  =>    '/source',
    target  =>    '/target',
- 
+
    verbose     =>        1,
    override    =>        0,
 
    identifier  =>    'sub',
    file_limit  =>        2,
    file_sort   =>      '+',
-   
+
    separator   =>      '-',
    continue    =>        1,
    length      =>        5,
 );
 
-my %char_options = (  
+my %char_options = (
    mode    =>    'char',
 
    source  =>    '/source',
@@ -40,7 +40,7 @@ my %char_options = (
 
    verbose     =>          1,
    override    =>          0,
-  
+
    identifier  =>      'sub',
 
    separator   =>        '-',
@@ -77,11 +77,11 @@ if ($retval == $ADJUST) {
     print __FILE__, " requires adjustment\n";
 }
 # action
-elsif ($retval == $ACTION) { 
+elsif ($retval == $ACTION) {
     formwrite('track');
 }
 # no action
-elsif ($retval == $NOACTION) { 
+elsif ($retval == $NOACTION) {
     print "None moved.\n";
 }
 # existing files
@@ -90,14 +90,14 @@ elsif ($retval == $EXISTS) {
 
     $Form_opt{header} = 'EXISTS';
     $Form_opt{ul} = '-' x length $Form_opt{header};
-     
+
     formwrite('start_debug');
 
     for my $file (@Dir::Split::exists) {
         print "file:\t$file\n";
     }
-    
-    formwrite('end_debug'); 
+
+    formwrite('end_debug');
     formwrite('track');
 }
 # copy or unlink failure
@@ -107,35 +107,35 @@ elsif ($retval == $FAILURE) {
     if (@Dir::Split::exists) {
         $Form_opt{header} = 'EXISTS';
         $Form_opt{ul} = '-' x length $Form_opt{header};
-	
+
         formwrite('start_debug');
 
         for my $file (@Dir::Split::exists) {
             print "file:\t$file\n";
         }
-	
-	formwrite('end_debug');
+
+        formwrite('end_debug');
     }
-    
+
     $Form_opt{header} = 'FAILURE';
     $Form_opt{ul} = '-' x length $Form_opt{header};
-    
+
     formwrite('start_debug');
-    
+
     for my $file (@{$Dir::Split::failure{copy}}) {
         print "copy failed:\t$file\n";
     }
     for my $file (@{$Dir::Split::failure{unlink}}) {
         print "unlink failed:\t$file\n";
     }
-    
+
     formwrite('end_debug');
     formwrite('track');
 }
 
 sub formwrite {
     my ($ident) = @_;
-    
+
     no warnings 'redefine';
     eval $Form{$ident};
     die $@ if $@;
@@ -143,7 +143,7 @@ sub formwrite {
 }
 
 BEGIN {
-    $Form{track} = 'format = 
+    $Form{track} = 'format =
 -------------------
 source - files: @<<<
 sprintf "%3d", $Dir::Split::track{source}{files}
@@ -160,15 +160,15 @@ $Form_opt{ul}
 START: DEBUG - @<<<<<<<<<<
 $Form_opt{header}
 ---------------@<<<<<<<<<<
-$Form_opt{ul} 
+$Form_opt{ul}
 .';
-    
+
     $Form{end_debug} = 'format =
 ---------------@<<<<<<<<<<
 $Form_opt{ul}
 END  : DEBUG - @<<<<<<<<<<
 $Form_opt{header}
 ---------------@<<<<<<<<<<
-$Form_opt{ul} 
-.';    
+$Form_opt{ul}
+.';
 }
