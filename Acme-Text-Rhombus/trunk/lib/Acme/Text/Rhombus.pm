@@ -6,37 +6,40 @@ use base qw(Exporter);
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.17';
+$VERSION = '0.18';
 @EXPORT_OK = qw(rhombus);
 
-sub rhombus {
-    my %opts = @_;    
+sub rhombus
+{
+    my %opts = @_;
     my ($rhombus, $lines, $letter, $case, $fillup);
-    
+
     $lines  = $opts{lines}  ||      25;
     $letter = $opts{letter} ||     'a';
-    $case   = $opts{case}   || 'upper'; 
-    $fillup = $opts{fillup} ||     '+'; 
-        
-    $letter = $case eq 'upper' ? uc($letter) : lc($letter);   
+    $case   = $opts{case}   || 'upper';
+    $fillup = $opts{fillup} ||     '+';
+
+    $letter = $case eq 'upper' ? uc $letter : lc $letter;
     $lines++ if $lines % 2 == 0;
-    
+
     my ($line, $repeat) = (1,1);
+
     for (; $line <= $lines; $line++) {
         my $space = ($lines - $repeat) / 2;
-	my $fillup_space = $fillup x $space;
-	
-	$rhombus .= $fillup_space;
-        $rhombus .= $letter x $repeat; 
+        my $fillup_space = $fillup x $space;
+
+        $rhombus .= $fillup_space;
+        $rhombus .= $letter x $repeat;
         $rhombus .= "$fillup_space\n";
-	
-	$repeat = $line < ($lines / 2) ? $repeat + 2 : $repeat - 2;
+
+        $repeat = $line < ($lines / 2) ? $repeat + 2 : $repeat - 2;
         $letter = chr(ord($letter) + 1);
 
         if ($letter !~ /[a-z]/i) {
-	    $letter = $case eq 'upper' ? 'A' : 'a';
-	}
-    }    
+            $letter = $case eq 'upper' ? 'A' : 'a';
+        }
+    }
+
     return $rhombus;
 }
 
@@ -85,19 +88,19 @@ Options:
 
 =over 4
 
-=item lines
+=item * C<lines>
 
 Amount of lines to be printed.
 
-=item letter
+=item * C<letter>
 
 Alphanumerical letter to start with.
 
-=item case
+=item * C<case>
 
 Lower/upper case of the letters within the rhombus.
 
-=item fillup
+=item * C<fillup>
 
 The fillup character.
 
@@ -109,9 +112,9 @@ Steven Schubiger <schubiger@cpan.org>
 
 =head1 LICENSE
 
-This program is free software; you may redistribute it and/or 
+This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>	    
+See L<http://www.perl.com/perl/misc/Artistic.html>
 
 =cut

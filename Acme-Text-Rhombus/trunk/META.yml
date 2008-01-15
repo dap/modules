@@ -1,6 +1,6 @@
 ---
 name: Acme-Text-Rhombus
-version: 0.17
+version: 0.18
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Draw an alphanumerical rhombus
@@ -17,8 +17,8 @@ recommends:
 provides:
   Acme::Text::Rhombus:
     file: lib/Acme/Text/Rhombus.pm
-    version: 0.17
-generated_by: Module::Build version 0.2709
+    version: 0.18
+generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2
