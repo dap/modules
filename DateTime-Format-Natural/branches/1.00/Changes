@@ -1,6 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
-0.66 Tue Jan  8 14:13:18 CET 2008
+0.66 Tue Jan 15 12:04:06 CET 2008
+
+ - Merged development version to stable.
+
+0.65_01 Tue Jan  8 14:13:18 CET 2008
 
  - Convey less filename information for all test-files (removed
    'en' suffixes), because they needlessly clutter the test output.
