@@ -8,5 +8,7 @@ META.yml
 README
 scripts/du.pl
 t/00-load.t
+t/data/tie.t.in
 t/pod-coverage.t
 t/pod.t
+t/tie.t

@@ -1,5 +1,13 @@
 Revision history for Perl extension Tie::DiskUsage.
 
+0.19 Thu Jan 17 14:27:27 CET 2008
+
+ - Added basic tie test.
+
+ - Beautified code layout.
+
+ - Added AUTHOR/LICENSE sections to the documentation.
+
 0.18 Don Dec 14 02:17:28 CET 2006
 
  - Extended the "SEE ALSO" section to include links

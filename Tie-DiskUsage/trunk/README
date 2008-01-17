@@ -9,18 +9,27 @@ SYNOPSIS
      untie %usage;
 
 DESCRIPTION
-    Tie::DiskUsage ties the disk-usage, which is gathered from the output of
-    "du", to a hash. If the path to perform the du-command on is being
+    "Tie::DiskUsage" ties the disk-usage, which is gathered from the output
+    of "du", to a hash. If the path to perform the du command on is being
     omitted, the current working directory will be examined; optional
     arguments to "du" may be passed subsequently.
 
-    By default, the location of the du-command is to be assumed in
+    By default, the location of the du command is to be assumed in
     /usr/bin/du; if "du" cannot be found to exist there, "File::Which" will
     attempt to gather its former location.
 
     The default path to "du" may be overriden by setting
-    $Tie::DiskUsage::$DU_BIN.
+    "$Tie::DiskUsage::$DU_BIN".
 
 SEE ALSO
     "tie" in perlfunc, du(1), Filesys::DiskUsage, Sys::Statistics::Linux
+
+AUTHOR
+    Steven Schubiger <schubiger@cpan.org>
+
+LICENSE
+    This program is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See <http://www.perl.com/perl/misc/Artistic.html>
 
