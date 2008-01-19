@@ -10,11 +10,11 @@ SYNOPSIS
 
 DESCRIPTION
     "Tie::DiskUsage" ties the disk-usage, which is gathered from the output
-    of "du", to a hash. If the path to perform the du command on is being
+    of "du", to a hash. If the path to perform the "du" command on is being
     omitted, the current working directory will be examined; optional
     arguments to "du" may be passed subsequently.
 
-    By default, the location of the du command is to be assumed in
+    By default, the location of the "du" command is to be assumed in
     /usr/bin/du; if "du" cannot be found to exist there, "File::Which" will
     attempt to gather its former location.
 

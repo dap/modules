@@ -13,6 +13,7 @@ my $build = Module::Build->new
    requires => {
                  'Carp' => 0,
                  'File::Basename' => 0,
+                 'File::Spec' => 0,
                  'File::Which' => 0,
                  'Symbol' => 0,
                  'Tie::Hash' => 0,

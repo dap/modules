@@ -10,7 +10,7 @@ use Tie::Hash ();
 our ($VERSION, @ISA, $DU_BIN);
 
 @ISA = qw(Tie::StdHash);
-$VERSION = '0.19';
+$VERSION = '0.20';
 
 $DU_BIN = '/usr/bin/du';
 
@@ -37,7 +37,7 @@ sub _locate_du
         };
         die $@ if $@;
         my $du_which = File::Which::which('du');
-        $du_which
+        defined $du_which
           ? $DU_BIN = $du_which
           : croak "Can't locate ", File::Basename::basename($DU_BIN), ": $!";
     }
@@ -80,11 +80,11 @@ Tie::DiskUsage - Tie disk-usage to a hash
 
 C<Tie::DiskUsage> ties the disk-usage, which is gathered
 from the output of C<du>, to a hash. If the path to perform
-the du command on is being omitted, the current working
+the C<du> command on is being omitted, the current working
 directory will be examined; optional arguments to C<du> may be
 passed subsequently.
 
-By default, the location of the du command is to be
+By default, the location of the C<du> command is to be
 assumed in F</usr/bin/du>; if C<du> cannot be found to exist
 there, C<File::Which> will attempt to gather its former location.
 

@@ -1,5 +1,12 @@
 Revision history for Perl extension Tie::DiskUsage.
 
+0.20 Sat Jan 19 15:49:19 CET 2008
+
+ - Require File::Spec at compile-time within the tie test
+   and bail out when 'du' cannot be located. Moreover, don't
+   check for exact disk-usage within the target dir, but for
+   greater than zero disk-usage [reported by cpantesters].
+
 0.19 Thu Jan 17 14:27:27 CET 2008
 
  - Added basic tie test.

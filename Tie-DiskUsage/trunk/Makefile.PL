@@ -9,6 +9,7 @@ WriteMakefile
           'VERSION_FROM' => 'lib/Tie/DiskUsage.pm',
           'PREREQ_PM' => {
                            'Test::More' => 0,
+                           'File::Spec' => 0,
                            'File::Which' => 0,
                            'File::Basename' => 0,
                            'Symbol' => 0,

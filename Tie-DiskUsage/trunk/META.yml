@@ -1,6 +1,6 @@
 ---
 name: Tie-DiskUsage
-version: 0.19
+version: 0.20
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Tie disk-usage to a hash
@@ -10,6 +10,7 @@ resources:
 requires:
   Carp: 0
   File::Basename: 0
+  File::Spec: 0
   File::Which: 0
   Symbol: 0
   Tie::Hash: 0
@@ -21,7 +22,7 @@ recommends:
 provides:
   Tie::DiskUsage:
     file: lib/Tie/DiskUsage.pm
-    version: 0.19
+    version: 0.20
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
