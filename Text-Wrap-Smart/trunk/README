@@ -1,11 +1,12 @@
 NAME
-    Text::Wrap::Smart - Wrap text into chunks of equal length
+    Text::Wrap::Smart - Wrap text into chunks of (mostly) equal length
 
 SYNOPSIS
      use Text::Wrap::Smart qw(wrap_smart);
 
-     $text = .. # random content & length
- 
+     $text = "..."; # random length
+
+     # example options
      %options = (
                  no_split => 1,
                  max_msg_size => 160,
@@ -15,16 +16,17 @@ SYNOPSIS
 
 DESCRIPTION
     "Text::Wrap::Smart" was primarly developed to split an overly long SMS
-    message into chunks of equal size. The distribution's "wrap_smart()" may
-    nevertheless be used for other purposes.
+    message into chunks of mostly equal size. The distribution's
+    "wrap_smart()" may nevertheless be suitable for other purposes.
 
 FUNCTIONS
   wrap_smart
      @chunks = wrap_smart($text [, { options } ]);
 
     "options" may contain the "no_split" option indicating that words shall
-    not be broken up. "max_msg_size" sets the character length boundary for
-    each chunk emitted.
+    not be broken up which indicates 'fuzzy wrapping` (if "no_split" is
+    undefined, 'exact wrapping` will be applied). "max_msg_size" sets the
+    character length boundary for each chunk emitted.
 
 SEE ALSO
     Text::Wrap

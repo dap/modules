@@ -1,5 +1,18 @@
 Revision history for Perl extension Text::Wrap::Smart.
 
+0.6 Fri Jan 25 22:36:50 CET 2008
+
+ - Refactored wrap_smart() by dividing the core code into
+   two subs suitable for fuzzy and exact wrapping.
+
+ - Removed comments, because the code is mostly obvious.
+
+ - Added a test-file which tests exact wrapping.
+
+ - Renamed no_split.t to fuzzy_wrap.t.
+
+ - Reworded documentation.
+
 0.5 Sat Mar 10 13:30:44 CET 2007
 
  - Localised $/ within wrap_smart().

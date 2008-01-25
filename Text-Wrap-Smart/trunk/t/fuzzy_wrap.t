@@ -40,7 +40,8 @@ foreach my $args (@args) {
     test_wrap($args);
 }
 
-sub test_wrap {
+sub test_wrap
+{
     my ($args) = @_;
 
     my $text         = $args->[0];
@@ -48,7 +49,6 @@ sub test_wrap {
     my $count        = $args->[2];
     my $max_msg_size = $args->[3];
 
-    # Split at word boundary
     my %opts = (no_split => 1);
 
     $opts{max_msg_size} = $max_msg_size
@@ -60,12 +60,11 @@ sub test_wrap {
     chomp @$expected;
 
     my $msg_size = $opts{max_msg_size} ? $opts{max_msg_size} : 'default';
-
     my $msg_size_text = "(msg size: $msg_size)";
 
     my @msg = (
-        "correct amount of substrings $msg_size_text",
-        "splitted at word boundary    $msg_size_text",
+        "$msg_size_text correct amount of substrings",
+        "$msg_size_text splitted at word boundary",
     );
 
     is(scalar @strings, $count, $msg[0]);

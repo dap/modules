@@ -9,88 +9,96 @@ use Math::BigFloat;
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.5';
+$VERSION = '0.6';
 @EXPORT_OK = qw(wrap_smart);
 
-sub wrap_smart {
+sub wrap_smart
+{
     my ($text, $conf) = @_;
-    croak "wrap_smart(\\\$text [, { options } ])\n" unless $text;
+    croak "wrap_smart(\\\$text [, { options } ])\n" unless defined $text;
 
     my $msg_size = $conf->{max_msg_size} || 160;
     my $no_split = $conf->{no_split};
 
-    my ($i, $pos, @strings);
+    my $exact_split = !$no_split;
 
-    my $length      = length $text;
+    my $i;
+    my $length = length $text;
     my $length_eval = $length;
 
-    # Count possible chunks
     do {
         $length_eval -= $msg_size;
         $i++;
     } while ($length_eval > 0);
 
-    # Ceil average message length
-    my $x       = Math::BigFloat->new($length / $i);
-    my $average = $x->bceil();
+    my $x = Math::BigFloat->new($length / $i);
+    my $average = $x->bceil;
 
-    if (!$no_split) {
-        # Split text in *exact* substrings
-        for ($pos = 0; $pos < $length; $pos += $average) {
-            my $string = substr($text, $pos, $average);
-            push @strings, $string;
-        }
-    } else {
-        my ($have_space, $pos);
+    if ($exact_split) {
+        return _exact_wrap($text, $conf, $average)
+    }
+    else {
+        return _fuzzy_wrap($text, $conf, $average);
+    }
+}
 
-        my $offset    = 0;
-        my $text_eval = $text;
+sub _exact_wrap
+{
+    my ($text, $conf, $average) = @_;
 
-        # Iterate while end position is not reached
-        while ($offset < length($text) - 1) {
-            # Determine nearest offset of a word boundary
-            if (length $text_eval > $average && $text_eval =~ / /) {
-                $pos        = rindex($text_eval, ' ', $average);
-                $have_space = 1;
-            # If space encountered & remaining text is less than average, 
-            # set position to end; otherwise set position to msg size provided.
-            } else {
-                $pos = $have_space ? length $text_eval : $msg_size;
-            }
+    my (@chunks, $pos);
+    my $length = length $text;
 
-            # Set position to remaining length if no word boundary is found
-            $pos       = length $text_eval if $pos == -1;
-
-            # Extract substring
-            my $substr = substr($text_eval, 0, $pos);
-
-            # Increment position to skip word boundary
-            $pos++;
-            my $length = 0;
-
-            # Set position to end of index if end is reached
-            if ($pos > length $text_eval) {
-                $pos    = length $text_eval;
-                $length = 0;
-            # Otherwise, calculate remaining length of text
-            } else {
-                $length = length($text_eval) - $pos;
-            }
-
-            # Shrink the text accordingly & increment offset
-            $text_eval = substr($text_eval, $pos, $length);
-            $offset   += $pos;
-
-            # Mark trailing spaces to be removed
-            local $/ = ' ';
-
-            # Remove spaces & push substring
-            chomp $substr;
-            push @strings, $substr;
-       }
+    for ($pos = 0; $pos < $length; $pos += $average) {
+        my $chunk = substr($text, $pos, $average);
+        push @chunks, $chunk;
     }
 
-    return @strings;
+    return @chunks;
+}
+
+sub _fuzzy_wrap
+{
+    my ($text, $conf, $average) = @_;
+
+    my (@chunks, $have_space, $pos);
+    my $msg_size = $conf->{max_msg_size} || 160;
+
+    my $offset = 0;
+    my $text_eval = $text;
+
+    while ($offset < length($text) - 1) {
+        if (length $text_eval > $average && $text_eval =~ / /) {
+            $pos = rindex($text_eval, ' ', $average);
+            $have_space = 1;
+        }
+        else {
+            $pos = $have_space ? length $text_eval : $msg_size;
+        }
+
+        $pos = length $text_eval if $pos == -1;
+        my $chunk = substr($text_eval, 0, $pos);
+        $pos++;
+        my $length = 0;
+
+        if ($pos > length $text_eval) {
+            $pos = length $text_eval;
+            $length = 0;
+        }
+        else {
+            $length = length($text_eval) - $pos;
+        }
+
+        $text_eval = substr($text_eval, $pos, $length);
+        $offset += $pos;
+
+        local $/ = ' ';
+        chomp $chunk;
+
+        push @chunks, $chunk;
+    }
+
+    return @chunks;
 }
 
 1;
@@ -98,14 +106,15 @@ __END__
 
 =head1 NAME
 
-Text::Wrap::Smart - Wrap text into chunks of equal length
+Text::Wrap::Smart - Wrap text into chunks of (mostly) equal length
 
 =head1 SYNOPSIS
 
  use Text::Wrap::Smart qw(wrap_smart);
 
- $text = .. # random content & length
- 
+ $text = "..."; # random length
+
+ # example options
  %options = (
              no_split => 1,
              max_msg_size => 160,
@@ -115,9 +124,9 @@ Text::Wrap::Smart - Wrap text into chunks of equal length
 
 =head1 DESCRIPTION
 
-C<Text::Wrap::Smart> was primarly developed to split an overly
-long SMS message into chunks of equal size. The distribution's
-C<wrap_smart()> may nevertheless be used for other purposes.
+C<Text::Wrap::Smart> was primarly developed to split an overly long SMS
+message into chunks of mostly equal size. The distribution's C<wrap_smart()>
+may nevertheless be suitable for other purposes.
 
 =head1 FUNCTIONS
 
@@ -125,9 +134,10 @@ C<wrap_smart()> may nevertheless be used for other purposes.
 
  @chunks = wrap_smart($text [, { options } ]);
 
-C<options> may contain the C<no_split> option indicating that
-words shall not be broken up. C<max_msg_size> sets the character
-length boundary for each chunk emitted.
+C<options> may contain the C<no_split> option indicating that words
+shall not be broken up which indicates 'fuzzy wrapping` (if C<no_split> is
+undefined, 'exact wrapping` will be applied). C<max_msg_size> sets the
+character length boundary for each chunk emitted.
 
 =head1 SEE ALSO
 
@@ -139,7 +149,7 @@ Steven Schubiger <schubiger@cpan.org>
 
 =head1 LICENSE
 
-This program is free software; you may redistribute it and/or 
+This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
 See L<http://www.perl.com/perl/misc/Artistic.html>
