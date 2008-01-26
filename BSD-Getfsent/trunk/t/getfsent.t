@@ -8,6 +8,8 @@ use File::Spec;
 use FindBin qw($Bin);
 use Test::More tests => 7;
 
+BAIL_OUT('unsupported OS') unless -e $BSD::Getfsent::FSTAB && -f _;
+
 $BSD::Getfsent::FSTAB = File::Spec->catfile($Bin, 'data', 'getfsent.t.in');
 
 my $entries_total = getfsent();

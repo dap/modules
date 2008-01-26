@@ -1,5 +1,14 @@
 Revision history for Perl extension BSD::Getfsent.
 
+0.16 Sat Jan 26 20:18:33 CET 2008
+
+ - Prematurely bail out within the getfsent.t test-file when the fstab
+   file doesn't exist and/or isn't from type file.
+
+ - Added logic to skip comments in a fstab file.
+
+ - Reformatted/-worded documentation.
+
 0.15 Sat Jan 12 14:12:31 CET 2008
 
  - Added the test-file getfsent.t which tests the getfsent() function.

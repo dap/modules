@@ -9,7 +9,7 @@ use IO::File ();
 
 our ($VERSION, @EXPORT_OK, $ENTRIES, $FSTAB);
 
-$VERSION = '0.15';
+$VERSION = '0.16';
 @EXPORT_OK = qw(getfsent);
 $ENTRIES = __PACKAGE__ . '::_fsents';
 $FSTAB = '/etc/fstab';
@@ -40,7 +40,9 @@ sub _parse_entries
     my @entries;
     my $fh = _open_fh();
 
-    for (my $i = 0; local $_ = <$fh>; $i++) {
+    while (local $_ = <$fh>) {
+        next if /^\#/;
+
         chomp;
         my @entry = split;
 
@@ -52,7 +54,7 @@ sub _parse_entries
               (reverse split ',', $entry[3], 2));     # fs_type to index 4.
         }
 
-        @{$entries[$i]} = @entry;
+        push @entries, [ @entry ];
     }
 
     _close_fh($fh);
@@ -104,10 +106,10 @@ BSD::Getfsent - Get file system descriptor file entry
 
 =head2 getfsent
 
-In list context, each file system entry is returned.
+In list context, each file system entry is returned (C<getfsent()>
+continuously reads the next line of the F</etc/fstab> file).
 
-C<getfsent()> then continuously reads the next line of the /etc/fstab file,
-opening the file if necessary.
+The list returned is structured as following:
 
  $entry[0]    # block special device name
  $entry[1]    # file system path prefix
@@ -126,6 +128,14 @@ F</etc/fstab>
 =head1 EXPORT
 
 C<getfsent()> is exportable.
+
+=head1 BUGS & CAVEATS
+
+C<BSD::Getfsent> was, as it name suggests, developed for BSD-like systems.
+It may be nevertheless suitable for other UNIX-like systems, including Linux,
+but remains untested. Bear in mind, that tests will fail if no F</etc/fstab>
+can be found (in order that testing on systems like Windows, where no
+F</etc/fstab> exists, doesn't result in a false positive).
 
 =head1 SEE ALSO
 

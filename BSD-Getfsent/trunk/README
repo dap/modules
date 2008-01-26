@@ -10,10 +10,10 @@ SYNOPSIS
 
 FUNCTIONS
   getfsent
-    In list context, each file system entry is returned.
+    In list context, each file system entry is returned ("getfsent()"
+    continuously reads the next line of the /etc/fstab file).
 
-    "getfsent()" then continuously reads the next line of the /etc/fstab
-    file, opening the file if necessary.
+    The list returned is structured as following:
 
      $entry[0]    # block special device name
      $entry[1]    # file system path prefix
@@ -30,6 +30,14 @@ FILES
 
 EXPORT
     "getfsent()" is exportable.
+
+BUGS & CAVEATS
+    "BSD::Getfsent" was, as it name suggests, developed for BSD-like
+    systems. It may be nevertheless suitable for other UNIX-like systems,
+    including Linux, but remains untested. Bear in mind, that tests will
+    fail if no /etc/fstab can be found (in order that testing on systems
+    like Windows, where no /etc/fstab exists, doesn't result in a false
+    positive).
 
 SEE ALSO
     fstab(5), getfsent(3)
