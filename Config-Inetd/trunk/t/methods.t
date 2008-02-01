@@ -21,12 +21,12 @@ is($inetd->enable(daytime => 'tcp'), 1, '$inetd->enable()');
 is($inetd->is_enabled(daytime => 'tcp'), 1, '$inetd->is_enabled()');
 
 my $regex_service = qr{
-    ^   \#?[\w\Q/.:-[]\E]+ 
-    \s+ (?:stream|dgram) 
-    \s+ (?:tcp|udp|rpc/udp)6? 
-    \s+ (?:no)?wait 
-    \s+ (?:root|_fingerd|_identd) 
-    \s+ (?:/\w+/\w+/[\w\.]+|internal) 
+    ^   \#?[\w\Q/.:-[]\E]+
+    \s+ (?:stream|dgram)
+    \s+ (?:tcp|udp|rpc/udp)6?
+    \s+ (?:no)?wait
+    \s+ (?:root|_fingerd|_identd)
+    \s+ (?:/\w+/\w+/[\w\.]+|internal)
     \s* (?:[\w\.]+)?
 }x;
 

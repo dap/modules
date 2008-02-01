@@ -4,21 +4,21 @@ NAME
 SYNOPSIS
      use Config::Inetd;
 
-     $inetd = Config::Inetd->new;                      
+     $inetd = Config::Inetd->new;
 
-     if ($inetd->is_enabled(telnet => 'tcp')) {    
+     if ($inetd->is_enabled(telnet => 'tcp')) {
          $inetd->disable(telnet => 'tcp');
      }
- 
+
      print $inetd->dump_enabled;
      print $inetd->dump_disabled;
 
-     print $inetd->{CONF}[6];                                               
+     print $inetd->{CONF}[6];
 
 DESCRIPTION
-    Config::Inetd is an interface to inetd's configuration file inetd.conf;
-    it simplifies checking and setting the enabled/disabled state of
-    services and dumping them by their state.
+    "Config::Inetd" is an interface to inetd's configuration file
+    inetd.conf; it simplifies checking and setting the enabled/disabled
+    state of services and dumping them by their state.
 
 CONSTRUCTOR
   new
@@ -31,7 +31,7 @@ METHODS
   is_enabled
     Checks whether a service is enlisted as enabled.
 
-     $retval = $inetd->is_enabled($service => $protocol);
+     $inetd->is_enabled($service => $protocol);
 
     Returns 1 if the service is enlisted as enabled, 0 if enlisted as
     disabled, undef if the service does not exist.
@@ -39,7 +39,7 @@ METHODS
   enable
     Enables a service.
 
-     $retval = $inetd->enable($service => $protocol);
+     $inetd->enable($service => $protocol);
 
     Returns 1 if the service has been enabled, 0 if no action has been
     taken.
@@ -50,7 +50,7 @@ METHODS
   disable
     Disables a service.
 
-     $retval = $inetd->disable($service => $protocol);
+     $inetd->disable($service => $protocol);
 
     Returns 1 if the service has been disabled, 0 if no action has been
     taken.
@@ -76,7 +76,7 @@ METHODS
 
 INSTANCE DATA
     The inetd configuration file is tied as instance data (newlines are
-    preserved); it may be accessed via @{$inetd->{CONF}}.
+    preserved); it may be accessed via "@{$inetd->{CONF}}".
 
 SEE ALSO
     Tie::File, inetd(8)

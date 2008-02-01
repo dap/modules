@@ -1,15 +1,19 @@
 Revision history for Perl extension Config::Inetd.
 
+0.28 Fri Feb  1 16:07:41 CET 2008
+
+ - Clarified and reformatted documentation.
+
 0.27 Sat Nov 10 22:04:05 CET 2007
 
- - Fixed permissions for 't/data/inetd.conf' by inlining 
+ - Fixed permissions for 't/data/inetd.conf' by inlining
    the data and copying it to a temporary file while testing.
 
  - Undo the bailing out within 'methods.t'.
 
 0.26 Fri Nov  9 22:47:46 CET 2007
 
- - Bail out within 'methods.t' when no system-wide 
+ - Bail out within 'methods.t' when no system-wide
    configuration (i.e. 'inetd.conf') is being found.
 
 0.25 Sun Mar 19 22:49:56 CET 2006
@@ -18,11 +22,11 @@ Revision history for Perl extension Config::Inetd.
 
 0.23 Wed Mar 15 22:51:54 CET 2006
 
- - Added func.t to the test suite. Checks against a local 
+ - Added func.t to the test suite. Checks against a local
    copy of inetd.conf whether $inetd->dump_enabled() & $inetd->
    dump_disabled() return the expected amount of services.
    Furthermore, evaluates whether $inetd->disable() & $inetd->
-   enable() trigger the according changes correctly; the state 
+   enable() trigger the according changes correctly; the state
    of $inetd->is_enabled() is checked against an enabled service.
    All services are checked via a custom regular expression to
    ensure that instance data access functions.
@@ -31,17 +35,17 @@ Revision history for Perl extension Config::Inetd.
 
  - Lines read in from inetd.conf preserve their newlines as
    specified via the Tie::File option autochomp.
- 
- - Inetd.pm (formerly known as Entity.pm) is warnings-free 
-   (previously emitted warnings while splitting the service/protocol 
+
+ - Inetd.pm (formerly known as Entity.pm) is warnings-free
+   (previously emitted warnings while splitting the service/protocol
    from the inetd.conf and for 1 inner reference that existed
    for the tied Tie::File object).
-   
+
  - Suitable Build.PL added.
 
 0.21 2005/02/23
 
- - Namespace changed from previously Net::Inetd to Config::Inetd 
+ - Namespace changed from previously Net::Inetd to Config::Inetd
    as proposed by others.
 
 0.11 2004/01/28
