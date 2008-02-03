@@ -5,8 +5,8 @@ use warnings;
 use base qw(Exporter);
 
 our ($VERSION, @EXPORT_OK, %EXPORT_TAGS, $Skip_multiple, @subs);
-     
-$VERSION = '0.33';
+
+$VERSION = '0.35';
 @subs = qw(factors matches);
 @EXPORT_OK = @subs;
 %EXPORT_TAGS = ('all' => [ @subs ]);
@@ -25,6 +25,8 @@ Math::Factor::XS - Factorise numbers and calculate matching multiplications
 =head1 SYNOPSIS
 
  use Math::Factor::XS ':all';
+ # or
+ use Math::Factor::XS qw(factors matches);
 
  $number = 30107;
 
@@ -36,7 +38,7 @@ Math::Factor::XS - Factorise numbers and calculate matching multiplications
 
 =head1 DESCRIPTION
 
-Math::Factor::XS factorises numbers by applying modulo operator divisons.
+C<Math::Factor::XS> factorises numbers by applying modulo operator divisons.
 
 =head1 FUNCTIONS
 
@@ -46,8 +48,7 @@ Factorises numbers.
 
  @factors = factors($number);
 
-$number will be entirely factorised and its factors will be saved within 
-the array @factors.
+The number will be entirely factorised and its factors will be returned as list.
 
 =head2 matches
 
@@ -55,21 +56,21 @@ Evaluates matching multiplications.
 
  @matches = matches($number, @factors);
 
-The factors within @factors will be multplicated against each other and results 
-that equal the number itself, will be saved to the two-multidimensional array @matches.
+The factors will be multplicated against each other and results that equal the number
+itself, will be returned as two-multidimensional list.
 The matches are accessible through the indexes, for example, the first two numbers
-that matched the number, may be accessed by $matches[0][0] and $matches[0][1], 
-the second ones by $matches[1][0] and $matches[1][1], and so on.
+that matched the number, may be accessed by C<$matches[0][0]> and C<$matches[0][1]>,
+the second ones by C<$matches[1][0]> and C<$matches[1][1]>, and so on.
 
-If $Math::Factor::XS::Skip_multiple is set to a true value, matching multiplications 
-that contain multiplicated (small) factors will be dropped.
+If C<$Math::Factor::XS::Skip_multiple> is set to a true value, matching multiplications
+that contain multiplicated (small) factors will be discarded.
 
-Example: 
+Example:
 
- # accepted 
- 30107 == 11 * 2737  
+ # accepted
+ 30107 == 11 * 2737
 
- # dropped
+ # discarded
  30107 == 77 * 391
 
 =head1 EXPORT
@@ -88,9 +89,9 @@ Steven Schubiger <schubiger@cpan.org>
 
 =head1 LICENSE
 
-This program is free software; you may redistribute it and/or 
+This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>	    
+See L<http://www.perl.com/perl/misc/Artistic.html>
 
 =cut

@@ -7,9 +7,9 @@ MANIFEST			This list of files
 META.yml
 ppport.h
 README
-scripts/usage-example.pl
+scripts/factors_matches.pl
 t/00-load.t
-t/calc_factors.t
+t/functions.t
 t/pod-coverage.t
 t/pod.t
 XS.xs

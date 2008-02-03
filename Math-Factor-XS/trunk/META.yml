@@ -1,6 +1,6 @@
 ---
 name: Math-Factor-XS
-version: 0.33
+version: 0.35
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Factorise numbers and calculate matching multiplications
@@ -18,8 +18,8 @@ recommends:
 provides:
   Math::Factor::XS:
     file: lib/Math/Factor/XS.pm
-    version: 0.33
-generated_by: Module::Build version 0.2709
+    version: 0.35
+generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2
