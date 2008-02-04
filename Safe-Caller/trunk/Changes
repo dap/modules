@@ -1,5 +1,22 @@
 Revision history for Perl extension Safe::Caller.
 
+0.05 Wed Mai 16 08:27:48 CEST 2007
+
+ - Changed all documentative occurences of '$safe' to '$caller'
+   (this should clarify its use a bit further).
+
+ - Redid the entire implementation by using closures internally.
+
+ - Deprecated called_from_pkg(), called_from_file() and
+   called_from_sub(). Aliased them (typeglobs) to their more
+   descriptive successors.
+
+ - Fixed a bug in called_from_subroutine() which consisted of
+   inadequate testing against a fully qualified subname that
+   was reported by the according closure call; because of the
+   additional indirection by calling caller() from this sub,
+   the frame level needed to be incremented once.
+
 0.04 Mon May 14 18:19:12 CEST 2007
 
  - There was a subtle bug which led the accessor closures
@@ -27,7 +44,7 @@ Revision history for Perl extension Safe::Caller.
 0.01 Tue May  9 21:31:10 CEST 2006
 
  - called_from.t - which checks whether the closures and
-   called_from_(?:pkg|file|line|sub) subs work as expected -
+   called_from_(pkg|file|line|sub) subs work as expected -
    has been included in the test-suite.
 
  - Added suitable documentation.

@@ -3,33 +3,41 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 14;
 use Safe::Caller;
 
-my $safe = Safe::Caller->new;
+{
+    my $caller = Safe::Caller->new;
 
-my $self = Foo->new($safe);
-my @retval = $self->foo;
+    my $self = Foo->new($caller);
+    my @retval = $self->foo;
 
-is($retval[0], 'main', '$self->{pkg}->()');
-is($retval[1], 't/called_from.t', '$self->{file}->()');
-is($retval[2], '12', '$self->{line}->()');
-is($retval[3], 'Base::foo', '$self->{sub}->()');
+    is($retval[0], 'main', '$self->{package}->()');
+    is($retval[1], 't/called_from.t', '$self->{filename}->()');
+    is($retval[2], '13', '$self->{line}->()');
+    is($retval[3], 'Base::foo', '$self->{subroutine}->()');
+    is($retval[4], 'main', '$self->{pkg}->() (deprecated)');
+    is($retval[5], 't/called_from.t', '$self->{file}->() (deprecated)');
+    is($retval[6], 'Base::foo', '$self->{sub}->() (deprecated)');
 
-$self = Bar->new($safe);
-@retval = $self->foo;
+    $self = Bar->new($caller);
+    @retval = $self->foo;
 
-is($retval[0], 1, 'called_from_pkg()');
-is($retval[1], 1, 'called_from_file()');
-is($retval[2], 1, 'called_from_line()');
-is($retval[3], 1, 'called_from_sub()');
+    is($retval[0], 1, 'called_from_package()');
+    is($retval[1], 1, 'called_from_filename()');
+    is($retval[2], 1, 'called_from_line()');
+    is($retval[3], 1, 'called_from_subroutine()');
+    is($retval[4], 1, 'called_from_pkg() (deprecated)');
+    is($retval[5], 1, 'called_from_file() (deprecated)');
+    is($retval[6], 1, 'called_from_sub() (deprecated)');
+}
 
 package Base;
 
 sub new {
-    my ($self, $safe) = @_;
+    my ($self, $caller) = @_;
     my $class = ref($self) || $self;
-    return bless { safe => $safe }, $class;
+    return bless { caller => $caller }, $class;
 }
 
 sub foo {
@@ -43,7 +51,7 @@ use base qw(Base);
 
 sub bar {
     my ($self) = @_;
-    return map { $self->{safe}->{$_}->() } qw(pkg file line sub);
+    return map { $self->{caller}->{$_}->() } qw(package filename line subroutine pkg file sub);
 }
 
 package Bar;
@@ -52,6 +60,11 @@ use base qw(Base);
 
 sub bar {
     my ($self) = @_;
-    return ($self->{safe}->called_from_pkg('Base'), $self->{safe}->called_from_file('t/called_from.t'),
-            $self->{safe}->called_from_line(37),    $self->{safe}->called_from_sub('Bar::bar'));
+    return ($self->{caller}->called_from_package('Base'),
+            $self->{caller}->called_from_filename('t/called_from.t'),
+            $self->{caller}->called_from_line(45),
+            $self->{caller}->called_from_subroutine('Base::foo'),
+            $self->{caller}->called_from_pkg('Base'),
+            $self->{caller}->called_from_file('t/called_from.t'),
+            $self->{caller}->called_from_sub('Base::foo'));
 }

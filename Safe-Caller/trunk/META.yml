@@ -1,13 +1,14 @@
 ---
 name: Safe-Caller
-version: 0.03
+version: 0.05
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
-abstract: A nicer interface to caller() with code execution restriction
+abstract: A nicer interface to the built-in caller()
 license: perl
 resources:
   license: http://dev.perl.org/licenses/
 build_requires:
+  Carp: 0
   Test::More: 0
 recommends:
   Test::Pod: 1.14
@@ -15,8 +16,8 @@ recommends:
 provides:
   Safe::Caller:
     file: lib/Safe/Caller.pm
-    version: 0.03
-generated_by: Module::Build version 0.2801
+    version: 0.05
+generated_by: Module::Build version 0.2805
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2

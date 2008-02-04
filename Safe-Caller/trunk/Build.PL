@@ -12,14 +12,17 @@ my $build = Module::Build->new
    dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/Safe/Caller.pm',
    requires => {},
-   build_requires => { 'Test::More' => 0 },	       
+   build_requires => {
+                       'Carp' => 0,
+                       'Test::More' => 0,
+                     },
    recommends => {
                    'Test::Pod' => '1.14',
-		   'Test::Pod::Coverage' => '1.04',
-		 },
+                   'Test::Pod::Coverage' => '1.04',
+                 },
    license => 'perl',
    create_readme => 1,
    create_makefile_pl => 'traditional',
   );
-  
+
 $build->create_build_script;
