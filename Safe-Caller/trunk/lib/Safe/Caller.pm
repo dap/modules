@@ -5,7 +5,7 @@ use warnings;
 
 use Carp ();
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use constant FRAMES => 1;
 
@@ -20,19 +20,16 @@ sub new {
                      };
 
     # all fields required because we need to maintain backwards compatibility
-    my @lookups = (['package','pkg'], ['filename', 'file'], 'line', ['subroutine', 'sub'],
-                    'hasargs', 'wantarray', 'evaltext', 'is_require', 'hints', 'bitmask');
+    my @sets = (['package','pkg'], ['filename', 'file'], 'line', ['subroutine', 'sub'],
+                 'hasargs', 'wantarray', 'evaltext', 'is_require', 'hints', 'bitmask');
 
-    my $i = 0; my @map;
-    foreach my $lookup (@lookups) {
-        if (ref $lookup eq 'ARRAY') {
-            push @map, map { $_ => $i } @$lookup;
-        } else {
-            push @map, ($lookup => $i);
+    my $i = 0; my %map;
+    foreach my $set (@sets) {
+        foreach my $lookup (ref $set eq 'ARRAY' ? @$set : $set) {
+            $map{$lookup} = $i;
         }
         $i++;
     }
-    my %map = @map;
 
     my $accessors = {};
     foreach my $type (keys %map) {
@@ -66,7 +63,7 @@ sub called_from_filename {
 
 sub called_from_line {
     my ($self, $called_from_line) = @_;
-    Carp::croak 'usage: $caller->called_from_line(42);'
+    Carp::croak 'usage: $caller->called_from_line(13);'
       unless defined $called_from_line && $called_from_line =~ /^\d+$/;
 
     return $self->{line}->() eq $called_from_line
@@ -78,7 +75,7 @@ sub called_from_subroutine {
     Carp::croak 'usage: $caller->called_from_subroutine(\'sub\');'
       unless defined $called_from_subroutine;
 
-    return $self->{subroutine}->($self->{_frames}+1) eq $called_from_subroutine
+    return $self->{subroutine}->($self->{_frames} + 1) eq $called_from_subroutine
       ? 1 : 0;
 }
 

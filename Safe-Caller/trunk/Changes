@@ -1,6 +1,12 @@
 Revision history for Perl extension Safe::Caller.
 
-0.05 Wed Mai 16 08:27:48 CEST 2007
+0.06 Fri May 18 15:40:07 CEST 2007
+
+ - Removed some unnecessary code.
+
+ - Replaced some occurences of is() with ok().
+
+0.05 Wed May 16 08:27:48 CEST 2007
 
  - Changed all documentative occurences of '$safe' to '$caller'
    (this should clarify its use a bit further).

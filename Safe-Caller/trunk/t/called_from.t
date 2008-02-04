@@ -23,13 +23,13 @@ use Safe::Caller;
     $self = Bar->new($caller);
     @retval = $self->foo;
 
-    is($retval[0], 1, 'called_from_package()');
-    is($retval[1], 1, 'called_from_filename()');
-    is($retval[2], 1, 'called_from_line()');
-    is($retval[3], 1, 'called_from_subroutine()');
-    is($retval[4], 1, 'called_from_pkg() (deprecated)');
-    is($retval[5], 1, 'called_from_file() (deprecated)');
-    is($retval[6], 1, 'called_from_sub() (deprecated)');
+    ok($retval[0], 'called_from_package()');
+    ok($retval[1], 'called_from_filename()');
+    ok($retval[2], 'called_from_line()');
+    ok($retval[3], 'called_from_subroutine()');
+    ok($retval[4], 'called_from_pkg() (deprecated)');
+    ok($retval[5], 'called_from_file() (deprecated)');
+    ok($retval[6], 'called_from_sub() (deprecated)');
 }
 
 package Base;

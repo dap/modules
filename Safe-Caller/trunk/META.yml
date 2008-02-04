@@ -1,6 +1,6 @@
 ---
 name: Safe-Caller
-version: 0.05
+version: 0.06
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: A nicer interface to the built-in caller()
@@ -16,7 +16,7 @@ recommends:
 provides:
   Safe::Caller:
     file: lib/Safe/Caller.pm
-    version: 0.05
+    version: 0.06
 generated_by: Module::Build version 0.2805
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
