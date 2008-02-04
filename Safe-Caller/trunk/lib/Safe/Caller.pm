@@ -3,13 +3,14 @@ package Safe::Caller;
 use strict;
 use warnings;
 
-use Carp ();
+use Carp qw(croak);
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use constant FRAMES => 1;
 
-sub new {
+sub new
+{
     my ($self, $frames) = @_;
     $frames ||= FRAMES;
 
@@ -43,36 +44,40 @@ sub new {
     return bless $accessors, ref($self) || $self;
 }
 
-sub called_from_package {
+sub called_from_package
+{
     my ($self, $called_from_package) = @_;
-    Carp::croak 'usage: $caller->called_from_package(\'PACKAGE\');'
+    croak 'usage: $caller->called_from_package(\'PACKAGE\');'
       unless defined $called_from_package;
 
     return $self->{package}->() eq $called_from_package
       ? 1 : 0;
 }
 
-sub called_from_filename {
+sub called_from_filename
+{
     my ($self, $called_from_filename) = @_;
-    Carp::croak 'usage: $caller->called_from_filename(\'file\');'
+    croak 'usage: $caller->called_from_filename(\'file\');'
       unless defined $called_from_filename;
 
     return $self->{filename}->() eq $called_from_filename
       ? 1 : 0;
 }
 
-sub called_from_line {
+sub called_from_line
+{
     my ($self, $called_from_line) = @_;
-    Carp::croak 'usage: $caller->called_from_line(13);'
+    croak 'usage: $caller->called_from_line(13);'
       unless defined $called_from_line && $called_from_line =~ /^\d+$/;
 
     return $self->{line}->() eq $called_from_line
       ? 1 : 0;
 }
 
-sub called_from_subroutine {
+sub called_from_subroutine
+{
     my ($self, $called_from_subroutine) = @_;
-    Carp::croak 'usage: $caller->called_from_subroutine(\'sub\');'
+    croak 'usage: $caller->called_from_subroutine(\'sub\');'
       unless defined $called_from_subroutine;
 
     return $self->{subroutine}->($self->{_frames} + 1) eq $called_from_subroutine

@@ -1,6 +1,5 @@
 # Note: this file has been initially created by Make::Build::Convert 0.20_01
 
-use 5.005;
 use strict;
 use warnings;
 
