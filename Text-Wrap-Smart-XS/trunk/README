@@ -1,0 +1,52 @@
+NAME
+    Text::Wrap::Smart::XS - Wrap text fast into chunks of (mostly) equal
+    length
+
+SYNOPSIS
+     use Text::Wrap::Smart::XS ':all';
+     # or
+     use Text::Wrap::Smart::XS qw(exact_wrap fuzzy_wrap);
+
+     @chunks = exact_wrap($text, $wrap_at);
+     @chunks = fuzzy_wrap($text, $wrap_at);
+
+DESCRIPTION
+    "Text::Wrap::Smart::XS" is the faster companion of "Text::Wrap::Smart".
+
+FUNCTIONS
+  exact_wrap
+     @chunks = exact_wrap($text [, $wrap_at ]);
+
+    Wrap a text of varying length into exact chunks (except the last one,
+    which consists of the remaining text). Optionally a wrapping length may
+    be specified; if no length is supplied, a default of 160 will be
+    assumed.
+
+  fuzzy_wrap
+     @chunks = fuzzy_wrap($text [, $wrap_at ]);
+
+    Wrap a text of varying length into chunks of fuzzy length (the boundary
+    is calculated from the last whitespace preceeding the wrapping length,
+    and if no remaining whitespace could be find, the end-of-text.
+    Optionally a wrapping length may be specified; if no length is supplied,
+    a default of 160 will be assumed.
+
+EXPORT
+  Functions
+    "exact_wrap(), fuzzy_wrap()" are exportable.
+
+  Tags
+    ":all - *()"
+
+SEE ALSO
+    Text::Wrap, Text::Wrap::Smart
+
+AUTHOR
+    Steven Schubiger <schubiger@cpan.org>
+
+LICENSE
+    This program is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See <http://www.perl.com/perl/misc/Artistic.html>
+
