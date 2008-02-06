@@ -1,5 +1,11 @@
 Revision history for Perl extension Text::Wrap::Smart::XS.
 
+0.02 Wed Feb  6 18:23:29 CET 2008
+
+ - Fixed installation for Module::Build users.
+
+ - Reformatted XS.xs.
+
 0.01 Wed Feb  6 15:25:44 CET 2008
 
  - Initial version.

@@ -16,7 +16,7 @@ my $build = Module::Build->new
                    'Test::Pod' => '1.14',
                    'Test::Pod::Coverage' => '1.04',
                 },
-   xs_files => { 'XS.xs' => 'blib/Text/Wrap/Smart/XS.xs' },
+   xs_files => { 'XS.xs' => 'lib/Text/Wrap/Smart/XS.xs' },
    include_dirs => [ '.' ],
    license => 'perl',
    create_readme => 1,
