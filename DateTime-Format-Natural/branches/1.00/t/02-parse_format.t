@@ -4,13 +4,14 @@ use strict;
 use warnings;
 
 use DateTime::Format::Natural;
-use Test::More tests => 3;
+use Test::More tests => 4;
 
 my ($sec, $min, $hour, $day, $month, $year) = (00, 13, 01, 24, 11, 2006);
 
-my %specific = ('27/5/1979'  => [ '27.05.1979 01:13:00', 'dd/m/yyyy'  ],
-                '05/27/79'   => [ '27.05.1979 01:13:00', 'mm/dd/yy'   ],
-                '1979-05-27' => [ '27.05.1979 01:13:00', 'yyyy-mm-dd' ]);
+my %specific = ('27/5/1979'           => [ '27.05.1979 01:13:00', 'dd/m/yyyy'  ],
+                '05/27/79'            => [ '27.05.1979 01:13:00', 'mm/dd/yy'   ],
+                '1979-05-27'          => [ '27.05.1979 01:13:00', 'yyyy-mm-dd' ],
+                '1979-05-27 21:09:14' => [ '27.05.1979 21:09:14', 'yyyy-mm-dd' ]);
 
 compare(\%specific);
 

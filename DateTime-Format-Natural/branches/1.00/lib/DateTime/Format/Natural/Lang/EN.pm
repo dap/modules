@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '1.10';
+our $VERSION = '1.11';
 
 our (%init,
      %timespan,
@@ -20,13 +20,14 @@ our (%init,
 %init = ('tokens' => sub {});
 %timespan = ('literal' => 'to');
 
-%RE = ('number'   => qr/^(\d+)$/,
-       'year'     => qr/^(\d{4})$/,
-       'time'     => qr/^((?:\d{1,2})(?:\:\d{1,2})?)$/,
-       'time_am'  => qr/^((?:\d+)(?:\:\d+)?)(?:am)?$/, 
-       'time_pm'  => qr/^((?:\d+)(?:\:\d+)?)pm$/,
-       'day_enum' => qr/^(\d+)(?:st|nd|rd|th)?$/,
-       'monthday' => qr/^(\d{1,2})$/);
+%RE = ('number'    => qr/^(\d+)$/,
+       'year'      => qr/^(\d{4})$/,
+       'time'      => qr/^((?:\d{1,2})(?:\:\d{1,2})?)$/,
+       'time_am'   => qr/^((?:\d+)(?:\:\d+)?)(?:am)?$/,
+       'time_pm'   => qr/^((?:\d+)(?:\:\d+)?)pm$/,
+       'time_full' => qr/^(\d{2}\:\d{2}:\d{2})$/,
+       'day_enum'  => qr/^(\d+)(?:st|nd|rd|th)?$/,
+       'monthday'  => qr/^(\d{1,2})$/);
 {
     my $i = 1;
 
@@ -413,6 +414,14 @@ our (%init,
          { 0 => $RE{time} },
          [ [ 0 ] ],
          [ '_time' ],
+       ],
+    ],
+    time_full => [
+       [ 'REGEXP' ],
+       [
+         { 0 => $RE{time_full} },
+         [ [ 0 ] ],
+         [ '_time_full' ],
        ],
     ],
     month_year => [

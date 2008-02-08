@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.66';
+our $VERSION = '0.67';
 
 sub new
 {
@@ -90,7 +90,13 @@ sub parse_datetime
     my %count; $count{$_}++ foreach @count;
 
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
-        $self->{count}{tokens} = 1;
+        if ($date_string =~ /^\S+\b\s+\b\S+/) {
+            ($date_string, @{$self->{tokens}}) = split /\s+/, $date_string;
+            $self->{count}{tokens} = 1 + @{$self->{tokens}};
+        }
+        else {
+            $self->{count}{tokens} = 1;
+        }
 
         my $separator = quotemeta((keys %count)[0]);
         my @chunks = split /$separator/, $date_string;
@@ -144,6 +150,12 @@ sub parse_datetime
 
         $self->_set_valid_exp;
         $self->_set_modified(1);
+
+        if (@{$self->{tokens} || []}) {
+            $self->_unset_valid_exp;
+            $self->_unset_modified;
+            $self->_process;
+        }
     }
     else {
         @{$self->{tokens}} = split ' ', $date_string;

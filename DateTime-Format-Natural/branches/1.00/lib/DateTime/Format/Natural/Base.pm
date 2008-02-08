@@ -9,7 +9,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.09';
+our $VERSION = '1.10';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -777,6 +777,20 @@ sub _time
             $self->_set(hour => $time);
             $self->_set(minute => 0);
         }
+    }
+    $self->_set_modified(1);
+}
+
+sub _time_full
+{
+    my $self = shift;
+    $self->_add_trace;
+    my ($time) = @_;
+    my ($hour, $minute, $second) = split /:/, $time;
+    if ($self->_valid_time(hour => $hour, minute => $minute, second => $second)) {
+        $self->_set(hour => $hour);
+        $self->_set(minute => $minute);
+        $self->_set(second => $second);
     }
     $self->_set_modified(1);
 }
