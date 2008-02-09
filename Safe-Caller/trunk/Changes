@@ -1,0 +1,69 @@
+Revision history for Perl extension Safe::Caller.
+
+0.08 Tue Feb  5 19:55:49 CET 2008
+
+ - Use File::Spec within t/called_from.t to build paths.
+   [testers #1018044 - Taro Nishino <taro-nishino@wine.ocn.ne.jp>]
+
+0.07 Mon Feb  4 17:55:43 CET 2008
+
+ - Removed dependency upon a certain perl version.
+
+ - Refined code layout.
+
+0.06 Fri May 18 15:40:07 CEST 2007
+
+ - Removed some unnecessary code.
+
+ - Replaced some occurences of is() with ok().
+
+0.05 Wed May 16 08:27:48 CEST 2007
+
+ - Changed all documentative occurences of '$safe' to '$caller'
+   (this should clarify its use a bit further).
+
+ - Redid the entire implementation by using closures internally.
+
+ - Deprecated called_from_pkg(), called_from_file() and
+   called_from_sub(). Aliased them (typeglobs) to their more
+   descriptive successors.
+
+ - Fixed a bug in called_from_subroutine() which consisted of
+   inadequate testing against a fully qualified subname that
+   was reported by the according closure call; because of the
+   additional indirection by calling caller() from this sub,
+   the frame level needed to be incremented once.
+
+0.04 Mon May 14 18:19:12 CEST 2007
+
+ - There was a subtle bug which led the accessor closures
+   to revert to the default frame whenever 0 frame was being
+   supplied; fixed by adding some statements that checked whether
+   the frame being passed is rather defined than true.
+
+ - Added parameter checking for all verification routines, i.e.
+   called_from_pkg(), called_from_file(), called_from_line()
+   and called_from_sub().
+
+ - Extended documentation to reflect the accessors (with a link
+   to caller()'s documentation), which were previously undocumented.
+
+0.03 Tue Jun 20 10:59:59 CEST 2006
+
+ - Moved redundant occurences of new() and foo() out of two packages
+   into one Base package.
+
+0.02 Sat Jun 17 20:46:09 CEST 2006
+
+ - Fixed both $self->{line}->() and called_from_line() in called_from.t
+   from previous erroneous values.
+
+0.01 Tue May  9 21:31:10 CEST 2006
+
+ - called_from.t - which checks whether the closures and
+   called_from_(pkg|file|line|sub) subs work as expected -
+   has been included in the test-suite.
+
+ - Added suitable documentation.
+
+ - Initial version.
