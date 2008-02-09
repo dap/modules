@@ -7,11 +7,13 @@ use base qw(Tie::Handle);
 use Carp qw(croak);
 use File::Spec ();
 
-our @ISA = qw(Tie::StdHandle);
+our ($VERSION, @ISA);
 
-our $VERSION = '0.03';
+$VERSION = '0.04';
+@ISA = qw(Tie::StdHandle);
 
-sub redirect {
+sub redirect
+{
     my ($class, %opts) = @_;
 
     croak <<'EOT'
@@ -38,7 +40,8 @@ EOT
     return bless {}, ref($class) || $class;
 }
 
-DESTROY {
+DESTROY
+{
     no strict 'refs';
     my $caller = caller();
 
@@ -59,51 +62,51 @@ Hook::Output::File - Redirect STDOUT/STDERR to a file
  use Hook::Output::File;
 
  {
-     my $hookout = Hook::Output::File->redirect(stdout => '/home/sts/test1.out',
-                                                stderr => '/home/sts/test2.out');
+     my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
+                                                stderr => '/tmp/2.out');
      logged();
 
-     undef $hookout;                          # restore previous state of handles
+     undef $hookout; # restore previous state of handles
 
      not_logged();
  }
 
  sub logged {
-     print STDOUT "logged: stdout!\n";        # stdout is redirected to logfile
-     print STDERR "logged: stderr!\n";        # stderr is redirected to logfile
+     print STDOUT "logged: stdout!\n"; # stdout is redirected to logfile
+     print STDERR "logged: stderr!\n"; # stderr is redirected to logfile
  }
 
  sub not_logged {
-     print STDOUT "not logged: stdout!\n";    # stdout goes to stdout (not logfile)
-     print STDERR "not logged: stderr!\n";    # stderr goes to stderr (not logfile)
+     print STDOUT "not logged: stdout!\n"; # stdout goes to stdout (not logfile)
+     print STDERR "not logged: stderr!\n"; # stderr goes to stderr (not logfile)
 }
 
 =head1 DESCRIPTION
 
-C<Hook::Output::File> redirects STDOUT/STDERR to a file.
+C<Hook::Output::File> redirects C<STDOUT/STDERR> to a file.
 
 =head1 METHODS
 
 =head2 redirect
 
-Installs a scoped file-redirection hook for regular output (STDOUT & STDERR). Don't
-intermix the file locations for STDOUT & STDERR output or you will receive unexpected
+Installs a scoped file-redirection hook for regular output (C<STDOUT & STDERR>). Don't
+intermix the file locations for C<STDOUT & STDERR> output or you will receive unexpected
 results. The filenames will be checked that they're absolute and if not, an exception
-will be thrown (because otherwise, the open() call would fail silently). The hook may
+will be thrown (because otherwise, the C<open()> call would fail silently). The hook may
 be uninstalled either explicitly or implicitly; former action requires to undef the
 hook output "variable" (actually, it's a blessed object), latter one will automatically
-achieved when exiting the current scope.
+be achieved when exiting the current scope.
 
  {
-     my $hookout = Hook::Output::File->redirect(stdout => '/home/sts/test1.out',
-                                                stderr => '/home/sts/test2.out');
+     my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
+                                                stderr => '/tmp/2.out');
      some_sub();
 
-     undef $hookout;   # explicitly uninstall hook
+     undef $hookout; # explicitly uninstall hook
 
      another_sub();
 
- }   # implicitly uninstalls hook
+ } # implicitly uninstalls hook
 
 =head1 BUGS & CAVEATS
 

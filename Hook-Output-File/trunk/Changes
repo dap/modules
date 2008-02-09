@@ -1,9 +1,17 @@
 Revision history for Perl extension Hook::Output::File.
 
-0.2 Wed Jan 31 23:45:51 CET 2007
+0.04 Sat Feb  9 17:25:37 CET 2008
+
+ - Added test-file redirect.t.
+
+ - Added new build dependencies (File::Temp & IO::Capture).
+
+ - Reformatted documentation.
+
+0.02 Wed Jan 31 23:45:51 CET 2007
 
  - Replaced STDIN with STDERR in description.
 
-0.1 Thu Wed Jan 31 11:03:00 CET 2007
+0.01 Thu Wed Jan 31 11:03:00 CET 2007
 
  - Initial version.

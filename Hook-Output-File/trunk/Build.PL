@@ -8,21 +8,25 @@ use Module::Build;
 my $build = Module::Build->new
   (
    module_name => 'Hook::Output::File',
-   dist_author => 'Steven Schubiger <schubiger@cpan.org>',   
+   dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/Hook/Output/File.pm',
    requires => {
                  'Carp' => 0,
-		 'File::Spec' => 0,
-		 'Tie::Handle' => 0,
-	       },
-   build_requires => { 'Test::More' => 0 },	       
+                 'File::Spec' => 0,
+                 'Tie::Handle' => 0,
+               },
+   build_requires => {
+                       'File::Temp' => 0,
+                       'IO::Capture' => 0,
+                       'Test::More' => 0,
+                     },
    recommends => {
                    'Test::Pod' => '1.14',
-		   'Test::Pod::Coverage' => '1.04',
-		 },   
+                   'Test::Pod::Coverage' => '1.04',
+                 },
    license => 'perl',
-   create_readme => 1,   
+   create_readme => 1,
    create_makefile_pl => 'traditional',
   );
-  
+
 $build->create_build_script;

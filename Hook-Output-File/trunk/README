@@ -5,49 +5,53 @@ SYNOPSIS
      use Hook::Output::File;
 
      {
-         my $hookout = Hook::Output::File->redirect(stdout => '/home/sts/test1.out',
-                                                    stderr => '/home/sts/test2.out');
+         my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
+                                                    stderr => '/tmp/2.out');
          logged();
 
-         undef $hookout;                          # restore previous state of handles
+         undef $hookout; # restore previous state of handles
 
          not_logged();
      }
 
      sub logged {
-         print STDOUT "logged: stdout!\n";        # stdout is redirected to logfile
-         print STDERR "logged: stderr!\n";        # stderr is redirected to logfile
+         print STDOUT "logged: stdout!\n"; # stdout is redirected to logfile
+         print STDERR "logged: stderr!\n"; # stderr is redirected to logfile
      }
 
      sub not_logged {
-         print STDOUT "not logged: stdout!\n";    # stdout goes to stdout (not logfile)
-         print STDERR "not logged: stderr!\n";    # stderr goes to stderr (not logfile)
+         print STDOUT "not logged: stdout!\n"; # stdout goes to stdout (not logfile)
+         print STDERR "not logged: stderr!\n"; # stderr goes to stderr (not logfile)
     }
 
 DESCRIPTION
-    "Hook::Output::File" redirects STDOUT/STDERR to a file.
+    "Hook::Output::File" redirects "STDOUT/STDERR" to a file.
 
 METHODS
   redirect
-    Installs a scoped file-redirection hook for regular output (STDOUT &
-    STDERR). Don't intermix the file locations for STDOUT & STDERR output or
-    you will receive unexpected results. The filenames will be checked that
-    they're absolute and if not, an exception will be thrown (because
-    otherwise, the open() call would fail silently). The hook may be
+    Installs a scoped file-redirection hook for regular output ("STDOUT &
+    STDERR"). Don't intermix the file locations for "STDOUT & STDERR" output
+    or you will receive unexpected results. The filenames will be checked
+    that they're absolute and if not, an exception will be thrown (because
+    otherwise, the "open()" call would fail silently). The hook may be
     uninstalled either explicitly or implicitly; former action requires to
     undef the hook output "variable" (actually, it's a blessed object),
-    latter one will automatically achieved when exiting the current scope.
+    latter one will automatically be achieved when exiting the current
+    scope.
 
      {
-         my $hookout = Hook::Output::File->redirect(stdout => '/home/sts/test1.out',
-                                                    stderr => '/home/sts/test2.out');
+         my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
+                                                    stderr => '/tmp/2.out');
          some_sub();
 
-         undef $hookout;   # explicitly uninstall hook
+         undef $hookout; # explicitly uninstall hook
 
          another_sub();
 
-     }   # implicitly uninstalls hook
+     } # implicitly uninstalls hook
+
+BUGS & CAVEATS
+    Doesn't work in a forked environment, such as the case with daemons.
 
 SEE ALSO
     perltie
