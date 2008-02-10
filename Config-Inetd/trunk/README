@@ -44,8 +44,8 @@ METHODS
     Returns 1 if the service has been enabled, 0 if no action has been
     taken.
 
-    It is recommended to preceedingly run is_enabled() to determine whether
-    a service is disabled.
+    It is recommended to preceedingly run "is_enabled()" to determine
+    whether a service is disabled.
 
   disable
     Disables a service.
@@ -55,8 +55,8 @@ METHODS
     Returns 1 if the service has been disabled, 0 if no action has been
     taken.
 
-    It is recommended to preceedingly run is_enabled() to determine whether
-    a service is enabled.
+    It is recommended to preceedingly run "is_enabled()" to determine
+    whether a service is enabled.
 
   dump_enabled
     Dumps the enabled services.

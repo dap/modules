@@ -1,5 +1,9 @@
 Revision history for Perl extension Config::Inetd.
 
+0.29 Fri Feb  1 17:47:47 CET 2008
+
+ - Some more documentation reformatting.
+
 0.28 Fri Feb  1 16:07:41 CET 2008
 
  - Clarified and reformatted documentation.

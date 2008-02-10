@@ -9,7 +9,7 @@ use Tie::File ();
 
 our ($VERSION, $INETD_CONF, $conf_tied);
 
-$VERSION = '0.28';
+$VERSION = '0.29';
 $INETD_CONF = '/etc/inetd.conf';
 
 sub new
@@ -202,7 +202,7 @@ Enables a service.
 
 Returns 1 if the service has been enabled, 0 if no action has been taken.
 
-It is recommended to preceedingly run is_enabled() to determine whether a
+It is recommended to preceedingly run C<is_enabled()> to determine whether a
 service is disabled.
 
 =head2 disable
@@ -213,7 +213,7 @@ Disables a service.
 
 Returns 1 if the service has been disabled, 0 if no action has been taken.
 
-It is recommended to preceedingly run is_enabled() to determine whether a
+It is recommended to preceedingly run C<is_enabled()> to determine whether a
 service is enabled.
 
 =head2 dump_enabled
