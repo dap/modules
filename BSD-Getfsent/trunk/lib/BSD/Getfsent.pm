@@ -9,7 +9,7 @@ use IO::File ();
 
 our ($VERSION, @EXPORT_OK, $ENTRIES, $FSTAB);
 
-$VERSION = '0.16';
+$VERSION = '0.17';
 @EXPORT_OK = qw(getfsent);
 $ENTRIES = __PACKAGE__ . '::_fsents';
 $FSTAB = '/etc/fstab';
@@ -19,16 +19,16 @@ sub getfsent
     if (wantarray) {
         no strict 'refs';
 
-        unless ($$ENTRIES) {
-            @$ENTRIES = @{_parse_entries()};
-            $$ENTRIES = 1;
+        unless (${$ENTRIES}) {
+            @{$ENTRIES} = @{_parse_entries()};
+            ${$ENTRIES} = 1;
         }
 
-        if (@$ENTRIES) {
-            return @{shift @$ENTRIES};
+        if (@{$ENTRIES}) {
+            return @{shift @{$ENTRIES}};
         }
         else {
-            $$ENTRIES = 0;
+            ${$ENTRIES} = 0;
             return ();
         }
     }
@@ -109,7 +109,7 @@ BSD::Getfsent - Get file system descriptor file entry
 In list context, each file system entry is returned (C<getfsent()>
 continuously reads the next line of the F</etc/fstab> file).
 
-The list returned is structured as following:
+The list returned is structured as follows:
 
  $entry[0]    # block special device name
  $entry[1]    # file system path prefix

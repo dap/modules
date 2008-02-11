@@ -13,7 +13,7 @@ FUNCTIONS
     In list context, each file system entry is returned ("getfsent()"
     continuously reads the next line of the /etc/fstab file).
 
-    The list returned is structured as following:
+    The list returned is structured as follows:
 
      $entry[0]    # block special device name
      $entry[1]    # file system path prefix

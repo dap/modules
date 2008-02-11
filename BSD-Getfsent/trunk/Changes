@@ -1,5 +1,9 @@
 Revision history for Perl extension BSD::Getfsent.
 
+0.17 Sun Feb 10 19:14:33 CET 2008
+
+ - Reworded documentation and clarified the code.
+
 0.16 Sat Jan 26 20:18:33 CET 2008
 
  - Prematurely bail out within the getfsent.t test-file when the fstab
@@ -13,15 +17,15 @@ Revision history for Perl extension BSD::Getfsent.
 
  - Added the test-file getfsent.t which tests the getfsent() function.
 
- - Adjusted the documentation (moved the description section to 
+ - Adjusted the documentation (moved the description section to
    functions/getfsent) and reworded some explanation.
 
  - Beautified the code layout.
 
 0.14 Wed Mar 29 21:04:51 CEST 2006
 
- - Updated Build.PL with newly added dist_author & dist_version_from 
-   fields; furthermore, changed requires, build_requires, recommends, 
+ - Updated Build.PL with newly added dist_author & dist_version_from
+   fields; furthermore, changed requires, build_requires, recommends,
    create_readme & create_makefile_pl fields to appropriate values.
 
  - Added INSTALL containing install instructions.
