@@ -1,5 +1,13 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.16 Wed Feb 13 16:47:56 CET 2008
+
+ - Don't assume a '/' within File::Spec->catfile() in basic.t.
+
+ - Reordered code within parse_switches() in latex2pod.
+
+ - Add more dependencies to Build.PL.
+
 0.15 Sun Dec 23 15:39:50 CET 2007
 
  - Reworded the documentation.

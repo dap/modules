@@ -11,7 +11,11 @@ WriteMakefile
           'VERSION_FROM' => 'lib/LaTeX/Pod.pm',
           'PREREQ_PM' => {
                            'Test::More' => 0,
-                           'LaTeX::TOM' => 0
+                           'Getopt::Long' => 0,
+                           'FindBin' => 0,
+                           'File::Spec' => 0,
+                           'LaTeX::TOM' => 0,
+                           'Carp' => 0
                          }
         )
 ;

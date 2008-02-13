@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Getopt::Long qw(:config no_ignore_case);
 use LaTeX::Pod;
 
 my $params = parse_switches();
@@ -10,11 +11,12 @@ convert($params);
 
 sub parse_switches
 {
-    use Getopt::Long qw(:config no_ignore_case);
     my %opts;
-    GetOptions(\%opts,'h','V') or usage();
+    GetOptions(\%opts, 'h','V') or usage();
+
     usage()   if $opts{h} or (!defined($ARGV[0]) && !$opts{V});
     version() if $opts{V};
+
     return { file => $ARGV[0] };
 }
 

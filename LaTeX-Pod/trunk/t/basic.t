@@ -3,19 +3,20 @@
 use strict;
 use warnings;
 
+use File::Spec;
 use FindBin qw($Bin);
 use LaTeX::Pod;
 use Test::More tests => 1;
 
 $^W = 0;
 
-my $parser = LaTeX::Pod->new(File::Spec->catfile($Bin, 'data/basic.t.in'));
+my $parser = LaTeX::Pod->new(File::Spec->catfile($Bin, 'data', 'basic.t.in'));
 $parser->convert;
 
 my $got = $parser->_pod_get;
 my @expected = split /\n/, do { local $/; <DATA> };
 
-is_deeply($got, \@expected);
+is_deeply(\@$got, \@expected);
 
 __DATA__
 =head1 1
