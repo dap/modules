@@ -8,7 +8,7 @@ use Carp qw(croak);
 
 our ($VERSION, @EXPORT_OK, %EXPORT_TAGS, @subs);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 @subs = qw(exact_wrap fuzzy_wrap);
 @EXPORT_OK = @subs;
 %EXPORT_TAGS = ('all' => [ @subs ]);
@@ -74,10 +74,12 @@ assumed.
  @chunks = fuzzy_wrap($text [, $wrap_at ]);
 
 Wrap a text of varying length into chunks of fuzzy length (the boundary
-is calculated from the last whitespace preceeding the wrapping length,
-and if no remaining whitespace could be find, the end-of-text. Optionally
-a wrapping length may be specified; if no length is supplied, a
-default of 160 will be assumed.
+is normally calculated from the last whitespace preceding the wrapping length,
+and if no remaining whitespace could be find, the end-of-text; if the wrapping
+length is smaller than the size of a word, greedy wrapping will be applied: all
+characters until the first whitespace encountered form a chunk). Optionally a
+wrapping length may be specified; if no length is supplied, a default of 160
+will be assumed.
 
 =head1 EXPORT
 

@@ -1,6 +1,6 @@
 ---
 name: Text-Wrap-Smart-XS
-version: 0.02
+version: 0.03
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Wrap text fast into chunks of (mostly) equal length
@@ -10,6 +10,7 @@ resources:
 requires:
   Carp: 0
 build_requires:
+  ExtUtils::CBuilder: 0
   Test::More: 0
 recommends:
   Test::Pod: 1.14
@@ -17,7 +18,7 @@ recommends:
 provides:
   Text::Wrap::Smart::XS:
     file: lib/Text/Wrap/Smart/XS.pm
-    version: 0.02
+    version: 0.03
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

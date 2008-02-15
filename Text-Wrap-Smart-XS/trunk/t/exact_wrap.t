@@ -22,7 +22,7 @@ my @expected = (
 );
 
 # Contains four fields: text to be wrapped, expected result,
-# amount of substrings expected and the maximum size of a chunk.
+# amount of substrings expected and the wrapping length of a chunk.
 my @args = (
     [ 'abcdefghijklmnopqrstuvwxyz ' x 10, $expected[0], 2,  0 ],
     [ 'abcdefghijklmnopqrstuvwxyz ' x 10, $expected[1], 9, 30 ],

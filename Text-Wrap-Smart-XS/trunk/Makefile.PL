@@ -9,6 +9,7 @@ WriteMakefile
           'VERSION_FROM' => 'lib/Text/Wrap/Smart/XS.pm',
           'PREREQ_PM' => {
                            'Test::More' => 0,
+                           'ExtUtils::CBuilder' => 0,
                            'Carp' => 0
                          }
         )

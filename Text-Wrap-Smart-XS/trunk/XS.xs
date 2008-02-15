@@ -81,19 +81,23 @@ xs_fuzzy_wrap(text, wrap_at)
 
         offset = 0;
         while (offset < length) {
+            unsigned int seen_spaces = 0;
+
             average_iter = average;
             count = 0;
             str_iter = text_iter;
 
             while (*str_iter) {
+                if (*str_iter == ' ')
+                    seen_spaces++;
                 p = strchr(str_iter, ' ');
                 if (p == NULL)
                     diff = 0;
                 else
                     diff = p - str_iter;
-                if (diff > average_iter)
+                if (diff > average_iter && seen_spaces > 1)
                     break;
-                if (average_iter < 0)
+                if (average_iter <= 0 && *str_iter == ' ')
                     break;
                 average_iter--;
                 count++;
