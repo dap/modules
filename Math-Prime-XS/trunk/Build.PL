@@ -10,20 +10,20 @@ my $build = Module::Build->new
    module_name => 'Math::Prime::XS',
    dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/Math/Prime/XS.pm',
-   requires => { 
+   requires => {
                  'Exporter' => 0,
                  'XSLoader' => 0,
-	       },
-   build_requires => { 'Test::More' => 0 },	       
+               },
+   build_requires => { 'Test::More' => 0 },
    recommends => {
                    'Test::Pod' => '1.14',
-		   'Test::Pod::Coverage' => '1.04',
+                   'Test::Pod::Coverage' => '1.04',
                  },
-   xs_files => { 'XS.xs' => 'blib/Math/Prime/XS.xs' },
+   xs_files => { 'XS.xs' => 'lib/Math/Prime/XS.xs' },
    include_dirs => [ '.' ],
    license => 'perl',
    create_readme => 1,
    create_makefile_pl => 'traditional',
   );
-  
+
 $build->create_build_script;

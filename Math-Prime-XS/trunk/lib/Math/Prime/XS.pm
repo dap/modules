@@ -6,7 +6,7 @@ use base qw(Exporter);
 
 our ($VERSION, @EXPORT_OK, %EXPORT_TAGS, @subs);
 
-$VERSION = '0.17';
+$VERSION = '0.18';
 @subs = qw(primes is_prime mod_primes sieve_primes sum_primes trial_primes);
 @EXPORT_OK = @subs;
 %EXPORT_TAGS = ('all' => [ @subs ]);
@@ -32,16 +32,30 @@ Math::Prime::XS - Calculate/detect prime numbers with deterministic tests
 
 =head1 SYNOPSIS
 
- use Math::Prime::XS qw(primes is_prime);
- 
- @allprimes  = primes(9);
- @someprimes = primes(4,9);
- 
- if (is_prime(11)) { # do something }
+ use Math::Prime::XS ':all';
+ # or
+ use Math::Prime::XS qw(primes is_prime mod_primes sieve_primes sum_primes trial_primes);
+
+ @all_primes   = primes(9);
+ @range_primes = primes(4, 9);
+
+ if (is_prime(11)) { # do stuff }
+
+ @all_primes   = mod_primes(9);
+ @range_primes = mod_primes(4, 9);
+
+ @all_primes   = sieve_primes(9);
+ @range_primes = sieve_primes(4, 9);
+
+ @all_primes   = sum_primes(9);
+ @range_primes = sum_primes(4, 9);
+
+ @all_primes   = trial_primes(9);
+ @range_primes = trial_primes(4, 9);
 
 =head1 DESCRIPTION
 
-Math::Prime::XS calculates/detects prime numbers by either applying
+C<Math::Prime::XS> calculates/detects prime numbers by either applying
 Modulo operator division, the Sieve of Eratosthenes, Trial division or a
 Summing calculation.
 
@@ -49,38 +63,38 @@ Summing calculation.
 
 =head2 primes
 
-Takes an integer and calculates the primes from 0 <= integer. 
-Optionally an integer may be provided as first argument which will function as limit. 
-Calculation then will take place within the range of the limit and the integer. 
+Takes an integer and calculates the primes from 0 <= integer.
+Optionally an integer may be provided as first argument which will function as limit.
+Calculation then will take place within the range of the limit and the integer.
 Calls C<sum_primes()> beneath the surface.
 
 =head2 is_prime
 
-Takes an integer as input and returns 1 if integer is prime, undef if it isn't.
+Takes an integer as input and returns 1 if integer is prime, 0 if it isn't.
 The underlying algorithm has been taken from C<sum_primes()>.
 
 =head2 mod_primes
 
-Applies the Modulo operator division and provides same functionality and interface as C<primes()>. 
+Applies the Modulo operator division and provides same functionality and interface as C<primes()>.
 Divides the number by all n less or equal then the number; if the number gets exactly two times
 divided by rest null, then the number is prime, otherwise not.
 
 =head2 sieve_primes
 
-Applies the Sieve of Erathosthenes and provides same functionality and interface as C<primes()>. 
-The most efficient way to find all of the small primes (say all those less than 10,000,000) 
-is by using the Sieve of Eratosthenes (ca 240 BC): Make a list of all the integers less 
-than or equal to n (and greater than one).  Strike out the multiples of all primes less 
+Applies the Sieve of Erathosthenes and provides same functionality and interface as C<primes()>.
+The most efficient way to find all of the small primes (say all those less than 10,000,000)
+is by using the Sieve of Eratosthenes (ca 240 BC): Make a list of all the integers less
+than or equal to n (and greater than one).  Strike out the multiples of all primes less
 than or equal to the square root of n, then the numbers that are left are the primes.
 
 L<http://primes.utm.edu/glossary/page.php?sort=SieveOfEratosthenes>
 
 =head2 sum_primes
 
-Applies a Summing calculation that is somehow similar to C<trial_primes()>; provides same 
+Applies a Summing calculation that is somehow similar to C<trial_primes()>; provides same
 functionality and interface as C<primes()>. Compared to C<trial_primes()>, Trial division is
 being omitted and replaced by an addition of primes less than the number's square root.
-If one of the "multiples" equals the number, then the number is not prime, otherwise, 
+If one of the "multiples" equals the number, then the number is not prime, otherwise,
 it is. This algorithm is a somewhat hybrid between the Sieve of Eratosthenes and Trial
 division.
 
@@ -88,9 +102,9 @@ L<http://www.geraldbuehler.de/primzahlen>
 
 =head2 trial_primes
 
-Applies Trial division and provides the same functionality and interface as C<primes()>. To see 
-if an individual small integer is prime, Trial division works well: just divide by all the 
-primes less than (or equal to) its square root. For example, to show 211 is prime, just divide 
+Applies Trial division and provides the same functionality and interface as C<primes()>. To see
+if an individual small integer is prime, Trial division works well: just divide by all the
+primes less than (or equal to) its square root. For example, to show 211 is prime, just divide
 by 2, 3, 5, 7, 11, and 13. Since none of these divides the number evenly, it is a prime.
 
 L<http://primes.utm.edu/glossary/page.php?sort=TrialDivision>
@@ -99,7 +113,7 @@ L<http://primes.utm.edu/glossary/page.php?sort=TrialDivision>
 
 If one appends C<_primes> to the names on the left, one gets the full subnames.
 Following benchmark output refers to output generated by the C<cmpthese()> function
-of the Benchmark module. 
+of the Benchmark module.
 
 Calculation results:
 
@@ -119,16 +133,16 @@ primes <= 8000, one iteration:
  sum       7.00/s 8979%  112%    --   -2%
  trial     7.14/s 9164%  116%    2%    --
 
-Bear in mind, that these results are not too reliable as the author could neither increase the number 
-nor the iteration count provided, because if he attempted to do so, perl would report "Out of memory!", 
-which was most likely caused by the Sieve of Eratosthenes algorithm, which is rather memory exhaustive 
-by implementation. The Sieve of Eratosthenes is expected to be the slowest, followed by the Modulo 
+Bear in mind, that these results are not too reliable as the author could neither increase the number
+nor the iteration count provided, because if he attempted to do so, perl would report "Out of memory!",
+which was most likely caused by the Sieve of Eratosthenes algorithm, which is rather memory exhaustive
+by implementation. The Sieve of Eratosthenes is expected to be the slowest, followed by the Modulo
 operator division, then either Summing calculation or Trial division (dependant upon the iterations)
 followed by its counterpart.
 
 =head1 EXPORT
 
-=head2 Functions 
+=head2 Functions
 
 C<primes(), is_prime(), mod_primes(), sieve_primes(), sum_primes(), trial_primes()> are exportable.
 

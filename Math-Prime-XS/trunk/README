@@ -3,15 +3,29 @@ NAME
     tests
 
 SYNOPSIS
-     use Math::Prime::XS qw(primes is_prime);
- 
-     @allprimes  = primes(9);
-     @someprimes = primes(4,9);
- 
-     if (is_prime(11)) { # do something }
+     use Math::Prime::XS ':all';
+     # or
+     use Math::Prime::XS qw(primes is_prime mod_primes sieve_primes sum_primes trial_primes);
+
+     @all_primes   = primes(9);
+     @range_primes = primes(4, 9);
+
+     if (is_prime(11)) { # do stuff }
+
+     @all_primes   = mod_primes(9);
+     @range_primes = mod_primes(4, 9);
+
+     @all_primes   = sieve_primes(9);
+     @range_primes = sieve_primes(4, 9);
+
+     @all_primes   = sum_primes(9);
+     @range_primes = sum_primes(4, 9);
+
+     @all_primes   = trial_primes(9);
+     @range_primes = trial_primes(4, 9);
 
 DESCRIPTION
-    Math::Prime::XS calculates/detects prime numbers by either applying
+    "Math::Prime::XS" calculates/detects prime numbers by either applying
     Modulo operator division, the Sieve of Eratosthenes, Trial division or a
     Summing calculation.
 
@@ -23,7 +37,7 @@ FUNCTIONS
     and the integer. Calls "sum_primes()" beneath the surface.
 
   is_prime
-    Takes an integer as input and returns 1 if integer is prime, undef if it
+    Takes an integer as input and returns 1 if integer is prime, 0 if it
     isn't. The underlying algorithm has been taken from "sum_primes()".
 
   mod_primes
@@ -41,7 +55,7 @@ FUNCTIONS
     primes less than or equal to the square root of n, then the numbers that
     are left are the primes.
 
-    http://primes.utm.edu/glossary/page.php?sort=SieveOfEratosthenes
+    <http://primes.utm.edu/glossary/page.php?sort=SieveOfEratosthenes>
 
   sum_primes
     Applies a Summing calculation that is somehow similar to
@@ -52,7 +66,7 @@ FUNCTIONS
     number is not prime, otherwise, it is. This algorithm is a somewhat
     hybrid between the Sieve of Eratosthenes and Trial division.
 
-    http://www.geraldbuehler.de/primzahlen
+    <http://www.geraldbuehler.de/primzahlen>
 
   trial_primes
     Applies Trial division and provides the same functionality and interface
@@ -62,7 +76,7 @@ FUNCTIONS
     2, 3, 5, 7, 11, and 13. Since none of these divides the number evenly,
     it is a prime.
 
-    http://primes.utm.edu/glossary/page.php?sort=TrialDivision
+    <http://primes.utm.edu/glossary/page.php?sort=TrialDivision>
 
 BENCHMARK
     If one appends "_primes" to the names on the left, one gets the full
@@ -105,9 +119,9 @@ EXPORT
     ":all - *()"
 
 SEE ALSO
-    http://primes.utm.edu,
-    http://www.it.fht-esslingen.de/~schmidt/vorlesungen/kryptologie/seminar/
-    ws9798/html/prim/prim-1.html
+    <http://primes.utm.edu>,
+    <http://www.it.fht-esslingen.de/~schmidt/vorlesungen/kryptologie/seminar
+    /ws9798/html/prim/prim-1.html>
 
 AUTHOR
     Steven Schubiger <schubiger@cpan.org>
@@ -116,5 +130,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See http://www.perl.com/perl/misc/Artistic.html
+    See <http://www.perl.com/perl/misc/Artistic.html>
 

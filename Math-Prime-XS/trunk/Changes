@@ -1,5 +1,13 @@
 Revision history for Perl extension Math::Prime::XS.
 
+0.18 Fri Feb 15 15:23:36 CET 2008
+
+ - is_prime() now returns 0 if the number isn't a prime number.
+
+ - Added tests for calculating primes within a range.
+
+ - Updated ppport.h.
+
 0.17 Tue Apr  4 20:53:19 CEST 2006
 
  - Changed Build.PL argument create_makefile_pl from 'passtrough'
@@ -7,25 +15,25 @@ Revision history for Perl extension Math::Prime::XS.
 
 0.15 Thu Nov  3 20:45:22 CET 2005
 
- - Omitted the pod-coverage testing part for XSUB's.
+ - Omitted the pod-coverage testing part for XSUBs.
 
 0.14 Sat Oct 29 20:30:42 CEST 2005
 
  - Added INSTALL instructions to the package.
- 
- - The xs_files argument in Build.PL specifies where *.xs 
+
+ - The xs_files argument in Build.PL specifies where *.xs
    files reside.
 
 0.13 Wed Oct 26 19:44:23 CEST 2005
 
  - Converted Math::Prime::Simple over to XS.
- 
+
  - Reimplemented the Sieve of Eratosthenes in C.
- 
- - Added modulo operator division, trial division and a 
+
+ - Added modulo operator division, trial division and a
    "hybrid" summing calculation method.
-   
- - Updated the docs with relevant function documentation 
+
+ - Updated the docs with relevant function documentation
    and related benchmarks.
 
 0.03 2004/01/14
@@ -33,4 +41,5 @@ Revision history for Perl extension Math::Prime::XS.
  - Implemented the Sieve of Eratosthenes.
 
 0.01 2004/01/14
+
  - Initial version.
