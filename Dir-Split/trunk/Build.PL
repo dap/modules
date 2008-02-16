@@ -1,6 +1,5 @@
 ## Created by make2build 0.16
 
-use 5.005;
 use strict;
 use warnings;
 
@@ -20,14 +19,17 @@ my $build = Module::Build->new
                  'File::Spec' => 0,
                  'SelfLoader' => 0,
                },
-   build_requires => { 'Test::More' => 0 },	       
+   build_requires => {
+                       'File::Temp' => 0,
+                       'Test::More' => 0,
+                     },
    recommends => {
                    'Test::Pod' => '1.14',
-		   'Test::Pod::Coverage' => '1.04',
-		 },
+                   'Test::Pod::Coverage' => '1.04',
+                 },
    license => 'perl',
-   create_readme => 1,		       
+   create_readme => 1,
    create_makefile_pl => 'traditional',
   );
-  
+
 $build->create_build_script;

@@ -1,6 +1,6 @@
 ---
 name: Dir-Split
-version: 0.79
+version: 0.80
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Split files of a directory to subdirectories
@@ -16,6 +16,7 @@ requires:
   File::Spec: 0
   SelfLoader: 0
 build_requires:
+  File::Temp: 0
   Test::More: 0
 recommends:
   Test::Pod: 1.14
@@ -23,7 +24,7 @@ recommends:
 provides:
   Dir::Split:
     file: lib/Dir/Split.pm
-    version: 0.79
+    version: 0.80
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

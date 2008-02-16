@@ -4,6 +4,7 @@ NAME
 SYNOPSIS
      use Dir::Split;
 
+     # example arguments
      $dir = Dir::Split->new(
          mode    =>    'num',
 
@@ -40,10 +41,11 @@ DESCRIPTION
     file amounts, characteristic splitting tries to keep up the contentual
     recognition of data.
 
-METHODS
+CONSTRUCTOR
   new
-    Object constructor.
+    Creates a new "Dir::Split" object.
 
+     # example arguments
      $dir = Dir::Split->new(
          mode    =>    'num',
 
@@ -64,6 +66,7 @@ METHODS
 
      $dir = Dir::Split->new(%args);
 
+METHODS
   split_dir
     Splits files to subdirectories.
 

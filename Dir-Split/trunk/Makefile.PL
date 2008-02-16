@@ -14,6 +14,7 @@ WriteMakefile
                            'Test::More' => 0,
                            'File::Find' => 0,
                            'SelfLoader' => 0,
+                           'File::Temp' => 0,
                            'File::Path' => 0,
                            'File::Basename' => 0
                          }

@@ -1,11 +1,10 @@
 package Dir::Split;
 
-use 5.005;
 use strict;
 use warnings;
 use base qw(Exporter);
 
-use Carp ();
+use Carp qw(croak);
 use File::Basename ();
 use File::Copy ();
 use File::Find ();
@@ -32,7 +31,7 @@ our ($VERSION,
      %failure,
      %track);
 
-$VERSION = '0.79';
+$VERSION = '0.80';
 
 @EXPORT = qw(
     $NOACTION
@@ -91,7 +90,7 @@ sub _sanity_input
 
     if ($UNLINK && ($TRAVERSE || $TRAVERSE_UNLINK ||
         $TRAVERSE_RMDIR || $TRAVERSE_RMDIR_SOURCE)) {
-        Carp::croak '$UNLINK and $TRAVERSE_* may not be combined';
+        croak '$UNLINK and $TRAVERSE_* may not be combined';
     }
 
     my %generic = (
@@ -132,10 +131,11 @@ sub _validate_input
         if ($prove ne 'defined' && $prove !~ /\d+$/) {
             $condition .= " =~ /$prove/";
         }
+        no warnings 'uninitialized';
         my $match = eval "sub { $condition }"
           or die "Couldn't compile $condition: $@";
 
-        Carp::croak('Option ', $arg, ' not defined or invalid')
+        croak "Option '$arg' not defined or invalid"
           unless &$match;
     }
 }
@@ -300,7 +300,7 @@ sub _mkpath
         $track{target}{dirs}++;
     }
     else {
-        Carp::croak "Dir $target_path couldn't be created: $!";
+        croak "Dir $target_path couldn't be created: $!";
     }
 
     return $target_path;
@@ -374,12 +374,12 @@ sub _read_dir
     my ($self, $items, $dir) = @_;
 
     opendir(my $dir_fh, $dir)
-      or Carp::croak "Couldn't open dir $dir: $!";
+      or croak "Couldn't open dir $dir: $!";
 
-    @$items = grep !/^\.\.?/, readdir($dir_fh);
+    @$items = grep !/^(?:\.|\.\.)$/, readdir($dir_fh);
 
     closedir($dir_fh)
-      or Carp::croak "Couldn't close dir $dir: $!";
+      or croak "Couldn't close dir $dir: $!";
 }
 
 1;
@@ -431,6 +431,7 @@ Dir::Split - Split files of a directory to subdirectories
 
  use Dir::Split;
 
+ # example arguments
  $dir = Dir::Split->new(
      mode    =>    'num',
 
@@ -470,12 +471,13 @@ splitting tries to keep up the contentual recognition of data.
 
 =cut
 
-=head1 METHODS
+=head1 CONSTRUCTOR
 
 =head2 new
 
-Object constructor.
+Creates a new C<Dir::Split> object.
 
+ # example arguments
  $dir = Dir::Split->new(
      mode    =>    'num',
 
@@ -495,6 +497,8 @@ Object constructor.
  );
 
  $dir = Dir::Split->new(%args);
+
+=head1 METHODS
 
 =head2 split_dir
 

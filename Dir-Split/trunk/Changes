@@ -1,5 +1,15 @@
 Revision history for Perl extension Dir::Split.
 
+0.80 Sat Feb 16 13:18:05 CET 2008
+
+ - Added test-file split.t.
+
+ - Revised the code for excluding '.' and '..'.
+
+ - Removed dependency upon a certain perl version.
+
+ - Reformatted scripts/dir-split.pl.
+
 0.79 Thu Dec 20 21:30:14 CET 2007
 
  - Fixed a bug (don't remove the first two files from the list,
