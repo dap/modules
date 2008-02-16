@@ -12,7 +12,7 @@ SYNOPSIS
 
      if ($parser->success) {
          # operate on $dt/@dt, for example:
-         printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day,
+         printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day,
                                                   $dt->month,
                                                   $dt->year,
                                                   $dt->hour,
@@ -33,9 +33,10 @@ METHODS
     are options and not necessarily required.
 
      $parser = DateTime::Format::Natural->new(
-               lang          => '[en|de]',
+               lang          => 'en',
                format        => 'mm/dd/yy',
                prefer_future => '[0|1]'
+               time_zone     => 'floating',
                daytime       => { morning   => 06,
                                   afternoon => 13,
                                   evening   => 20,
@@ -43,15 +44,19 @@ METHODS
      );
 
     * "lang"
-        Contains the language selected, currently limited to "en" (english)
-        & "de" (german). Defaults to '"en"'.
+        Contains the language selected, currently limited to "en" (english).
+        Defaults to '"en"'.
 
     * "format"
         Specifies the format of numeric dates, defaults to '"d/m/y"'.
 
-    * "prefer_future (experimental)"
+    * "prefer_future"
         Turns ambigious weekdays/months to their futuristic relatives.
         Accepts a boolean, defaults to 0.
+
+    * "time_zone"
+        The time zone to use when parsing and for output. Accepts any time
+        zone recognized by DateTime. Defaults to 'floating'.
 
     * "daytime"
         A hash consisting of specific hours given for peculiar daytimes.
@@ -61,20 +66,10 @@ METHODS
     Creates a "DateTime" object from a human readable date/time string.
 
      $dt = $parser->parse_datetime($date_string);
-
-     $dt = $parser->parse_datetime(
-           string => $date_string,
-           debug  => 1,
-     );
+     $dt = $parser->parse_datetime(string => $date_string);
 
     * "string"
         The date string.
-
-    * "debug"
-        Boolean value indicating debugging mode.
-
-        If debugging is enabled, each token that is analysed will be output
-        to STDOUT with a trailing newline appended.
 
     Returns a DateTime object.
 
@@ -84,11 +79,7 @@ METHODS
     as "parse_datetime()", but must be explicitly called in list context.
 
      @dt = $parser->parse_datetime_duration($date_string);
-
-     @dt = $parser->parse_datetime_duration(
-           string => $date_string,
-           debug  => 1,
-     );
+     @dt = $parser->parse_datetime_duration(string => $date_string);
 
   success
     Returns a boolean indicating success or failure for parsing the
@@ -101,9 +92,17 @@ METHODS
     Returns a trace of methods which we're called within the Base class and
     a summary how often certain units were modified.
 
+GRAMMAR
+    The grammar handling has been rewritten to be easily extendable and
+    hence everybody is encouraged to propose sensible new additions and/or
+    changes.
+
+    See the classes "DateTime::Format::Natural::Lang::[language_code]" if
+    you're intending to hack a bit on the grammar guts.
+
 EXAMPLES
-    See the modules "DateTime::Format::Natural::Lang::*" for a overview of
-    valid input.
+    See the classes "DateTime::Format::Natural::Lang::[language_code]" for a
+    overview of current valid input.
 
 CREDITS
     Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's
@@ -124,6 +123,9 @@ CREDITS
      Shawn M. Moore
      Andreas J. König
      Chia-liang Kao
+     Jonny Schulz
+     Jesse Vincent
+     Jason May
 
 SEE ALSO
     DateTime, Date::Calc, <http://datetime.perl.org>

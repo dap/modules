@@ -3,27 +3,30 @@
 use strict;
 use warnings;
 
-use Carp ();
 use DateTime::Format::Natural;
+use Getopt::Long qw(:config no_auto_abbrev no_ignore_case);
+use Term::ReadLine;
 
 use constant LANG_DEFAULT => 'en';
 
-my $debug               = 0;
 my $format;
-my $lang                = LANG_DEFAULT;
-my $prefer_future       = 0;
-my @supported_languages = qw(de en);
-my $trace               = 0;
-my %valid_languages     = map { $_ => 1 } @supported_languages;
+my $lang;
+my $prefer_future;
+my @supported_languages = qw(en);
+my $trace;
+my %valid_languages = map { $_ => 1 } @supported_languages;
 
-parse_switches() if @ARGV;
+{
+    my $opts = {};
+    $opts = parse_switches() if @ARGV;
+    set_values($opts);
+    process();
+}
 
-sub parse_switches {
-    use Getopt::Long qw(:config no_auto_abbrev no_ignore_case);
-
+sub parse_switches
+{
     my %opts;
-    GetOptions(\%opts, qw(d|debug
-                          f|format=s
+    GetOptions(\%opts, qw(f|format=s
                           h|help
                           l|lang=s
                           p|prefer_future
@@ -35,21 +38,27 @@ sub parse_switches {
     version()   if $opts{V};
     supported() if $opts{s};
 
-    $debug         ||= $opts{d};
-    $lang            = $opts{l} || LANG_DEFAULT;
-    $format        ||= $opts{f};
-    $prefer_future ||= $opts{p};
-    $trace           = $opts{t};
+    return \%opts;
 }
 
-sub usage {
+sub set_values
+{
+    my $opts = shift;
+
+    $lang          = $opts->{l} || LANG_DEFAULT;
+    $format        = $opts->{f} || '';
+    $prefer_future = $opts->{p} || 0;
+    $trace         = $opts->{t} || 0;
+}
+
+sub usage
+{
     print <<USAGE;
 Usage: $0 [switches]
-  -d, --debug            debugging mode (experimental)
   -f, --format           format of numeric dates
-  -h, --help             help screen
-  -l, --language code    language (country code)
-  -p, --prefer_future    prefer future
+  -h, --help             this help screen
+  -l, --lang             language code
+  -p, --prefer_future    use futuristic dates (when possible)
   -s, --supported        list of supported languages
   -t, --trace            print trace after processing
   -V, --version          print version
@@ -57,43 +66,63 @@ USAGE
     exit;
 }
 
-sub version {
+sub version
+{
     print "  DateTime::Format::Natural $DateTime::Format::Natural::VERSION\n";
     exit;
 }
 
-sub supported {
+sub supported
+{
     print "$_\n" foreach @supported_languages;
     exit;
 }
 
-unless ($valid_languages{$lang}) {
-    warn "Language [$lang] isn't supported, switching to default [", LANG_DEFAULT, "]\n";
-    $lang = LANG_DEFAULT;
-}
-
-my $parse = DateTime::Format::Natural->new(
-            lang          => $lang,
-            format        => $format,
-            prefer_future => $prefer_future,
-);
-
-while (1) {
-    print 'Input date string: ';
-    chomp(my $input = <STDIN>);
-
-    my @dt = $parse->parse_datetime_duration(string => $input, debug => $debug);
-
-    if ($parse->success) {
-        foreach my $dt (@dt) {
-            printf("%02s.%02s.%4s %02s:%02s:%02s\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
-        }
-    } else {
-        Carp::croak $parse->error, "\n";
+sub process
+{
+    unless ($valid_languages{$lang}) {
+        warn "Language [$lang] isn't supported, switching to default [", LANG_DEFAULT, "]\n";
+        $lang = LANG_DEFAULT;
     }
 
-    if ($trace) {
-        print $parse->trace, "\n";
+    my $term = Term::ReadLine->new('dateparse');
+    my $prompt = 'dateparse> ';
+
+    while (defined(my $input = $term->readline($prompt))) {
+        $term->addhistory($input) if $input =~ /\S/;
+        last if $input =~ /^(?:quit|exit)$/;
+
+        if ($input =~ /^(?:\?|help)$/i) {
+            print <<EOT;
+
+Commands
+ ?, help                this help screen
+ exit, quit             leave dateparse
+ everything else        datetime string
+
+EOT
+            next;
+        }
+
+        my $parse = DateTime::Format::Natural->new(
+                    lang          => $lang,
+                    format        => $format,
+                    prefer_future => $prefer_future,
+        );
+        my @dt = $parse->parse_datetime_duration(string => $input);
+
+        if ($parse->success) {
+            foreach my $dt (@dt) {
+                printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
+            }
+        }
+        else {
+            warn $parse->error, "\n";
+        }
+
+        if ($trace) {
+            print $parse->trace, "\n";
+        }
     }
 }
 
@@ -103,12 +132,11 @@ dateparse - frontend to DateTime::Format::Natural
 
 =head1 SYNOPSIS
 
- Usage: ./dateparse [switches]
-   -d, --debug            debugging mode (experimental)
+ Usage: dateparse [switches]
    -f, --format           format of numeric dates
-   -h, --help             help screen
-   -l, --language code    language (country code)
-   -p, --prefer_future    prefer future
+   -h, --help             this help screen
+   -l, --lang             language code
+   -p, --prefer_future    use futuristic dates (when possible)
    -s, --supported        list of supported languages
    -t, --trace            print trace after processing
    -V, --version          print version

@@ -2,27 +2,30 @@ package DateTime::Format::Natural::Lang::Base;
 
 use strict;
 use warnings;
-use base qw(Exporter);
 
-our $VERSION = '0.3';
+our ($VERSION, $AUTOLOAD);
 
-our @EXPORT = qw(AUTOLOAD __new);
+$VERSION = '0.8';
 
-our $AUTOLOAD;
-
-sub __new {
+sub __new
+{
     my $class = shift;
 
     no strict 'refs';
 
     my $obj = {};
-    $obj->{weekdays} = \%{$class.'::'.'data_weekdays'};
-    $obj->{months}   = \%{$class.'::'.'data_months'};
+    $obj->{weekdays}        = \%{$class.'::'.'data_weekdays'};
+    $obj->{weekdays_abbrev} = \%{$class.'::'.'data_weekdays_abbrev'};
+    $obj->{weekdays_all}    = \@{$class.'::'.'data_weekdays_all'};
+    $obj->{months}          = \%{$class.'::'.'data_months'};
+    $obj->{months_abbrev}   = \%{$class.'::'.'data_months_abbrev'};
+    $obj->{months_all}      = \@{$class.'::'.'data_months_all'};
 
     return bless $obj, ref($class) || $class;
 }
 
-AUTOLOAD {
+AUTOLOAD
+{
     my ($self, $exp) = @_;
 
     my ($caller) = $AUTOLOAD =~ /(.*)::.*/;
@@ -32,7 +35,12 @@ AUTOLOAD {
     if (substr($sub, 0, 2) eq '__') {
        $sub =~ s/^__//;
        no strict 'refs';
-       return ${$caller.'::'.$sub}{$exp};
+       if (defined $exp && length $exp) {
+           return ${$caller.'::'.$sub}{$exp};
+       }
+       else {
+           return \%{$caller.'::'.$sub};
+       }
     }
 }
 
@@ -54,7 +62,7 @@ C<DateTime::Format::Natural::Lang::> classes.
 
 =head1 SEE ALSO
 
-L<DateTime::Format::Natural::Lang::>, L<DateTime>, L<Date::Calc>, L<http://datetime.perl.org>
+L<DateTime::Format::Natural>
 
 =head1 AUTHOR
 
