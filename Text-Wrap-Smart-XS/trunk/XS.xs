@@ -64,7 +64,6 @@ xs_fuzzy_wrap(text, wrap_at)
         unsigned long count;
         unsigned long diff;
         unsigned long length;
-        unsigned long offset;
         long average_iter;
         long length_iter;
     PPCODE:
@@ -79,8 +78,7 @@ xs_fuzzy_wrap(text, wrap_at)
         } while (length_iter > 0);
         average = (int) ceil((float) length / (float) i);
 
-        offset = 0;
-        while (offset < length) {
+        while (*text_iter) {
             unsigned int seen_spaces = 0;
 
             average_iter = average;
@@ -115,13 +113,12 @@ xs_fuzzy_wrap(text, wrap_at)
                    break;
                *str_iter++ = *text_iter++;
             }
-            text_iter++;
+            if (*text_iter != '\0')
+                text_iter++;
             *str_iter = '\0';
 
             EXTEND(SP, 1);
             PUSHs(sv_2mortal(newSVpv(str,0)));
 
             Safefree(str);
-
-            offset += count;
         }
