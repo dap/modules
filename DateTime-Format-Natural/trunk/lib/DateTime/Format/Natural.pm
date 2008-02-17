@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.67';
+our $VERSION = '0.68';
 
 sub new
 {
@@ -451,7 +451,7 @@ DateTime::Format::Natural - Create machine readable date/time with natural parsi
 C<DateTime::Format::Natural> takes a string with a human readable date/time and creates a
 machine readable one by applying natural parsing logic.
 
-=head1 METHODS
+=head1 CONSTRUCTOR
 
 =head2 new
 
@@ -496,6 +496,8 @@ A hash consisting of specific hours given for peculiar daytimes. Daytimes may be
 selectively changed.
 
 =back
+
+=head1 METHODS
 
 =head2 parse_datetime
 

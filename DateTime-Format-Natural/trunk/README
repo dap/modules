@@ -27,7 +27,7 @@ DESCRIPTION
     date/time and creates a machine readable one by applying natural parsing
     logic.
 
-METHODS
+CONSTRUCTOR
   new
     Creates a new "DateTime::Format::Natural" object. Arguments to "new()"
     are options and not necessarily required.
@@ -62,6 +62,7 @@ METHODS
         A hash consisting of specific hours given for peculiar daytimes.
         Daytimes may be selectively changed.
 
+METHODS
   parse_datetime
     Creates a "DateTime" object from a human readable date/time string.
 

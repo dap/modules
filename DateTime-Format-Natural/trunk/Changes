@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.68 Sun Feb 17 14:19:07 CET 2008
+
+ - Added 'prefer_future' test-file.
+
+ - Added Test::MockTime to the dependency list in Build.PL.
+
+ - Restructured documentation.
+
 0.67 Fri Feb  8 01:04:38 CET 2008
 
  - Extended parser to accept a formatted date and time string.
