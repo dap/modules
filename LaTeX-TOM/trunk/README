@@ -12,7 +12,7 @@ SYNOPSIS
      $latex = $document->toLaTeX;
 
      $specialnodes = $document->getNodesByCondition(
-         '$node->getNodeType eq \'TEXT\' && 
+         '$node->getNodeType eq \'TEXT\' &&
           $node->getNodeText =~ /magic string/'
      );
 
@@ -318,6 +318,13 @@ BUGS
 
     Please let the authors know of parser errors if you discover any.
 
+CREDITS
+    Thanks to (in order of appearance) who have contributed valuable
+    suggestions & patches:
+
+     Otakar Smrz
+     Moritz Lenz
+
 AUTHORS
     Written by Aaron Krowne <akrowne@vt.edu>
 
@@ -326,4 +333,10 @@ AUTHORS
 WEB SITE
     Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this
     module's home on the WWW.
+
+LICENSE
+    This program is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See <http://www.perl.com/perl/misc/Artistic.html>
 

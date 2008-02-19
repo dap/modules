@@ -2,16 +2,19 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.8
+# Version 0.8_01
 #
 # ----------------------------------------------------------------------------
 #
-# by Aaron Krowne (akrowne@vt.edu)
+# originally written by Aaron Krowne (akrowne@vt.edu)
 # July 2002
 #
 # Virginia Polytechnic Institute and State University
 # Department of Computer Science
 # Digital Libraries Research Laboratory
+#
+# now maintained by Steven Schubiger (schubiger@cpan.org)
+# February 2008
 #
 # ----------------------------------------------------------------------------
 #
@@ -32,7 +35,7 @@ use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
 
 use base qw(LaTeX::TOM::Parser);
 
-our $VERSION = '0.8';
+our $VERSION = '0.8_01';
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -41,16 +44,16 @@ our $VERSION = '0.8';
 # command names here, the parser will treat such sequences as plain text.
 #
 %INNERCMDS = (
- 'bf' => 1, 
- 'md' => 1, 
- 'em' => 1, 
- 'up' => 1, 
- 'sl' => 1, 
- 'sc' => 1, 
- 'sf' => 1, 
- 'rm' => 1, 
- 'it' => 1, 
- 'tt' => 1, 
+ 'bf' => 1,
+ 'md' => 1,
+ 'em' => 1,
+ 'up' => 1,
+ 'sl' => 1,
+ 'sc' => 1,
+ 'sf' => 1,
+ 'rm' => 1,
+ 'it' => 1,
+ 'tt' => 1,
  'noindent' => 1,
  'mathtt' => 1,
  'mathbf' => 1,
@@ -71,13 +74,13 @@ our $VERSION = '0.8';
 #
 %MATHENVS = (
   'align' => 1,
-  'equation' => 1, 
-  'eqnarray' => 1, 
-  'displaymath' => 1, 
+  'equation' => 1,
+  'eqnarray' => 1,
+  'displaymath' => 1,
   'ensuremath' => 1,
   'math' => 1,
-  '$$' => 1, 
-  '$' => 1, 
+  '$$' => 1,
+  '$' => 1,
   '\[' => 1,
   '\(' => 1,
   );
@@ -96,17 +99,17 @@ our $VERSION = '0.8';
  'huge' => 1,
  'Huge' => 1,
  'HUGE' => 1,
- 'text' => 1, 
- 'textbf' => 1, 
- 'textmd' => 1, 
- 'textsc' => 1, 
- 'textsf' => 1, 
- 'textrm' => 1, 
- 'textsl' => 1, 
- 'textup' => 1, 
- 'texttt' => 1, 
- 'mbox' => 1, 
- 'fbox' => 1, 
+ 'text' => 1,
+ 'textbf' => 1,
+ 'textmd' => 1,
+ 'textsc' => 1,
+ 'textsf' => 1,
+ 'textrm' => 1,
+ 'textsl' => 1,
+ 'textup' => 1,
+ 'texttt' => 1,
+ 'mbox' => 1,
+ 'fbox' => 1,
  'section' => 1,
  'subsection' => 1,
  'subsubsection' => 1,
@@ -216,7 +219,7 @@ LaTeX::TOM - A module for parsing, analyzing, and manipulating LaTeX documents.
  $latex = $document->toLaTeX;
 
  $specialnodes = $document->getNodesByCondition(
-     '$node->getNodeType eq \'TEXT\' && 
+     '$node->getNodeType eq \'TEXT\' &&
       $node->getNodeText =~ /magic string/'
  );
 
@@ -730,7 +733,7 @@ user can still do this by breaking abstraction and directly modifying the Tree.
 
 Also note that the parsing is not complete.  This module was not written with
 the intention of being able to produce output documents the way ``latex'' does.
-The intent was instead to be able to analyze and modify the document on a 
+The intent was instead to be able to analyze and modify the document on a
 logical level with regards to the content; it doesn't care about the document
 formatting and outputting side of TeX/LaTeX.
 
@@ -744,6 +747,13 @@ deemed it ``good enough'' to use for purposes similar to mine.
 
 Please let the authors know of parser errors if you discover any.
 
+=head1 CREDITS
+
+Thanks to (in order of appearance) who have contributed valuable suggestions & patches:
+
+ Otakar Smrz
+ Moritz Lenz
+
 =head1 AUTHORS
 
 Written by Aaron Krowne <akrowne@vt.edu>
@@ -752,7 +762,14 @@ Maintained by Steven Schubiger <schubiger@cpan.org>
 
 =head1 WEB SITE
 
-Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this 
+Please see http://br.endernet.org/~akrowne/elaine/latex_tom/ for this
 module's home on the WWW.
+
+=head1 LICENSE
+
+This program is free software; you may redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See L<http://www.perl.com/perl/misc/Artistic.html>
 
 =cut

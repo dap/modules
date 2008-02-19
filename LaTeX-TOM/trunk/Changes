@@ -1,5 +1,11 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.8_01 Tue Feb 19 15:29:40 CET 2008
+
+ - Added basic test-file basic.t.
+
+ - Added CREDITS and LICENSE sections to the documentation.
+
 0.8 Mon Oct  8 10:23:01 CEST 2007
 
  - Fixed failing tests pod.t & pod-coverage.t (adjusted plans).
