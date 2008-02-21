@@ -1,0 +1,6 @@
+\NeedsTeXFormat{LaTeX2e}
+\documentclass[11pt]{article}
+\title{Some Test Doc}
+\begin{document}
+    \maketitle
+\end{document}

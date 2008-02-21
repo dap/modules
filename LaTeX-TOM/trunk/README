@@ -180,8 +180,7 @@ METHODS
         nodes of the tree.
 
    getTopLevelNodes
-        Return an arrayref which is a list of "LaTeX::TOM::Nodes" at the top
-        level of the Tree.
+        Return a list of "LaTeX::TOM::Nodes" at the top level of the Tree.
 
    getAllNodes
         Return an arrayref with all nodes of the tree. This "flattens" the

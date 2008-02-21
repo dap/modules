@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.8_01
+# Version 0.8_02
 #
 # ----------------------------------------------------------------------------
 #
@@ -35,7 +35,7 @@ use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
 
 use base qw(LaTeX::TOM::Parser);
 
-our $VERSION = '0.8_01';
+our $VERSION = '0.8_02';
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -461,8 +461,7 @@ useful to get a normal document again, after modifying nodes of the tree.
 
 =item C<>
 
-Return an arrayref which is a list of C<LaTeX::TOM::Nodes> at the top level of
-the Tree.
+Return a list of C<LaTeX::TOM::Nodes> at the top level of the Tree.
 
 =back
 

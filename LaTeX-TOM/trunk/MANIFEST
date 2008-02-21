@@ -11,7 +11,11 @@ MANIFEST			This list of files
 META.yml
 README
 t/00-load.t
-t/basic.t
+t/01-basic.t
+t/02-parser.t
+t/03-tree.t
+t/04-node.t
+t/data/tex.in
 t/pod-coverage.t
 t/pod.t
 TODO

@@ -1,5 +1,13 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.8_02 Thu Feb 21 21:08:50 CET 2008
+
+ - Added further test-files to suite (i.e., ones that test the
+   parser, tree and node functionality).
+
+ - Fixed a slight documentation error (the method getTopLevelNodes()
+   returns a list, and *not* an array reference).
+
 0.8_01 Tue Feb 19 15:29:40 CET 2008
 
  - Added basic test-file basic.t.
