@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.17 Thu Feb 21 15:59:48 CET 2008
+
+ - Made the "matching" for the node type more explicit.
+
 0.16 Wed Feb 13 16:47:56 CET 2008
 
  - Don't assume a '/' within File::Spec->catfile() in basic.t.

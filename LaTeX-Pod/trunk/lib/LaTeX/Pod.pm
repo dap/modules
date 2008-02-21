@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 sub new
 {
@@ -28,7 +28,7 @@ sub convert
         $self->{current_node} = $node;
         my $type = $node->getNodeType;
 
-        if ($type =~ /TEXT|COMMENT/) {
+        if ($type =~ /^(?:TEXT|COMMENT)$/) {
             next if $node->getNodeText !~ /\w+/
                  or $node->getNodeText =~ /^\\\w+$/m
                  or $self->_process_directives;
@@ -41,10 +41,10 @@ sub convert
                }
             }
         }
-        elsif ($type =~ /ENVIRONMENT/) {
+        elsif ($type eq 'ENVIRONMENT') {
             $self->_process_verbatim;
         }
-        elsif ($type =~ /COMMAND/) {
+        elsif ($type eq 'COMMAND') {
             $self->_unregister_previous('verbatim');
             my $cmd_name = $node->getCommandName;
 
