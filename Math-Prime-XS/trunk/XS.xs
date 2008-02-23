@@ -6,7 +6,7 @@
 
 
 
-MODULE = Math::Prime::XS        PACKAGE = Math::Prime::XS
+MODULE = Math::Prime::XS                PACKAGE = Math::Prime::XS
 
 void
 xs_mod_primes(number, ...)
@@ -179,16 +179,12 @@ xs_is_prime(number)
             if (is_prime) {
                 primes[++pcount] = n;
                 if (n == number) {
-                    EXTEND(SP,1);
-                    PUSHs(sv_2mortal(newSViv(1)));
-                    XSRETURN(1);
+                    XSRETURN_IV(1);
                 }
             }
             else {
                 if (n == number) {
-                    EXTEND(SP,1);
-                    PUSHs(sv_2mortal(newSViv(0)));
-                    XSRETURN(1);
+                    XSRETURN_IV(0);
                 }
             }
         }

@@ -1,5 +1,10 @@
 Revision history for Perl extension Math::Prime::XS.
 
+0.19 Sat Feb 23 16:20:29 CET 2008
+
+ - Use XSRETURN_IV() instead of manually extending the stack
+   and pushing the mortal boolean number.
+
 0.18 Fri Feb 15 15:23:36 CET 2008
 
  - is_prime() now returns 0 if the number isn't a prime number.
