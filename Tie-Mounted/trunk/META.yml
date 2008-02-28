@@ -1,6 +1,6 @@
 ---
 name: Tie-Mounted
-version: 0.17
+version: 0.18
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Tie a mounted node to an array
@@ -21,8 +21,8 @@ recommends:
 provides:
   Tie::Mounted:
     file: lib/Tie/Mounted.pm
-    version: 0.17
-generated_by: Module::Build version 0.271
+    version: 0.18
+generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2

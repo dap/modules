@@ -13,7 +13,7 @@ DESCRIPTION
     invoking the system commands "mount" and "umount"; "mount" is invoked
     when a former attempt to tie an array is being committed, "umount" when
     a tied array is to be untied. Suitability is therefore limited and
-    suggests a rarely used node (such as /backup).
+    suggests a rarely used node (such as /backup, for example).
 
     The mandatory parameter consists of the node (or: *mount point*) to be
     mounted (/backup - as declared in /etc/fstab); optional options to
@@ -29,7 +29,7 @@ DESCRIPTION
     If $Tie::Mounted::NO_FILES is set to a true value, a bogus array with
     zero files will be tied.
 
-CAVEATS
+BUGS & CAVEATS
   Security
     "Tie::Mounted" has by default set $APPROVE to an untrue value in order
     to allow all nodes to be passed. If $APPROVE is set to a true value,
@@ -51,8 +51,12 @@ CAVEATS
 
     Files within the tied array are statically tied.
 
+  Lacking tests
+    Tests that test the base functionality are completely missing due to an
+    environment that most likely can't be adequately simulated.
+
 SEE ALSO
-    perlfunc, fstab(5), mount(8), umount(8)
+    "tie" in perlfunc, fstab(5), mount(8), umount(8)
 
 AUTHOR
     Steven Schubiger <schubiger@cpan.org>
@@ -61,5 +65,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See http://www.perl.com/perl/misc/Artistic.html
+    See <http://www.perl.com/perl/misc/Artistic.html>
 

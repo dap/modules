@@ -10,8 +10,8 @@ use Tie::Mounted;
 my $node = '';
 
 tie my @files, 'Tie::Mounted', $node, '-v';
-{   
-    local $, = "\n"; 
+{
+    local $, = "\n";
     print @files;
     print "\n";
 }
