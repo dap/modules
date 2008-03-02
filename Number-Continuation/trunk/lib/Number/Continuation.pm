@@ -9,11 +9,11 @@ use Scalar::Util qw(refaddr);
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.03';
-
+$VERSION = '0.04';
 @EXPORT_OK = qw(continuation);
 
-sub continuation {
+sub continuation
+{
     my $opts = pop if ref $_[-1] eq 'HASH';
 
     my $input = ref $_[0] eq 'ARRAY'
@@ -22,7 +22,9 @@ sub continuation {
         ? join ' ', @_
         : !refaddr $_[0]
           ? $_[0]
-          : croak "continuation(\$set | \@set | \\\@set [, { options } ])\n";
+          : croak 'continuation($set | @set | \@set [, { options } ])';
+
+    _validate($input);
 
     my $wantarray = wantarray;
 
@@ -127,6 +129,19 @@ sub continuation {
     }
 
     return wantarray ? @output : $output;
+}
+
+sub _validate
+{
+    my ($set) = @_;
+
+    croak 'continuation(): empty set provided' unless defined $set;
+
+    my $RE_valid = qr{(?:[\d\-]+\ ?)+};
+    1 while $set =~ /\G$RE_valid/gc;
+    unless ($set =~ /\G$/) {
+        croak "continuation(): invalid set provided: '$set`";
+    }
 }
 
 1;

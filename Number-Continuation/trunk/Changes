@@ -1,5 +1,9 @@
 Revision history for Perl extension Number::Continuation.
 
+0.04 Sun Mar  2 16:26:32 CET 2008
+
+ - Added validation routine for input.
+
 0.03 Tue Feb 13 18:02:07 CET 2007
 
  - Avoiding expensive copy of @_ to an array with more readable
