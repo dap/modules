@@ -1,0 +1,98 @@
+NAME
+    LUGS::Events::Parser - Event parser for the Linux User Group Switzerland
+
+SYNOPSIS
+     use LUGS::Events::Parser;
+
+     $parser = LUGS::Events::Parser->new($events_file);
+
+     while ($event = $parser->next_event) {
+         $date = $event->get_event_date;
+         ...
+     }
+
+DESCRIPTION
+    "LUGS::Events::Parser" parses the events CSV file of the Linux User
+    Group Switzerland (LUGS) and offers according accessor methods.
+
+CONSTRUCTOR
+  new
+    Creates a new "LUGS::Events::Parser" object.
+
+     $parser = LUGS::Events::Parser->new('/path/to/events_file');
+
+METHODS
+  next_event
+     $event = $parser->next_event;
+
+    Returns a "LUGS::Events::Parser::Event" object.
+
+  get_event_date
+     $date = $event->get_event_date;
+
+    Fetch the full 'event' date field.
+
+  get_event_year
+     $year = $event->get_event_year;
+
+    Fetch the event year.
+
+  get_event_month
+     $month = $event->get_event_month;
+
+    Fetch the event month.
+
+  get_event_day
+     $day = $event->get_event_day;
+
+    Fetch the event day.
+
+  get_event_simple_day
+     $simple_day = $event->get_event_simple_day;
+
+    Fetch the event 'day' field (without zeroes).
+
+  get_event_weekday
+     $weekday = $event->get_event_weekday;
+
+    Fetch the event 'weekday' field.
+
+  get_event_time
+     $time = $event->get_event_time;
+
+    Fetch the event 'time' field.
+
+  get_event_title
+     $title = $event->get_event_title;
+
+    Fetch the event 'title' field.
+
+  get_event_color
+     $color = $event->get_event_color;
+
+    Fetch the event 'color' field.
+
+  get_event_location
+     $location = $event->get_event_location;
+
+    Fetch the event 'location' field.
+
+  get_event_responsible
+     $responsible = $event->get_event_responsible;
+
+    Fetch the event 'responsible' field.
+
+  get_event_more
+     $more = $event->get_event_more;
+
+    Fetch the event 'more' field.
+
+AUTHOR
+    Steven Schubiger <schubiger@cpan.org>
+
+LICENSE
+    This program is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See <http://www.perl.com/perl/misc/Artistic.html>
+

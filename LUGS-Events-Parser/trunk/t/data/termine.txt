@@ -1,0 +1,34 @@
+#
+# LUGS Terminliste
+#
+
+########################################################################
+section Definitive Daten
+########################################################################
+
+########################################################################
+month M&auml;rz 2008
+########################################################################
+
+event 20080303
+  weekday Mo
+  day 3
+  time 20:00
+  title Linux Stammtisch in Winterthur
+  color winti
+  location <a href="http://www.la-pergola-winti.ch/">Restaurant Pizzeria La Pergola</a>, Stadthausstrasse 71, 8400 Winterthur (<a href="http://map.search.ch/8400-winterthur/stadthausstr.-71">Karte</a>)
+  responsible <a href="mailto:Paul.Bosshard@LUGS.ch">Paul Bosshard</a>
+  more <a href="/lugs/sektionen/winterthur.phtml">Mehr Infos</a>
+endevent
+
+event 20080306
+  weekday Do
+  day 6
+  time 19:30
+  title LugBE Treff
+  color bern
+  location Restaurant Beaulieu, Erlachstrasse 3, 3012 Bern (<a href="http://map.search.ch/3012-bern/erlachstr.-3">Karte</a>)
+  responsible <a href="mailto:info@lugbe.ch">info@lugbe.ch</a>
+  more <a href="http://lugbe.ch/action/nexttreff.phtml">Mehr Infos</a>
+endevent
+
