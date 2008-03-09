@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
+use LUGS::Events::Parser::Event;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub new
 {
@@ -83,101 +84,6 @@ sub next_event
 }
 
 1;
-
-package LUGS::Events::Parser::Event;
-
-sub new
-{
-    my $class = shift;
-
-    return bless { event => { @_ } }, ref($class) || $class;
-}
-
-sub get_event_date
-{
-    my $self = shift;
-
-    return $self->{event}->{event};
-}
-
-sub get_event_year
-{
-    my $self = shift;
-
-    return substr($self->{event}->{event}, 0, 4);
-}
-
-sub get_event_month
-{
-    my $self = shift;
-
-    return substr($self->{event}->{event}, 4, 2);
-}
-
-sub get_event_day
-{
-    my $self = shift;
-
-    return substr($self->{event}->{event}, 6, 2);
-}
-
-sub get_event_simple_day
-{
-    my $self = shift;
-
-    return $self->{event}->{day};
-}
-
-sub get_event_weekday
-{
-    my $self = shift;
-
-    return $self->{event}->{weekday};
-}
-
-sub get_event_time
-{
-    my $self = shift;
-
-    return $self->{event}->{time};
-}
-
-sub get_event_title
-{
-    my $self = shift;
-
-    return $self->{event}->{title};
-}
-
-sub get_event_color
-{
-    my $self = shift;
-
-    return $self->{event}->{color};
-}
-
-sub get_event_location
-{
-    my $self = shift;
-
-    return $self->{event}->{location};
-}
-
-sub get_event_responsible
-{
-    my $self = shift;
-
-    return $self->{event}->{responsible};
-}
-
-sub get_event_more
-{
-    my $self = shift;
-
-    return $self->{event}->{more};
-}
-
-1;
 __END__
 
 =head1 NAME
@@ -220,7 +126,7 @@ Returns a C<LUGS::Events::Parser::Event> object.
 
  $date = $event->get_event_date;
 
-Fetch the full 'event' date field.
+Fetch the full C<'event'> date field.
 
 =head2 get_event_year
 
@@ -244,49 +150,49 @@ Fetch the event day.
 
  $simple_day = $event->get_event_simple_day;
 
-Fetch the event 'day' field (without zeroes).
+Fetch the event C<'day'> field (without zeroes).
 
 =head2 get_event_weekday
 
  $weekday = $event->get_event_weekday;
 
-Fetch the event 'weekday' field.
+Fetch the event C<'weekday'> field.
 
 =head2 get_event_time
 
  $time = $event->get_event_time;
 
-Fetch the event 'time' field.
+Fetch the event C<'time'> field.
 
 =head2 get_event_title
 
  $title = $event->get_event_title;
 
-Fetch the event 'title' field.
+Fetch the event C<'title'> field.
 
 =head2 get_event_color
 
  $color = $event->get_event_color;
 
-Fetch the event 'color' field.
+Fetch the event C<'color'> field.
 
 =head2 get_event_location
 
  $location = $event->get_event_location;
 
-Fetch the event 'location' field.
+Fetch the event C<'location'> field.
 
 =head2 get_event_responsible
 
  $responsible = $event->get_event_responsible;
 
-Fetch the event 'responsible' field.
+Fetch the event C<'responsible'> field.
 
 =head2 get_event_more
 
  $more = $event->get_event_more;
 
-Fetch the event 'more' field.
+Fetch the event C<'more'> field.
 
 =head1 AUTHOR
 
