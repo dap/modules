@@ -9,7 +9,7 @@ use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 
-our $VERSION = '0.68';
+our $VERSION = '0.68_01';
 
 sub new
 {
@@ -60,13 +60,16 @@ sub _init_check
             last;
         }
     }
-    Carp::croak "new(): $error\n" if defined $error;
+    Carp::croak "new(): `$error'" if defined $error;
 
     # time zone can't easily be checked by a regex
     eval {
         DateTime::TimeZone->new(name => $self->{Time_zone});
     };
-    Carp::croak "new(): $@\n" if $@;
+    if ($@) {
+        chomp(my $tz_error = $@);
+        Carp::croak "new(): `$tz_error'";
+    }
 }
 
 sub _init_vars

@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.68_01 Thu Mar 13 22:13:26 CET 2008
+
+ - Undo for trailing newlines to be printed when initially
+   checking the arguments for validity and some invalid ones are
+   encountered. Furthermore, add quoting to the error message.
+
 0.68 Sun Feb 17 14:19:07 CET 2008
 
  - Added 'prefer_future' test-file.
