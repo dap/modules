@@ -4,18 +4,21 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Base);
 
-use Carp ();
+use Carp qw(croak);
 use DateTime ();
 use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
+use Params::Validate ':all';
 
-our $VERSION = '0.68_01';
+our $VERSION = '0.69';
 
 sub new
 {
     my $class = shift;
 
     my $self = bless {}, ref($class) || $class;
+
+    $self->_init_check(@_);
     $self->_init(@_);
 
     return $self;
@@ -31,8 +34,6 @@ sub _init
     $self->{Time_zone}     = $opts{time_zone}     || 'floating';
     $self->{Opts}{daytime} = $opts{daytime};
 
-    $self->_init_check;
-
     my $mod = __PACKAGE__.'::Lang::'.uc($self->{Lang});
     eval "use $mod"; die $@ if $@;
 
@@ -44,32 +45,48 @@ sub _init_check
 {
     my $self = shift;
 
-    my %re = (format        => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
-              lang          => qr!^(?:en)$!,
-              prefer_future => qr!^(?:0|1)$!);
+    validation_options(
+        on_fail => sub
+    {
+        my ($error) = @_;
+        chomp $error;
+        croak $error;
+    },
+        stack_skip => 2,
+    );
 
-    my %msg = (format        => 'format string has no valid format',
-               lang          => 'language is not supported',
-               prefer_future => 'must be a boolean');
-
-    my $error;
-    foreach my $lookup (keys %re) {
-        my $param = ucfirst $lookup;
-        unless ($self->{$param} =~ $re{$lookup}) {
-            $error = "parameter '$lookup': $msg{$lookup}";
-            last;
-        }
-    }
-    Carp::croak "new(): `$error'" if defined $error;
-
-    # time zone can't easily be checked by a regex
-    eval {
-        DateTime::TimeZone->new(name => $self->{Time_zone});
-    };
-    if ($@) {
-        chomp(my $tz_error = $@);
-        Carp::croak "new(): `$tz_error'";
-    }
+    validate(@_, {
+        lang => {
+            type => SCALAR,
+            optional => 1,
+            regex => qr!^(?:en)$!,
+        },
+        format => {
+            type => SCALAR,
+            optional => 1,
+            regex => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
+        },
+        prefer_future => {
+            type => SCALAR,
+            optional => 1,
+            regex => qr!^[01]$!,
+        },
+        time_zone => {
+            type => SCALAR,
+            optional => 1,
+            callbacks => {
+                'valid timezone' => sub
+                {
+                    eval { DateTime::TimeZone->new(name => shift) };
+                    !$@;
+                }
+            }
+        },
+        daytime => {
+            type => HASHREF,
+            optional => 1,
+        },
+    });
 }
 
 sub _init_vars
@@ -176,11 +193,13 @@ sub _parse_init
     my $self = shift;
 
     if (@_ > 1) {
+        validate(@_, { string => 1 });
         my %opts             = @_;
         $self->{Date_string} = $opts{string};
         (undef)              = $opts{debug}; # legacy
     }
     else {
+        validate_pos(@_, 1);
         ($self->{Date_string}) = @_;
     }
 

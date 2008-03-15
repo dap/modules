@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.69 Sat Mar 15 13:44:03 CET 2008
+
+ - Validation of arguments is now handled by Params::Validate.
+
 0.68_01 Thu Mar 13 22:13:26 CET 2008
 
  - Undo for trailing newlines to be printed when initially

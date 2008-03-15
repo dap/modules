@@ -14,6 +14,7 @@ WriteMakefile
                            'DateTime' => 0,
                            'Date::Calc' => 0,
                            'Term::ReadLine' => 0,
+                           'Params::Validate' => 0,
                            'Test::MockTime' => 0,
                            'List::MoreUtils' => 0
                          }

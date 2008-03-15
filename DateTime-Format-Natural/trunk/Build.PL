@@ -14,6 +14,7 @@ my $build = Module::Build->new
                  'Date::Calc' => 0,
                  'DateTime' => 0,
                  'List::MoreUtils' => 0,
+                 'Params::Validate' => 0,
                  'Term::ReadLine' => 0,
                },
    build_requires => {
