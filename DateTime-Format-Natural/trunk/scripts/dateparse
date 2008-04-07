@@ -9,9 +9,8 @@ use Term::ReadLine;
 
 use constant LANG_DEFAULT => 'en';
 
-my $format;
+my %args;
 my $lang;
-my $prefer_future;
 my @supported_languages = qw(en);
 my $trace;
 my %valid_languages = map { $_ => 1 } @supported_languages;
@@ -45,10 +44,20 @@ sub set_values
 {
     my $opts = shift;
 
-    $lang          = $opts->{l} || LANG_DEFAULT;
-    $format        = $opts->{f} || '';
-    $prefer_future = $opts->{p} || 0;
-    $trace         = $opts->{t} || 0;
+    $lang  = $opts->{l} || LANG_DEFAULT;
+    $trace = $opts->{t} || 0;
+
+    my %table = (
+        l => 'lang',
+        f => 'format',
+        p => 'prefer_future',
+    );
+
+    foreach my $opt (keys %$opts) {
+        if (exists $table{$opt}) {
+            $args{$table{$opt}} = $opts->{$opt};
+        }
+    }
 }
 
 sub usage
@@ -82,7 +91,7 @@ sub process
 {
     unless ($valid_languages{$lang}) {
         warn "Language [$lang] isn't supported, switching to default [", LANG_DEFAULT, "]\n";
-        $lang = LANG_DEFAULT;
+        $lang = $args{lang} = LANG_DEFAULT;
     }
 
     my $term = Term::ReadLine->new('dateparse');
@@ -104,11 +113,7 @@ EOT
             next;
         }
 
-        my $parse = DateTime::Format::Natural->new(
-                    lang          => $lang,
-                    format        => $format,
-                    prefer_future => $prefer_future,
-        );
+        my $parse = DateTime::Format::Natural->new(%args);
         my @dt = $parse->parse_datetime_duration(string => $input);
 
         if ($parse->success) {

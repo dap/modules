@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.70 Mon Apr  7 20:29:39 CEST 2008
+
+ - Fixed 'dateparse' failures which were introduced along with
+   Params::Validate.
+
+ - Added missing trace calls to _day_today(), _day_yesterday()
+   and _day_tomorrow().
+
 0.69 Sat Mar 15 13:44:03 CET 2008
 
  - Validation of arguments is now handled by Params::Validate.

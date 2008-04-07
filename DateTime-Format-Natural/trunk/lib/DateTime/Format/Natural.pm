@@ -10,7 +10,7 @@ use Date::Calc qw(Day_of_Week);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.69';
+our $VERSION = '0.70';
 
 sub new
 {

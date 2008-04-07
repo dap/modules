@@ -9,7 +9,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.10';
+our $VERSION = '1.11';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -325,12 +325,14 @@ sub _day
 sub _day_today
 {
     my $self = shift;
+    $self->_add_trace;
     $self->_set_modified(1);
 }
 
 sub _day_yesterday
 {
     my $self = shift;
+    $self->_add_trace;
     $self->_subtract(day => 1);
     $self->_set_modified(1);
 }
@@ -338,6 +340,7 @@ sub _day_yesterday
 sub _day_tomorrow
 {
     my $self = shift;
+    $self->_add_trace;
     $self->_add(day => 1);
     $self->_set_modified(1);
 }
