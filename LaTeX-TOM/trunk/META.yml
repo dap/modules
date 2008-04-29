@@ -1,6 +1,6 @@
 ---
 name: LaTeX-TOM
-version: 0.8_02
+version: 0.9
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: 'A module for parsing, analyzing, and manipulating LaTeX documents.'
@@ -12,7 +12,7 @@ build_requires:
 provides:
   LaTeX::TOM:
     file: lib/LaTeX/TOM.pm
-    version: 0.8_02
+    version: 0.9
   LaTeX::TOM::Node:
     file: lib/LaTeX/TOM/Node.pm
   LaTeX::TOM::Parser:

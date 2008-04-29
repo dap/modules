@@ -21,8 +21,10 @@ is_deeply($tree_string, $tree_file, 'Tree read from string equals tree read from
 
 __DATA__
 \NeedsTeXFormat{LaTeX2e}
-\documentclass[11pt]{article}
+\documentclass[11pt]{book}
 \title{Some Test Doc}
 \begin{document}
     \maketitle
+    \chapter*{Preface}
+    \mainmatter
 \end{document}

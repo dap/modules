@@ -202,6 +202,10 @@ METHODS
         something about the currently scrutinized node of the tree. See the
         SYNOPSIS for examples.
 
+   getFirstNode
+        Returns the first node of the tree. This is useful if you want to
+        walk the tree yourself, starting with the first node.
+
   LaTeX::TOM::Node
     This section contains the methods for nodes of the parsed Trees.
 
@@ -323,6 +327,7 @@ CREDITS
 
      Otakar Smrz
      Moritz Lenz
+     James Bowlin
 
 AUTHORS
     Written by Aaron Krowne <akrowne@vt.edu>

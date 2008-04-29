@@ -6,7 +6,7 @@ use warnings;
 use File::Spec;
 use FindBin qw($Bin);
 use LaTeX::TOM;
-use Test::More tests => 44;
+use Test::More tests => 50;
 
 $^W = 0;
 
@@ -14,31 +14,34 @@ my $parser = LaTeX::TOM->new;
 my $tree = $parser->parseFile(File::Spec->catfile($Bin, 'data', 'tex.in'));
 
 my @expected_all = (
-    [ 'TEXT', ''                    ],
-    [ 'COMMAND', 'NeedsTeXFormat'   ],
-    [ 'TEXT', 'LaTeX2e'             ],
-    [ 'TEXT', "\n"                  ],
-    [ 'COMMAND', 'documentclass'    ],
-    [ 'TEXT', 'article'             ],
-    [ 'TEXT', "\n"                  ],
-    [ 'COMMAND', 'title'            ],
-    [ 'TEXT', 'Some Test Doc'       ],
-    [ 'TEXT', "\n"                  ],
-    [ 'ENVIRONMENT', 'document'     ],
-    [ 'TEXT', "\n    \\maketitle\n" ],
-    [ 'TEXT', "\n"                  ],
+    [ 'TEXT', ''                        ],
+    [ 'COMMAND', 'NeedsTeXFormat'       ],
+    [ 'TEXT', 'LaTeX2e'                 ],
+    [ 'TEXT', "\n"                      ],
+    [ 'COMMAND', 'documentclass'        ],
+    [ 'TEXT', 'book'                    ],
+    [ 'TEXT', "\n"                      ],
+    [ 'COMMAND', 'title'                ],
+    [ 'TEXT', 'Some Test Doc'           ],
+    [ 'TEXT', "\n"                      ],
+    [ 'ENVIRONMENT', 'document'         ],
+    [ 'TEXT', "\n    \\maketitle\n    " ],
+    [ 'COMMAND', 'chapter*'             ],
+    [ 'TEXT', "Preface"                 ],
+    [ 'TEXT', "\n    \\mainmatter\n"    ],
+    [ 'TEXT', "\n"                      ],
 );
 
 my @expected_top = (
-    [ 'TEXT', ''                    ],
-    [ 'COMMAND', 'NeedsTeXFormat'   ],
-    [ 'TEXT', "\n"                  ],
-    [ 'COMMAND', 'documentclass'    ],
-    [ 'TEXT', "\n"                  ],
-    [ 'COMMAND', 'title'            ],
-    [ 'TEXT', "\n"                  ],
-    [ 'ENVIRONMENT', 'document'     ],
-    [ 'TEXT', "\n"                  ],
+    [ 'TEXT', ''                        ],
+    [ 'COMMAND', 'NeedsTeXFormat'       ],
+    [ 'TEXT', "\n"                      ],
+    [ 'COMMAND', 'documentclass'        ],
+    [ 'TEXT', "\n"                      ],
+    [ 'COMMAND', 'title'                ],
+    [ 'TEXT', "\n"                      ],
+    [ 'ENVIRONMENT', 'document'         ],
+    [ 'TEXT', "\n"                      ],
 );
 
 verify_nodes(@{$tree->getAllNodes}, \@expected_all);

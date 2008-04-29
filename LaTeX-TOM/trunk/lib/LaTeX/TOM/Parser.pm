@@ -357,7 +357,7 @@ sub _stage3 {
             # due to the previous parsing stages. if found, the parent node is
             # promoted to a command.
             #
-            if ($text =~ /^\s*\\(\w+)/ && defined $parent && defined $parser->{config}{INNERCMDS}->{$1}) {
+            if ($text =~ /^\s*\\(\w+\*?)/ && defined $parent && defined $parser->{config}{INNERCMDS}->{$1}) {
                 my $command = $1;
 
                 # if the parent is already a command node, we have to make a new
@@ -397,14 +397,14 @@ sub _stage3 {
                     $parser->{USED_COMMANDS}->{$parent->{command}} = 1;
                 }
 
-                $node->{content} =~ s/^\s*\\(?:\w+)//o;
+                $node->{content} =~ s/^\s*\\(?:\w+\*?)//o;
             }
 
             # outer command (such as \command{parameters}). our regexp checks to
             # see if this text chunk ends in \command, since that would be the case
             # due to the previous parsing stages.
             #
-            if ($text =~ /(?:^|[^\\])(\\\w+(\s*\[.*?\])?)\s*$/os && 
+            if ($text =~ /(?:^|[^\\])(\\\w+\*?(\s*\[.*?\])?)\s*$/os && 
                     defined $tree->{nodes}[$i+1] &&
                     $tree->{nodes}[$i+1]->{type} eq 'GROUP') {
 
@@ -413,10 +413,10 @@ sub _stage3 {
                 #print "found text node [$text] with command tag [$tag]\n";
 
                 # remove the text
-                $node->{content} =~ s/\\\w+\s*(?:\[.*?\])?\s*$//os;
+                $node->{content} =~ s/\\\w+\*?\s*(?:\[.*?\])?\s*$//os;
 
                 # parse it for command and ops
-                $tag =~ /^\\(\w+)\s*(?:\[(.*?)\])?$/os;
+                $tag =~ /^\\(\w+\*?)\s*(?:\[(.*?)\])?$/os;
 
                 my $command = $1;
                 my $opts = $2;
@@ -434,7 +434,7 @@ sub _stage3 {
 
             # recognize braceless commands
             #
-            if ($text =~ /(\\(\w+)[ \t]+(\S+))/gso || $text =~ /(\\(\w+)(\d+))/gso) {
+            if ($text =~ /(\\(\w+\*?)[ \t]+(\S+))/gso || $text =~ /(\\(\w+)(\d+))/gso) {
                 my $all = $1;
                 my $command = $2;
                 my $param = $3;

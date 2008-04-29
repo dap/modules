@@ -1,5 +1,12 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.9 Tue Apr 29 12:21:00 CEST 2008
+
+ - Added support for dealing with starred commands.
+   [James Bowlin <bowlin@mindspring.com>]
+
+ - Merged development version to stable.
+
 0.8_02 Thu Feb 21 21:08:50 CET 2008
 
  - Added further test-files to suite (i.e., ones that test the

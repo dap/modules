@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.8_02
+# Version 0.9
 #
 # ----------------------------------------------------------------------------
 #
@@ -14,7 +14,7 @@
 # Digital Libraries Research Laboratory
 #
 # now maintained by Steven Schubiger (schubiger@cpan.org)
-# February 2008
+# April 2008
 #
 # ----------------------------------------------------------------------------
 #
@@ -35,7 +35,7 @@ use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
 
 use base qw(LaTeX::TOM::Parser);
 
-our $VERSION = '0.8_02';
+our $VERSION = '0.9';
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -511,6 +511,17 @@ node of the tree.  See the SYNOPSIS for examples.
 
 =back
 
+=head3 getFirstNode
+
+=over 4
+
+=item C<>
+
+Returns the first node of the tree.  This is useful if you want to walk the tree
+yourself, starting with the first node.
+
+=back
+
 =head2 LaTeX::TOM::Node
 
 This section contains the methods for nodes of the parsed Trees.
@@ -752,6 +763,7 @@ Thanks to (in order of appearance) who have contributed valuable suggestions & p
 
  Otakar Smrz
  Moritz Lenz
+ James Bowlin
 
 =head1 AUTHORS
 

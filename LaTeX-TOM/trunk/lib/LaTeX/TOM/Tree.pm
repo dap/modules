@@ -140,7 +140,7 @@ sub indexableText {
     my $text = join (' ', @$pt);
 
     # kill leftover commands
-    $text =~ s/\\\w+//gso;
+    $text =~ s/\\\w+\*?//gso;
 
     # kill nonpunctuation
     $text =~ s/[^\w\-0-9\s]//gso;
@@ -310,6 +310,11 @@ sub getEnvironmentsByName {
     my $name = shift;
 
     return $tree->getNodesByCondition("\$node->{type} eq 'ENVIRONMENT' && \$node->{class} eq '$name'");
+}
+
+sub getFirstNode {
+    my $tree = shift;
+    return $tree->{nodes}[0];
 }
 
 1;
