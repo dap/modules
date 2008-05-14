@@ -1,5 +1,13 @@
 Revision history for Perl extension Math::Prime::XS.
 
+0.20 Wed May 14 15:46:42 CEST 2008
+
+ - Improved the speed of xs_sieve_primes() by using a fixed-width
+   array for the composites, instead of a hash.
+   [suggested by Moritz Lenz <http://search.cpan.org/~moritz>]
+
+ - Reformatted the source code layout of XS.xs.
+
 0.19 Sat Feb 23 16:20:29 CET 2008
 
  - Use XSRETURN_IV() instead of manually extending the stack
