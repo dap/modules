@@ -6,7 +6,7 @@ use base qw(Exporter);
 
 our ($VERSION, @EXPORT_OK, %EXPORT_TAGS, @subs);
 
-$VERSION = '0.20';
+$VERSION = '0.20_01';
 @subs = qw(primes is_prime mod_primes sieve_primes sum_primes trial_primes);
 @EXPORT_OK = @subs;
 %EXPORT_TAGS = ('all' => [ @subs ]);

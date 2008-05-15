@@ -1,5 +1,10 @@
 Revision history for Perl extension Math::Prime::XS.
 
+0.20_01 Thu May 15 17:13:07 CEST 2008
+
+ - Use memset() within xs_sieve_primes() to "clear" the
+   composite array.
+
 0.20 Wed May 14 15:46:42 CEST 2008
 
  - Improved the speed of xs_sieve_primes() by using a fixed-width

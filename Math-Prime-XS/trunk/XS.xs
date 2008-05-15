@@ -59,6 +59,7 @@ xs_sieve_primes (number, ...)
         base = SvIV (ST(1));
       if (base >= number)
         croak ("Base is greater or equal number");
+      memset (&composite, 0, number);
       for (n = 2; n <= number;)
         {
           if (n >= base)
