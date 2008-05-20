@@ -1,5 +1,11 @@
 Revision history for Perl extension Text::Wrap::Smart::XS.
 
+0.04_01 Tue May 20 15:10:28 CEST 2008
+
+ - Avoid a memory leak when no more text is being processed.
+
+ - Reformatted the source code layout of XS.xs.
+
 0.04 Sun Feb 17 20:36:03 CET 2008
 
  - Fixed the cpantester failures introduced by the greedy
