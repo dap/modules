@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.71 Thu Jun 12 11:17:22 CEST 2008
+
+ - When processing "date abbreviations" call Date::Calc's check_date()
+   instead of calling _valid_date() thrice, which could cause bogus
+   error messages. [Pat Kale <kale1@llnl.gov>]
+
 0.70 Mon Apr  7 20:29:39 CEST 2008
 
  - Fixed 'dateparse' failures which were introduced along with

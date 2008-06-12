@@ -6,11 +6,11 @@ use base qw(DateTime::Format::Natural::Base);
 
 use Carp qw(croak);
 use DateTime ();
-use Date::Calc qw(Day_of_Week);
+use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.70';
+our $VERSION = '0.71';
 
 sub new
 {
@@ -150,6 +150,7 @@ sub parse_datetime
         my ($day, $month, $year) = map { $bits[$separated_indices->{$_}] } qw(d m y);
 
         if (not defined $day && defined $month && defined $year) {
+            $self->_set_failure;
             $self->_set_error("('format' parameter invalid)");
             return $self->_get_datetime_object;
         }
@@ -157,9 +158,8 @@ sub parse_datetime
         if ($year > $century) { $century-- };
         if (length $year == 2) { $year = "$century$year" };
 
-        if (not $self->SUPER::_valid_date(day => $day)
-             && $self->SUPER::_valid_date(month => $month)
-             && $self->SUPER::_valid_date(year => $year)) {
+        unless (check_date($year, $month, $day)) {
+            $self->_set_failure;
             $self->_set_error("(invalid date)");
             return $self->_get_datetime_object;
         }
@@ -596,6 +596,7 @@ valuable suggestions & patches:
  Jonny Schulz
  Jesse Vincent
  Jason May
+ Pat Kale
 
 =head1 SEE ALSO
 
