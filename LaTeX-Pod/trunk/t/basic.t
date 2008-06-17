@@ -15,6 +15,7 @@ $parser->convert;
 
 my $got = $parser->_pod_get;
 my @expected = split /\n/, do { local $/; <DATA> };
+$expected[-1] .= "\n";
 
 is_deeply(\@$got, \@expected);
 

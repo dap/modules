@@ -1,5 +1,10 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.18 Tue Jun 17 17:06:50 CEST 2008
+
+ - Append a trailing newline to the =cut directive within
+   the output generated.
+
 0.17 Thu Feb 21 15:59:48 CET 2008
 
  - Made the "matching" for the node type more explicit.

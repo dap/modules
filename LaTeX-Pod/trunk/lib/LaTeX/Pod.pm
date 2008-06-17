@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 sub new
 {
@@ -359,7 +359,7 @@ sub _pod_finalize
 {
     my $self = shift;
 
-    $self->_pod_add('=cut');
+    $self->_pod_add("=cut\n");
 
     return join "\n\n", @{$self->_pod_get};
 }
