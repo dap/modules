@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.71_01 Wed Jul 30 22:15:49 CEST 2008
+
+ - Added time_zone parameter support to 'dateparse' and a shortcut
+   to leave it quickly.
+
 0.71 Thu Jun 12 11:17:22 CEST 2008
 
  - When processing "date abbreviations" call Date::Calc's check_date()

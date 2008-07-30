@@ -30,7 +30,8 @@ sub parse_switches
                           l|lang=s
                           p|prefer_future
                           s|supported
-                          t|trace
+                          t|time_zone=s
+                          T|trace
                           V|version)) or usage();
 
     usage()     if $opts{h};
@@ -45,12 +46,13 @@ sub set_values
     my $opts = shift;
 
     $lang  = $opts->{l} || LANG_DEFAULT;
-    $trace = $opts->{t} || 0;
+    $trace = $opts->{T} || 0;
 
     my %table = (
         l => 'lang',
         f => 'format',
         p => 'prefer_future',
+        t => 'time_zone',
     );
 
     foreach my $opt (keys %$opts) {
@@ -69,7 +71,8 @@ Usage: $0 [switches]
   -l, --lang             language code
   -p, --prefer_future    use futuristic dates (when possible)
   -s, --supported        list of supported languages
-  -t, --trace            print trace after processing
+  -t, --time_zone        time zone string
+  -T, --trace            print trace after processing
   -V, --version          print version
 USAGE
     exit;
@@ -99,14 +102,14 @@ sub process
 
     while (defined(my $input = $term->readline($prompt))) {
         $term->addhistory($input) if $input =~ /\S/;
-        last if $input =~ /^(?:quit|exit)$/;
+        last if $input =~ /^(?:q(?:uit)?|exit)$/;
 
         if ($input =~ /^(?:\?|help)$/i) {
             print <<EOT;
 
 Commands
  ?, help                this help screen
- exit, quit             leave dateparse
+ exit, q, quit          leave dateparse
  everything else        datetime string
 
 EOT
@@ -143,7 +146,8 @@ dateparse - frontend to DateTime::Format::Natural
    -l, --lang             language code
    -p, --prefer_future    use futuristic dates (when possible)
    -s, --supported        list of supported languages
-   -t, --trace            print trace after processing
+   -t, --time_zone        time zone string
+   -T, --trace            print trace after processing
    -V, --version          print version
 
 =head1 AUTHOR
