@@ -3,13 +3,12 @@ package DateTime::Format::Natural::Base;
 use strict;
 use warnings;
 
-use DateTime ();
 use Date::Calc qw(Add_Delta_Days
                   Decode_Day_of_Week
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.11';
+our $VERSION = '1.12';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -350,11 +349,7 @@ sub _month
     my $self = shift;
     $self->_add_trace;
     my ($month) = @_;
-    $month = ucfirst lc $month;
-    if (length $month == 3) {
-        $month = $self->{data}->{months_abbrev}->{$month};
-    }
-    $self->_set(month => $self->{data}->{months}->{$month});
+    $self->_set(month => $self->_month_num($month));
     $self->_set_modified(1);
 }
 
@@ -363,11 +358,7 @@ sub _month_day_after
     my $self = shift;
     $self->_add_trace;
     my ($month, $day) = @_;
-    $month = ucfirst lc $month;
-    if (length $month == 3) {
-        $month = $self->{data}->{months_abbrev}->{$month};
-    }
-    $self->_set(month => $self->{data}->{months}->{$month});
+    $self->_set(month => $self->_month_num($month));
     if ($self->_valid_date(day => $day)) {
         $self->_set(day => $day);
     }
@@ -379,11 +370,7 @@ sub _month_day_before
     my $self = shift;
     $self->_add_trace;
     my ($day, $month) = @_;
-    $month = ucfirst lc $month;
-    if (length $month == 3) {
-        $month = $self->{data}->{months_abbrev}->{$month};
-    }
-    $self->_set(month => $self->{data}->{months}->{$month});
+    $self->_set(month => $self->_month_num($month));
     if ($self->_valid_date(day => $day)) {
         $self->_set(day => $day);
     }
@@ -406,10 +393,7 @@ sub _weekday
     my $self = shift;
     $self->_add_trace;
     my ($day) = @_;
-    $day = ucfirst lc $day;
-    if (length $day == 3) {
-        $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }
+    $self->_day_name(\$day);
     my $days_diff;
     # Set current weekday by adding the day difference
     if ($self->{data}->{weekdays}->{$day} > $self->{datetime}->wday) {
@@ -429,10 +413,7 @@ sub _last_day
     my $self = shift;
     $self->_add_trace;
     my ($day) = @_;
-    $day = ucfirst lc $day;
-    if (length $day == 3) {
-        $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }
+    $self->_day_name(\$day);
     my $days_diff = $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$day});
     $self->_subtract(day => $days_diff);
     $self->_set_modified(2);
@@ -482,12 +463,8 @@ sub _last_month
     my $self = shift;
     $self->_add_trace;
     my ($month) = @_;
-    $month = ucfirst lc $month;
-    if (length $month == 3) {
-        $month = $self->{data}->{months_abbrev}->{$month};
-    }
     $self->_subtract(year => 1);
-    $self->_set(month => $self->{data}->{months}->{$month});
+    $self->_set(month => $self->_month_num($month));
     $self->_set_modified(4);
 }
 
@@ -522,10 +499,7 @@ sub _next_weekday
     my $self = shift;
     $self->_add_trace;
     my ($day) = @_;
-    $day = ucfirst lc $day;
-    if (length $day == 3) {
-        $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }
+    $self->_day_name(\$day);
     my $days_diff = (7 - $self->{datetime}->wday + Decode_Day_of_Week($day));
     $self->_add(day => $days_diff);
     $self->_set_modified(2);
@@ -536,10 +510,7 @@ sub _weekday_next_week
     my $self = shift;
     $self->_add_trace;
     my ($day) = @_;
-    $day = ucfirst lc $day;
-    if (length $day == 3) {
-        $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }
+    $self->_day_name(\$day);
     my $days_diff = (7 - $self->{datetime}->wday + Decode_Day_of_Week($day));
     $self->_add(day => $days_diff);
     $self->_set_modified(3);
@@ -550,12 +521,8 @@ sub _next_month
     my $self = shift;
     $self->_add_trace;
     my ($month) = @_;
-    $month = ucfirst lc $month;
-    if (length $month == 3) {
-        $month = $self->{data}->{months_abbrev}->{$month};
-    }
     $self->_add(year => 1);
-    $self->_set(month => $self->{data}->{months}->{$month});
+    $self->_set(month => $self->_month_num($month));
     $self->_set_modified(2);
 }
 
@@ -634,10 +601,7 @@ sub _this_weekday
     my $self = shift;
     $self->_add_trace;
     my ($day) = @_;
-    $day = ucfirst lc $day;
-    if (length $day == 3) {
-        $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }
+    $self->_day_name(\$day);
     my $days_diff = $self->{data}->{weekdays}->{$day} - $self->{datetime}->wday;
     $self->_add(day => $days_diff);
     $self->_set_modified(2);
@@ -666,14 +630,8 @@ sub _count_weekday_this_month
     my $self = shift;
     my ($count, $day, $month) = @_;
     $self->_add_trace;
-    $day = ucfirst lc $day;
-    if (length $day == 3) {
-        $day = $self->{data}->{weekdays_abbrev}->{$day};
-    }
-    $month = ucfirst lc $month;
-    if (length $month == 3) {
-        $month = $self->{data}->{months_abbrev}->{$month};
-    }
+    $self->_day_name(\$day);
+    $self->_month_name(\$month);
     my $year;
     ($year, $month, $day) =
       Nth_Weekday_of_Month_Year($self->{datetime}->year,
@@ -835,6 +793,37 @@ sub _count_weekday
         $self->{datetime}->set_year($year);
     }
     $self->_set_modified(2);
+}
+
+sub _day_name
+{
+    my $self = shift;
+    my ($day) = @_;
+    $$day = ucfirst lc $$day;
+    if (length $$day == 3) {
+        $$day = $self->{data}->{weekdays_abbrev}->{$$day};
+    }
+}
+
+sub _month_name
+{
+    my $self = shift;
+    my ($month) = @_;
+    $$month = ucfirst lc $$month;
+    if (length $$month == 3) {
+        $$month = $self->{data}->{months_abbrev}->{$$month};
+    }
+}
+
+sub _month_num
+{
+    my $self = shift;
+    my ($month) = @_;
+    $month = ucfirst lc $month;
+    if (length $month == 3) {
+        $month = $self->{data}->{months_abbrev}->{$month};
+    }
+    return $self->{data}->{months}->{$month};
 }
 
 sub _add

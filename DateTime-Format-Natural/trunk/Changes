@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.71_02 Fri Aug  1 13:54:02 CEST 2008
+
+ - Moved some duplicated code fragments within the main base class
+   to separate methods.
+
 0.71_01 Wed Jul 30 22:15:49 CEST 2008
 
  - Added time_zone parameter support to 'dateparse' and a shortcut
