@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.71_03 Sun Aug  3 11:06:09 CEST 2008
+
+ - Declared some more expected types when validating arguments
+   with Params::Validate.
+
 0.71_02 Fri Aug  1 13:54:02 CEST 2008
 
  - Moved some duplicated code fragments within the main base class

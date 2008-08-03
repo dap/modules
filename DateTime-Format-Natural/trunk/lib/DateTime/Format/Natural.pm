@@ -10,7 +10,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.71_02';
+our $VERSION = '0.71_03';
 
 sub new
 {
@@ -193,13 +193,13 @@ sub _parse_init
     my $self = shift;
 
     if (@_ > 1) {
-        validate(@_, { string => 1 });
+        validate(@_, { string => { type => SCALAR }});
         my %opts             = @_;
         $self->{Date_string} = $opts{string};
         (undef)              = $opts{debug}; # legacy
     }
     else {
-        validate_pos(@_, 1);
+        validate_pos(@_, { type => SCALAR });
         ($self->{Date_string}) = @_;
     }
 
