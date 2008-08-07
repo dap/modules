@@ -10,7 +10,17 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.71_03';
+our $VERSION = '0.71_04';
+
+validation_options(
+    on_fail => sub
+{
+    my ($error) = @_;
+    chomp $error;
+    croak $error;
+},
+    stack_skip => 2,
+);
 
 sub new
 {
@@ -44,16 +54,6 @@ sub _init
 sub _init_check
 {
     my $self = shift;
-
-    validation_options(
-        on_fail => sub
-    {
-        my ($error) = @_;
-        chomp $error;
-        croak $error;
-    },
-        stack_skip => 2,
-    );
 
     validate(@_, {
         lang => {

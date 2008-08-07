@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.71_04 Thu Aug  7 11:28:36 CEST 2008
+
+ - Call validation_options() when DateTime::Format::Natural
+   gets loaded (instead of relying on it to be called from
+   within a method).
+
 0.71_03 Sun Aug  3 11:06:09 CEST 2008
 
  - Declared some more expected types when validating arguments
