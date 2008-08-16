@@ -8,7 +8,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.12';
+our $VERSION = '1.13';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -903,7 +903,7 @@ DateTime::Format::Natural::Base - Base class for DateTime::Format::Natural
 
 =head1 DESCRIPTION
 
-The C<DateTime::Format::Natural::Base> module defines the core functionality of
+The C<DateTime::Format::Natural::Base> class defines the core functionality of
 C<DateTime::Format::Natural>.
 
 =head1 SEE ALSO

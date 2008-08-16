@@ -5,7 +5,7 @@ use warnings;
 
 our ($VERSION, $AUTOLOAD);
 
-$VERSION = '0.8';
+$VERSION = '0.9';
 
 sub __new
 {
@@ -57,8 +57,8 @@ DateTime::Format::Natural::Lang::Base - Base class for DateTime::Format::Natural
 
 =head1 DESCRIPTION
 
-The C<DateTime::Format::Natural::Lang::Base> module defines the core functionality for
-C<DateTime::Format::Natural::Lang::> classes.
+The C<DateTime::Format::Natural::Lang::Base> class defines the core functionality for
+C<DateTime::Format::Natural::Lang::> grammar classes.
 
 =head1 SEE ALSO
 

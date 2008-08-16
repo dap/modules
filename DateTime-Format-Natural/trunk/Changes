@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.72 Sat Aug 16 13:39:27 CEST 2008
+
+ - When referring within classes to themselves, use the proper
+   term "class" instead of "module".
+
+ - Merged development version to stable.
+
 0.71_04 Thu Aug  7 11:28:36 CEST 2008
 
  - Call validation_options() when DateTime::Format::Natural
