@@ -1,5 +1,18 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.72_01 Sun Aug 31 12:33:53 CEST 2008
+
+ - Adjusted the dispatch entries for exact non-formatted dates
+   and introduced an according method to avoid false errors.
+   [rt #38857 - Ankur Gupta <ankur655@gmail.com>]
+
+ - Call DateTime's set method for exact formatted dates once
+   instead of setting each unit separately.
+
+ - Changed the parser to handle internal value positions (i.e.,
+   data related to tokens) with more respect when encountering
+   lists with a sequence that differs from a truly ascending one.
+
 0.72 Sat Aug 16 13:39:27 CEST 2008
 
  - When referring within classes to themselves, use the proper

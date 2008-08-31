@@ -10,7 +10,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.72';
+our $VERSION = '0.72_01';
 
 validation_options(
     on_fail => sub
@@ -164,9 +164,11 @@ sub parse_datetime
             return $self->_get_datetime_object;
         }
 
-        $self->{datetime}->set_year($year);
-        $self->{datetime}->set_month($month);
-        $self->{datetime}->set_day($day);
+        $self->{datetime}->set(
+            year  => $year,
+            month => $month,
+            day   => $day,
+        );
 
         $self->_set_valid_exp;
         $self->_set_modified(1);
@@ -313,9 +315,9 @@ sub _process
                 $self->_set_valid_exp;
                 my $i;
                 foreach my $positions (@{$expression->[1]}) {
-                    my @values;
+                    my ($c, @values);
                     foreach my $pos (@$positions) {
-                        $values[$pos] = exists $regex_stack{$pos}
+                        $values[$c++] = exists $regex_stack{$pos}
                           ? $regex_stack{$pos}
                           : ${$self->_token($pos)};
                     }
@@ -597,6 +599,7 @@ valuable suggestions & patches:
  Jesse Vincent
  Jason May
  Pat Kale
+ Ankur Gupta
 
 =head1 SEE ALSO
 

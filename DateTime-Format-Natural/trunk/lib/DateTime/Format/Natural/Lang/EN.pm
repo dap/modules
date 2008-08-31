@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '1.11';
+our $VERSION = '1.12';
 
 our (%init,
      %timespan,
@@ -890,13 +890,13 @@ our (%init,
        [ 'REGEXP', 'REGEXP', 'REGEXP' ],
        [
          { 0 => $RE{monthday}, 1 => $RE{month}, 2 => $RE{year} },
-         [ [ 0 ], [ 1 ], [ 2 ] ],
-         [ '_day', '_month', '_year' ],
+         [ [ 0, 1, 2 ] ],
+         [ '_day_month_year' ],
        ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{year} },
-         [ [ 0 ], [ 1 ], [ 2 ] ],
-         [ '_month', '_day', '_year' ],
+         [ [ 1, 0, 2 ] ],
+         [ '_day_month_year' ],
        ],
     ],
     count_weekday_in_month => [

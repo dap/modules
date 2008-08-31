@@ -8,7 +8,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.13';
+our $VERSION = '1.14';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -793,6 +793,20 @@ sub _count_weekday
         $self->{datetime}->set_year($year);
     }
     $self->_set_modified(2);
+}
+
+sub _day_month_year
+{
+    my $self = shift;
+    $self->_add_trace;
+    my ($day, $month, $year) = @_;
+    $self->_month_name(\$month);
+    $self->{datetime}->set(
+        year => $year,
+        month => $self->_month_num($month),
+        day => $day,
+    );
+    $self->_set_modified(3);
 }
 
 sub _day_name
