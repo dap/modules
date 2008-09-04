@@ -11,6 +11,7 @@ my $build = Module::Build->new
    dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/DateTime/Format/Natural.pm',
    requires => {
+                 'boolean' => 0,
                  'Date::Calc' => 0,
                  'DateTime' => 0,
                  'List::MoreUtils' => 0,

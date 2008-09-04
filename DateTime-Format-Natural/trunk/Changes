@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.72_02 Thu Sep  4 11:06:36 CEST 2008
+
+ - Use the "boolean" pragma for true/false values.
+
 0.72_01 Sun Aug 31 12:33:53 CEST 2008
 
  - Adjusted the dispatch entries for exact non-formatted dates

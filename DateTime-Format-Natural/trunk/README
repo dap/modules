@@ -52,7 +52,7 @@ CONSTRUCTOR
 
     * "prefer_future"
         Turns ambigious weekdays/months to their futuristic relatives.
-        Accepts a boolean, defaults to 0.
+        Accepts a boolean, defaults to false.
 
     * "time_zone"
         The time zone to use when parsing and for output. Accepts any time

@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use boolean qw(true);
 
 use Test::MockTime qw(set_fixed_time);
 use DateTime::Format::Natural;
@@ -33,7 +34,7 @@ sub compare_strings
 {
     my ($string, $result) = @_;
 
-    my $parse = DateTime::Format::Natural->new(lang => 'en', prefer_future => 1);
+    my $parse = DateTime::Format::Natural->new(lang => 'en', prefer_future => true);
     my $dt = $parse->parse_datetime(string => $string);
 
     my $res_string = sprintf("%02d.%02d.%4d %02d:%02d:%02d", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);

@@ -2,13 +2,14 @@ package DateTime::Format::Natural::Base;
 
 use strict;
 use warnings;
+use boolean qw(true false);
 
 use Date::Calc qw(Add_Delta_Days
                   Decode_Day_of_Week
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.14';
+our $VERSION = '1.15';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -878,12 +879,12 @@ sub _valid_date
     $set{$type} = $value;
 
     if (check_date($set{year}, $set{month}, $set{day})) {
-        return 1;
+        return true;
     }
     else {
         $self->_set_failure;
         $self->_set_error("('$value' is not a valid $type)");
-        return 0;
+        return false;
     }
 }
 
@@ -895,12 +896,12 @@ sub _valid_time
     $set{$type} = $value;
 
     if (check_time($set{hour}, $set{min}, $set{sec})) {
-        return 1;
+        return true;
     }
     else {
         $self->_set_failure;
         $self->_set_error("('$value' is not a valid $type)");
-        return 0;
+        return false;
     }
 }
 

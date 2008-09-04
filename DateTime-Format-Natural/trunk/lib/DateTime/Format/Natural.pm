@@ -3,6 +3,7 @@ package DateTime::Format::Natural;
 use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Base);
+use boolean qw(true false);
 
 use Carp qw(croak);
 use DateTime ();
@@ -10,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.72_01';
+our $VERSION = '0.72_02';
 
 validation_options(
     on_fail => sub
@@ -40,7 +41,7 @@ sub _init
 
     $self->{Format}        = $opts{format}        || 'd/m/y';
     $self->{Lang}          = $opts{lang}          || 'en';
-    $self->{Prefer_future} = $opts{prefer_future} || 0;
+    $self->{Prefer_future} = $opts{prefer_future} || false;
     $self->{Time_zone}     = $opts{time_zone}     || 'floating';
     $self->{Opts}{daytime} = $opts{daytime};
 
@@ -58,22 +59,21 @@ sub _init_check
     validate(@_, {
         lang => {
             type => SCALAR,
-            optional => 1,
+            optional => true,
             regex => qr!^(?:en)$!,
         },
         format => {
             type => SCALAR,
-            optional => 1,
+            optional => true,
             regex => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
         },
         prefer_future => {
-            type => SCALAR,
-            optional => 1,
-            regex => qr!^[01]$!,
+            type => BOOLEAN,
+            optional => true,
         },
         time_zone => {
             type => SCALAR,
-            optional => 1,
+            optional => true,
             callbacks => {
                 'valid timezone' => sub
                 {
@@ -84,7 +84,7 @@ sub _init_check
         },
         daytime => {
             type => HASHREF,
-            optional => 1,
+            optional => true,
         },
     });
 }
@@ -242,7 +242,7 @@ sub success
 {
     my $self = shift;
 
-    return ($self->_get_valid_exp && !$self->_get_failure) ? 1 : 0;
+    return ($self->_get_valid_exp && !$self->_get_failure) ? true : false;
 }
 
 sub error
@@ -281,7 +281,7 @@ sub _process
         last if $self->_get_modified >= @{$self->{tokens}};
 
         foreach my $expression (@grammar) {
-            my $valid_expression = 1;
+            my $valid_expression = true;
             my $definition = $expression->[0];
             my @positions = keys %$definition;
             my %regex_stack;
@@ -292,7 +292,7 @@ sub _process
                             next;
                         }
                         else {
-                            $valid_expression = 0;
+                            $valid_expression = false;
                         }
                     }
                 }
@@ -303,7 +303,7 @@ sub _process
                         next;
                     }
                     else {
-                        $valid_expression = 0;
+                        $valid_expression = false;
                     }
                 }
                 else {
@@ -338,7 +338,7 @@ sub _post_process_options
     my $self = shift;
 
     if ($self->{Prefer_future}) {
-        my %modified = map { $_ => 1 } grep { $_ ne 'total' } keys %{$self->{modified}};
+        my %modified = map { $_ => true } grep { $_ ne 'total' } keys %{$self->{modified}};
 
         if ($self->{count}{tokens} == 1
             && (any { $self->{tokens}->[0] =~ /$_/i } @{$self->{data}->{weekdays_all}})
@@ -354,8 +354,8 @@ sub _post_process_options
             && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
             && (exists $self->{modified}{day}
                   ? $self->{modified}{day} == 1
-                    ? 1 : 0
-                  : 1)
+                    ? true : false
+                  : true)
             && ($self->{datetime}->day_of_year < DateTime->now->day_of_year)
         ) {
             $self->{postprocess}{year} = 1;
@@ -382,13 +382,13 @@ sub _get_error       { $_[0]->{error}         }
 sub _set_error       { $_[0]->{error} = $_[1] }
 sub _unset_error     { $_[0]->{error} = ''    }
 
-sub _get_failure     { $_[0]->{failure}     }
-sub _set_failure     { $_[0]->{failure} = 1 }
-sub _unset_failure   { $_[0]->{failure} = 0 }
+sub _get_failure     { $_[0]->{failure}         }
+sub _set_failure     { $_[0]->{failure} = true  }
+sub _unset_failure   { $_[0]->{failure} = false }
 
-sub _get_valid_exp   { $_[0]->{valid_expression}     }
-sub _set_valid_exp   { $_[0]->{valid_expression} = 1 }
-sub _unset_valid_exp { $_[0]->{valid_expression} = 0 }
+sub _get_valid_exp   { $_[0]->{valid_expression}         }
+sub _set_valid_exp   { $_[0]->{valid_expression} = true  }
+sub _unset_valid_exp { $_[0]->{valid_expression} = false }
 
 sub _get_modified    { $_[0]->{modified}{total} || 0     }
 sub _set_modified    { $_[0]->{modified}{total} += $_[1] }
@@ -439,7 +439,7 @@ sub _set_datetime
                                       hour      => $hour,
                                       minute    => $min,
                                       second    => $sec);
-    $self->{running_tests} = 1;
+    $self->{running_tests} = true;
 }
 
 1;
@@ -507,7 +507,7 @@ Specifies the format of numeric dates, defaults to 'C<d/m/y>'.
 =item * C<prefer_future>
 
 Turns ambigious weekdays/months to their futuristic relatives. Accepts a boolean,
-defaults to 0.
+defaults to false.
 
 =item * C<time_zone>
 

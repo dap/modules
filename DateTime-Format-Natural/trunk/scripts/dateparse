@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use boolean qw(true false);
 
 use DateTime::Format::Natural;
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case);
@@ -13,7 +14,7 @@ my %args;
 my $lang;
 my @supported_languages = qw(en);
 my $trace;
-my %valid_languages = map { $_ => 1 } @supported_languages;
+my %valid_languages = map { $_ => true } @supported_languages;
 
 {
     my $opts = {};
@@ -46,7 +47,7 @@ sub set_values
     my $opts = shift;
 
     $lang  = $opts->{l} || LANG_DEFAULT;
-    $trace = $opts->{T} || 0;
+    $trace = $opts->{T} || false;
 
     my %table = (
         l => 'lang',
