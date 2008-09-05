@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.73 Thu Sep  4 19:53:44 CEST 2008
+
+ - Fixed the 'prefer_future' parameter validation error by
+   extending its type definition.
+
+ - Merged development version to stable.
+
 0.72_02 Thu Sep  4 11:06:36 CEST 2008
 
  - Use the "boolean" pragma for true/false values.

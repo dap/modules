@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.72_02';
+our $VERSION = '0.73';
 
 validation_options(
     on_fail => sub
@@ -68,7 +68,8 @@ sub _init_check
             regex => qr!^(?:[dmy]{1,4}[-./]){2}[dmy]{1,4}$!i,
         },
         prefer_future => {
-            type => BOOLEAN,
+            # SCALARREF due to boolean.pm's implementation
+            type => BOOLEAN | SCALARREF,
             optional => true,
         },
         time_zone => {
