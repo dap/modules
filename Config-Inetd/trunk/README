@@ -16,15 +16,16 @@ SYNOPSIS
      print $inetd->{CONF}[6];
 
 DESCRIPTION
-    "Config::Inetd" is an interface to inetd's configuration file
-    inetd.conf; it simplifies checking and setting the enabled/disabled
-    state of services and dumping them by their state.
+    "Config::Inetd" provides an interface to inetd's configuration file
+    (usually named inetd.conf); it basically simplifies checking and setting
+    the enabled/disabled status of services and also allows for dumping them
+    by a given status.
 
 CONSTRUCTOR
   new
      $inetd = Config::Inetd->new('/path/to/inetd.conf');
 
-    Omitting the path to inetd.conf, will cause the default /etc/inetd.conf
+    Omitting the path to inetd.conf will cause the default /etc/inetd.conf
     to be used.
 
 METHODS
@@ -33,53 +34,58 @@ METHODS
 
      $inetd->is_enabled($service => $protocol);
 
-    Returns 1 if the service is enlisted as enabled, 0 if enlisted as
-    disabled, undef if the service does not exist.
+    Returns true if the service is enlisted as enabled, false if enlisted as
+    disabled and undef if the service does not exist.
 
   enable
     Enables a service.
 
      $inetd->enable($service => $protocol);
 
-    Returns 1 if the service has been enabled, 0 if no action has been
-    taken.
+    Returns true if the service has been enabled, false if no action has
+    been taken.
 
-    It is recommended to preceedingly run "is_enabled()" to determine
-    whether a service is disabled.
+    It is recommended to precedingly call "is_enabled()" with according
+    arguments supplied to determine whether a service is disabled.
 
   disable
     Disables a service.
 
      $inetd->disable($service => $protocol);
 
-    Returns 1 if the service has been disabled, 0 if no action has been
-    taken.
+    Returns true if the service has been disabled, false if no action has
+    been taken.
 
-    It is recommended to preceedingly run "is_enabled()" to determine
-    whether a service is enabled.
+    It is recommended to precedingly call "is_enabled()" with according
+    arguments supplied to determine whether a service is enabled.
 
   dump_enabled
     Dumps the enabled services.
 
      @dump = $inetd->dump_enabled;
 
-    Returns an array that consists of inetd configuration lines which are
-    enabled services.
+    Returns a flat list that consists of the enabled entries as seen in the
+    configuration file.
 
   dump_disabled
     Dumps the disabled services.
 
      @dump = $inetd->dump_disabled;
 
-    Returns an array that consists of inetd configuration lines which are
-    disabled services.
+    Returns a flat list that consists of the disabled entries as seen in the
+    configuration file.
 
 INSTANCE DATA
     The inetd configuration file is tied as instance data (newlines are
-    preserved); it may be accessed via "@{$inetd->{CONF}}".
+    preserved); it may be accessed directly via "@{$inetd->{CONF}}".
+
+CAVEAT
+    It is strongly advised that the configuration file is backuped first if
+    one is intending to work with the default (e.g., system-wide)
+    configuration file and not a customized one.
 
 SEE ALSO
-    Tie::File, inetd(8)
+    Tie::File, inetd.conf(5)
 
 AUTHOR
     Steven Schubiger <schubiger@cpan.org>

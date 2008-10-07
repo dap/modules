@@ -2,132 +2,148 @@ package Config::Inetd;
 
 use strict;
 use warnings;
+use boolean qw(true false);
 
 use Carp qw(croak);
-use Fcntl qw(O_RDWR LOCK_EX LOCK_UN);
+use Fcntl qw(O_RDWR LOCK_EX);
+use Params::Validate ':all';
 use Tie::File ();
 
-our ($VERSION, $INETD_CONF, $conf_tied);
+our ($VERSION, $INETD_CONF);
 
-$VERSION = '0.29';
+$VERSION = '0.30';
 $INETD_CONF = '/etc/inetd.conf';
+
+validation_options(
+    on_fail => sub
+{
+    my ($error) = @_;
+    chomp $error;
+    croak $error;
+},
+    stack_skip => 2,
+);
 
 sub new
 {
-    my ($self, $conf_file) = @_;
-    $conf_file ||= $INETD_CONF;
+    my $class = shift;
 
-    my %data;
-    _tie_conf(\@{$data{CONF}}, $conf_file);
-    %{$data{ENABLED}} = %{_parse_enabled(@{$data{CONF}})};
+    my $self = bless {}, ref($class) || $class;
 
-    my $class = ref($self) || $self;
-    return bless(\%data, $class);
+    $self->_tie_conf(@_);
+    $self->_parse_enabled;
+
+    return $self;
 }
 
 sub _tie_conf
 {
-    my ($conf, $file) = @_;
+    my ($self, $conf_file) = @_;
+    $conf_file ||= $INETD_CONF;
 
-    $conf_tied = tie(@$conf, 'Tie::File', $file, mode => O_RDWR, autochomp => 0)
-      or croak "Couldn't tie $file: $!";
+    my $conf_tied = tie(
+        @{$self->{CONF}}, 'Tie::File', $conf_file,
+        mode => O_RDWR, autochomp => false
+    ) or croak "Cannot tie $conf_file: $!";
     $conf_tied->flock(LOCK_EX)
-      or croak "Couldn't lock $file: $!";
+      or croak "Cannot lock $conf_file: $!";
 }
 
 sub _parse_enabled
 {
-    _filter_conf(\@_);
+    my $self = shift;
 
-    my %is_enabled;
-    foreach my $entry (@_) {
-        my ($serv, $prot) = _split_serv_prot($entry);
-        $is_enabled{$serv}{$prot} = $entry !~ /^\#/ ? 1 : 0;
+    $self->_filter_conf($self->{CONF});
+
+    foreach my $entry (@{$self->{CONF}}) {
+        my ($serv, $prot) = $self->_extract_serv_prot($entry);
+        $self->{ENABLED}{$serv}{$prot} = $entry !~ /^\#/
+          ? true : false;
     }
-    return \%is_enabled;
 }
 
 sub is_enabled
 {
-    my ($self, $serv, $prot) = @_;
-    croak 'usage: $inetd->is_enabled($service => $protocol)'
-      unless defined $serv && defined $prot;
+    my $self = shift;
+    $self->_validate(@_);
+    my ($serv, $prot) = @_;
 
-    return defined $self->{ENABLED}{$serv}{$prot}
-      ? $self->{ENABLED}{$serv}{$prot} : undef;
+    return exists $self->{ENABLED}{$serv}{$prot}
+      ? $self->{ENABLED}{$serv}{$prot}
+      : undef;
 }
 
 sub enable
 {
-    my ($self, $serv, $prot) = @_;
-    croak 'usage: $inetd->enable($service => $protocol)'
-      unless defined $serv && defined $prot;
+    my $self = shift;
+    $self->_validate(@_);
+    my ($serv, $prot) = @_;
 
     foreach my $entry (@{$self->{CONF}}) {
         if ($entry =~ /^\#.*$serv.*$prot\b/) {
-            $self->{ENABLED}{$serv}{$prot} = 1;
+            $self->{ENABLED}{$serv}{$prot} = true;
             $entry = substr($entry, 1);
-            return 1;
+            return true;
         }
     }
-    return 0;
+
+    return false;
 }
 
 sub disable
 {
-    my ($self, $serv, $prot) = @_;
-    croak 'usage: $inetd->disable($service => $protocol)'
-      unless defined $serv && defined $prot;
+    my $self = shift;
+    $self->_validate(@_);
+    my ($serv, $prot) = @_;
 
     foreach my $entry (@{$self->{CONF}}) {
         if ($entry =~ /^(?!\#).*$serv.*$prot\b/) {
-            $self->{ENABLED}{$serv}{$prot} = 0;
+            $self->{ENABLED}{$serv}{$prot} = false;
             $entry = '#'.$entry;
-            return 1;
+            return true;
         }
     }
-    return 0;
+
+    return false;
 }
 
 sub dump_enabled
 {
-    my ($self) = @_;
-    croak 'usage: $inetd->dump_enabled' unless ref $self;
+    my $self = shift;
 
     my @conf = @{$self->{CONF}};
-    _filter_conf(\@conf, '^[^\#]');
+    $self->_filter_conf(\@conf, qr/^[^\#]/);
 
     return @conf;
 }
 
 sub dump_disabled
 {
-    my ($self) = @_;
-    croak 'usage: $inetd->dump_disabled' unless ref $self;
+    my $self = shift;
 
     my @conf = @{$self->{CONF}};
-    _filter_conf(\@conf, '^\#');
+    $self->_filter_conf(\@conf, qr/^\#/);
 
     return @conf;
 }
 
 sub _filter_conf
 {
-    my ($conf, @regexps) = @_;
+    my ($self, $conf, @regexps) = @_;
 
-    unshift @regexps, '(?:stream|dgram|raw|rdm|seqpacket)';
+    unshift @regexps, qr/(?:stream|dgram|raw|rdm|seqpacket)/;
 
     for (my $i = $#$conf; $i >= 0; $i--) {
         foreach my $regexp (@regexps) {
-            splice(@$conf, $i, 1) && last
-              unless $conf->[$i] =~ /$regexp/;
+            splice(@$conf, $i, 1) and last
+              unless $conf->[$i] =~ $regexp;
         }
     }
 }
 
-sub _split_serv_prot
+sub _extract_serv_prot
 {
-    my ($entry) = @_;
+    my ($self, $entry) = @_;
 
     my ($serv, $prot) = (split /\s+/, $entry)[0,2];
 
@@ -137,12 +153,15 @@ sub _split_serv_prot
     return ($serv, $prot);
 }
 
-sub DESTROY
+sub _validate
 {
-    my ($self) = @_;
+    my $self = shift;
+    validate_pos(@_, { type => SCALAR }, { type => SCALAR });
+}
 
-    $conf_tied->flock(LOCK_UN);
-    $conf_tied = 0;
+DESTROY
+{
+    my $self = shift;
     untie @{$self->{CONF}};
 }
 
@@ -170,9 +189,10 @@ Config::Inetd - Interface inetd's configuration file
 
 =head1 DESCRIPTION
 
-C<Config::Inetd> is an interface to inetd's configuration file F<inetd.conf>;
-it simplifies checking and setting the enabled/disabled state of services
-and dumping them by their state.
+C<Config::Inetd> provides an interface to inetd's configuration file
+(usually named F<inetd.conf>); it basically simplifies checking and
+setting the enabled/disabled status of services and also allows for
+dumping them by a given status.
 
 =head1 CONSTRUCTOR
 
@@ -180,7 +200,7 @@ and dumping them by their state.
 
  $inetd = Config::Inetd->new('/path/to/inetd.conf');
 
-Omitting the path to inetd.conf, will cause the default F</etc/inetd.conf>
+Omitting the path to inetd.conf will cause the default F</etc/inetd.conf>
 to be used.
 
 =head1 METHODS
@@ -191,8 +211,8 @@ Checks whether a service is enlisted as enabled.
 
  $inetd->is_enabled($service => $protocol);
 
-Returns 1 if the service is enlisted as enabled, 0 if enlisted as disabled,
-undef if the service does not exist.
+Returns true if the service is enlisted as enabled, false if enlisted
+as disabled and undef if the service does not exist.
 
 =head2 enable
 
@@ -200,10 +220,11 @@ Enables a service.
 
  $inetd->enable($service => $protocol);
 
-Returns 1 if the service has been enabled, 0 if no action has been taken.
+Returns true if the service has been enabled, false if no action has
+been taken.
 
-It is recommended to preceedingly run C<is_enabled()> to determine whether a
-service is disabled.
+It is recommended to precedingly call C<is_enabled()> with according
+arguments supplied to determine whether a service is disabled.
 
 =head2 disable
 
@@ -211,10 +232,11 @@ Disables a service.
 
  $inetd->disable($service => $protocol);
 
-Returns 1 if the service has been disabled, 0 if no action has been taken.
+Returns true if the service has been disabled, false if no action has
+been taken.
 
-It is recommended to preceedingly run C<is_enabled()> to determine whether a
-service is enabled.
+It is recommended to precedingly call C<is_enabled()> with according
+arguments supplied to determine whether a service is enabled.
 
 =head2 dump_enabled
 
@@ -222,8 +244,8 @@ Dumps the enabled services.
 
  @dump = $inetd->dump_enabled;
 
-Returns an array that consists of inetd configuration lines which are enabled
-services.
+Returns a flat list that consists of the enabled entries as seen in the
+configuration file.
 
 =head2 dump_disabled
 
@@ -231,17 +253,23 @@ Dumps the disabled services.
 
  @dump = $inetd->dump_disabled;
 
-Returns an array that consists of inetd configuration lines which are disabled
-services.
+Returns a flat list that consists of the disabled entries as seen in the
+configuration file.
 
 =head1 INSTANCE DATA
 
-The inetd configuration file is tied as instance data (newlines are preserved);
-it may be accessed via C<< @{$inetd->{CONF}} >>.
+The inetd configuration file is tied as instance data (newlines are
+preserved); it may be accessed directly via C<< @{$inetd->{CONF}} >>.
+
+=head1 CAVEAT
+
+It is strongly advised that the configuration file is B<backuped> first
+if one is intending to work with the default (e.g., system-wide)
+configuration file and not a customized one.
 
 =head1 SEE ALSO
 
-L<Tie::File>, inetd(8)
+L<Tie::File>, inetd.conf(5)
 
 =head1 AUTHOR
 

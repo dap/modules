@@ -1,6 +1,6 @@
 ---
 name: Config-Inetd
-version: 0.29
+version: 0.30
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Interface inetd's configuration file
@@ -10,7 +10,9 @@ resources:
 requires:
   Carp: 0
   Fcntl: 0
+  Params::Validate: 0
   Tie::File: 0
+  boolean: 0
 build_requires:
   Test::More: 0
 recommends:
@@ -19,7 +21,7 @@ recommends:
 provides:
   Config::Inetd:
     file: lib/Config/Inetd.pm
-    version: 0.29
+    version: 0.30
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

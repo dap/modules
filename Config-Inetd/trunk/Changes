@@ -1,5 +1,16 @@
 Revision history for Perl extension Config::Inetd.
 
+0.30 Sun Oct  5 13:48:13 CEST 2008
+
+ - Fixed an error related to unlocking within DESTROY by make it
+   release the tied configuration without an explicit unlock.
+
+ - Use the "boolean" pragma for true/false values.
+
+ - Validation of arguments is now handled by Params::Validate.
+
+ - Minor code and documentation improvements.
+
 0.29 Fri Feb  1 17:47:47 CET 2008
 
  - Some more documentation reformatting.

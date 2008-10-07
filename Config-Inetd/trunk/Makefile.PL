@@ -8,7 +8,9 @@ WriteMakefile
           'EXE_FILES' => [],
           'VERSION_FROM' => 'lib/Config/Inetd.pm',
           'PREREQ_PM' => {
+                           'boolean' => 0,
                            'Test::More' => 0,
+                           'Params::Validate' => 0,
                            'Tie::File' => 0,
                            'Fcntl' => 0,
                            'Carp' => 0

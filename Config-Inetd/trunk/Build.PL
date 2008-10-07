@@ -11,8 +11,10 @@ my $build = Module::Build->new
    dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/Config/Inetd.pm',
    requires => {
+                 'boolean' => 0,
                  'Carp' => 0,
                  'Fcntl' => 0,
+                 'Params::Validate' => 0,
                  'Tie::File' => 0,
                },
    build_requires => { 'Test::More' => 0 },

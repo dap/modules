@@ -8,7 +8,7 @@ use File::Temp ':POSIX';
 use Test::More tests => 6;
 
 my $tmpfile = tmpnam();
-open(my $fh, '>', $tmpfile) or die "Can't write to temporary file: $!\n";
+open(my $fh, '>', $tmpfile) or die "Cannot write to temporary file: $!\n";
 print {$fh} do { local $/; <DATA> };
 close($fh);
 
@@ -20,7 +20,7 @@ is($inetd->disable(daytime => 'tcp'), 1, '$inetd->disable()');
 is($inetd->enable(daytime => 'tcp'), 1, '$inetd->enable()');
 is($inetd->is_enabled(daytime => 'tcp'), 1, '$inetd->is_enabled()');
 
-my $regex_service = qr{
+my $regex = qr{
     ^   \#?[\w\Q/.:-[]\E]+
     \s+ (?:stream|dgram)
     \s+ (?:tcp|udp|rpc/udp)6?
@@ -32,7 +32,7 @@ my $regex_service = qr{
 
 my $match;
 foreach (@{$inetd->{CONF}}) {
-    $match++ if /$regex_service/;
+    $match++ if /$regex/;
 }
 is($match, 49, '@{$inetd->{CONF}} instance data');
 
