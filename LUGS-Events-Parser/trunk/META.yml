@@ -1,6 +1,6 @@
 ---
 name: LUGS-Events-Parser
-version: 0.02
+version: 0.03
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Event parser for the Linux User Group Switzerland
@@ -19,10 +19,10 @@ recommends:
 provides:
   LUGS::Events::Parser:
     file: lib/LUGS/Events/Parser.pm
-    version: 0.02
+    version: 0.03
   LUGS::Events::Parser::Event:
     file: lib/LUGS/Events/Parser/Event.pm
-    version: 0.01
+    version: 0.02
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

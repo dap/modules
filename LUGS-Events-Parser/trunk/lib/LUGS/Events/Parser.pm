@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 use LUGS::Events::Parser::Event;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub new
 {
@@ -39,7 +39,7 @@ sub _fetch_content
 {
     my $self = shift;
 
-    open (my $fh, '<', $self->{Input}) or die "Can't open $self->{Input}: $!\n";
+    open (my $fh, '<', $self->{Input}) or croak "Cannot open $self->{Input}: $!";
     $self->{content} = do { local $/; <$fh> };
     close($fh);
 }
@@ -193,6 +193,12 @@ Fetch the event C<'responsible'> field.
  $more = $event->get_event_more;
 
 Fetch the event C<'more'> field.
+
+=head2 get_event_anchor
+
+ $anchor = $event->get_event_anchor;
+
+Fetch the unique event anchor.
 
 =head1 AUTHOR
 

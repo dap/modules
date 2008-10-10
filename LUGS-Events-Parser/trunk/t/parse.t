@@ -27,6 +27,7 @@ my @expected = (
         'Winterthur (<a href="http://map.search.ch/8400-wint' .
         'erthur/stadthausstr.-71">Karte</a>)',
       '<a href="mailto:Paul.Bosshard@LUGS.ch">Paul Bosshard</a>',
+      '20080303_0_winti',
     ],
     [
       '20080306',
@@ -42,26 +43,27 @@ my @expected = (
         'ref="http://map.search.ch/3012-bern/erlachstr.-3">K' .
         'arte</a>)',
       '<a href="mailto:info@lugbe.ch">info@lugbe.ch</a>',
+      '20080306_0_bern',
     ],
 );
 
 my @events;
 while (my $event = $parser->next_event) {
-    my @event;
+    push @events, [
+        $event->get_event_date,
+        $event->get_event_year,
+        $event->get_event_month,
+        $event->get_event_day,
+        $event->get_event_simple_day,
+        $event->get_event_weekday,
+        $event->get_event_time,
+        $event->get_event_title,
+        $event->get_event_color,
+        $event->get_event_location,
+        $event->get_event_responsible,
+        $event->get_event_anchor,
+    ];
 
-    push @event, $event->get_event_date;
-    push @event, $event->get_event_year;
-    push @event, $event->get_event_month;
-    push @event, $event->get_event_day;
-    push @event, $event->get_event_simple_day;
-    push @event, $event->get_event_weekday;
-    push @event, $event->get_event_time;
-    push @event, $event->get_event_title;
-    push @event, $event->get_event_color;
-    push @event, $event->get_event_location;
-    push @event, $event->get_event_responsible;
-
-    push @events, [ @event ];
 }
 
 is_deeply(\@events, \@expected, 'Events parsing');

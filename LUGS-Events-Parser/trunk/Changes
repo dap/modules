@@ -1,5 +1,9 @@
 Revision history for Perl extension LUGS::Events::Parser.
 
+0.03 Fri Oct 10 21:09:11 CEST 2008
+
+ - Added a method to retrieve the unique event anchor.
+
 0.02 Sun Mar  9 19:30:40 CET 2008
 
  - Splitted each package within the main module into their own class.

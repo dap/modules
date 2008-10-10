@@ -87,6 +87,11 @@ METHODS
 
     Fetch the event 'more' field.
 
+  get_event_anchor
+     $anchor = $event->get_event_anchor;
+
+    Fetch the unique event anchor.
+
 AUTHOR
     Steven Schubiger <schubiger@cpan.org>
 
