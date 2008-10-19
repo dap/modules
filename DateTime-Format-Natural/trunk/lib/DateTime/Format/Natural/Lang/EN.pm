@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '1.12';
+our $VERSION = '1.13';
 
 our (%init,
      %timespan,
@@ -925,7 +925,7 @@ language or implicitly.
 =head1 EXAMPLES
 
 Below are some examples of human readable date/time input in english (be aware
-that the parser doesn't differentiate between lower/upper case):
+that the parser does not distinguish between lower/upper case):
 
 =head2 Simple
 

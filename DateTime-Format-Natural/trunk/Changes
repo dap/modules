@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.73_01 Sat Oct 18 22:21:56 CEST 2008
+
+ - Corrected a few typos in the main documentation and also 
+   reworded some bits.
+
 0.73 Thu Sep  4 19:53:44 CEST 2008
 
  - Fixed the 'prefer_future' parameter validation error by

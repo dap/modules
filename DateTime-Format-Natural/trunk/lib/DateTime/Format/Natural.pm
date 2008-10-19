@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.73';
+our $VERSION = '0.73_01';
 
 validation_options(
     on_fail => sub
@@ -507,7 +507,7 @@ Specifies the format of numeric dates, defaults to 'C<d/m/y>'.
 
 =item * C<prefer_future>
 
-Turns ambigious weekdays/months to their futuristic relatives. Accepts a boolean,
+Turns ambiguous weekdays/months to their futuristic relatives. Accepts a boolean,
 defaults to false.
 
 =item * C<time_zone>
@@ -517,7 +517,7 @@ recognized by L<DateTime>. Defaults to 'floating'.
 
 =item * C<daytime>
 
-A hash consisting of specific hours given for peculiar daytimes. Daytimes may be
+A hash reference consisting of customized daytime hours, which may be
 selectively changed.
 
 =back
@@ -557,12 +557,12 @@ string given.
 
 =head2 error
 
-Returns the error message if the parsing didn't succeed.
+Returns the error message if the parsing did not succeed.
 
 =head2 trace
 
-Returns a trace of methods which we're called within the Base class and
-a summary how often certain units were modified.
+Returns a trace of methods which were called within the Base class and
+a summary how often certain units have been modified.
 
 =head1 GRAMMAR
 

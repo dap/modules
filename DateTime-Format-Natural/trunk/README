@@ -51,7 +51,7 @@ CONSTRUCTOR
         Specifies the format of numeric dates, defaults to '"d/m/y"'.
 
     * "prefer_future"
-        Turns ambigious weekdays/months to their futuristic relatives.
+        Turns ambiguous weekdays/months to their futuristic relatives.
         Accepts a boolean, defaults to false.
 
     * "time_zone"
@@ -59,8 +59,8 @@ CONSTRUCTOR
         zone recognized by DateTime. Defaults to 'floating'.
 
     * "daytime"
-        A hash consisting of specific hours given for peculiar daytimes.
-        Daytimes may be selectively changed.
+        A hash reference consisting of customized daytime hours, which may
+        be selectively changed.
 
 METHODS
   parse_datetime
@@ -87,11 +87,11 @@ METHODS
     date/time string given.
 
   error
-    Returns the error message if the parsing didn't succeed.
+    Returns the error message if the parsing did not succeed.
 
   trace
-    Returns a trace of methods which we're called within the Base class and
-    a summary how often certain units were modified.
+    Returns a trace of methods which were called within the Base class and a
+    summary how often certain units have been modified.
 
 GRAMMAR
     The grammar handling has been rewritten to be easily extendable and
