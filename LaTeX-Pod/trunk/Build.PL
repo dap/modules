@@ -11,6 +11,7 @@ my $build = Module::Build->new
    dist_author => 'Steven Schubiger <schubiger@cpan.org>',
    dist_version_from => 'lib/LaTeX/Pod.pm',
    requires => {
+                 'boolean' => 0,
                  'Carp' => 0,
                  'Getopt::Long' => 0,
                  'LaTeX::TOM' => 0,

@@ -45,9 +45,11 @@ IMPLEMENTATION DETAILS
     The current implementation is a bit *flaky* because "LaTeX::TOM", the
     framework being used for parsing the LaTeX nodes, makes a clear
     distinction between various types of nodes. As example, an \item
-    directive has quite often a separate text which is associated with
-    former one. And they can't be detected without some kind of
-    sophisticated "look-behind", which is what is being done.
+    directive has quite often a separate text associated with it as its
+    content. Such directives and their expected converted relatives within
+    the output stream possibly cannot be easily detected without some kind
+    of sophisticated "look-behind" mechanism, which is how "LaTeX::Pod"
+    internally functions.
 
     "LaTeX::Pod" was designed with the intention to be *context-sensitive*
     aware. This is being achieved by setting which node has been seen before

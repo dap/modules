@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.18_01 Sat Oct 25 12:57:54 CEST 2008
+
+ - Use the "boolean" pragma for true/false values.
+
 0.18 Tue Jun 17 17:06:50 CEST 2008
 
  - Append a trailing newline to the =cut directive within

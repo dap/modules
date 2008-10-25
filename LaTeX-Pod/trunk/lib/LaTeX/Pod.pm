@@ -2,11 +2,12 @@ package LaTeX::Pod;
 
 use strict;
 use warnings;
+use boolean qw(true false);
 
 use Carp qw(croak);
 use LaTeX::TOM;
 
-our $VERSION = '0.18';
+our $VERSION = '0.18_01';
 
 sub new
 {
@@ -110,7 +111,7 @@ sub _process_directives
         if ($self->_is_set_node($node)) {
             $self->_unregister_node($node);
 
-            return 1;
+            return true;
         }
     }
 
@@ -120,10 +121,10 @@ sub _process_directives
         $self->_pod_add('=head1 '.$self->{current_node}->getNodeText);
         $self->{title_inc}++;
 
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 sub _process_text_title
@@ -306,7 +307,7 @@ sub _process_tags
                 textsf => 'C',
                 emph   => 'I');
 
-    $self->{append_following} = 1;
+    $self->{append_following} = true;
 
     $self->_pod_append("$tags{$tag}<$text>");
     $self->_unregister_node($tag);
@@ -321,7 +322,7 @@ sub _pod_add
     }
     else {
         $self->_pod_append($content);
-        $self->{append_following} = 0;
+        $self->{append_following} = false;
     }
 }
 
@@ -368,14 +369,14 @@ sub _register_node
 {
     my ($self, $item) = @_;
 
-    $self->{node}{$item} = 1;
+    $self->{node}{$item} = true;
 }
 
 sub _is_set_node
 {
     my ($self, $item) = @_;
 
-    return $self->{node}{$item} ? 1 : 0;
+    return $self->{node}{$item} ? true : false;
 }
 
 sub _unregister_node
@@ -389,7 +390,7 @@ sub _register_previous
 {
     my ($self, $item) = @_;
 
-    $self->{previous}{$item} = 1;
+    $self->{previous}{$item} = true;
 }
 
 sub _is_set_previous
@@ -400,11 +401,11 @@ sub _is_set_previous
 
     foreach my $item_single (@items) {
         if ($self->{previous}{$item_single}) {
-            return 1;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }
 
 sub _unregister_previous
@@ -483,9 +484,11 @@ It's not much, but there's more to come:
 
 The current implementation is a bit I<flaky> because C<LaTeX::TOM>, the framework
 being used for parsing the LaTeX nodes, makes a clear distinction between various
-types of nodes. As example, an \item directive has quite often a separate text which
-is associated with former one. And they can't be detected without some kind of
-sophisticated "look-behind", which is what is being done.
+types of nodes. As example, an \item directive has quite often a separate text
+associated with it as its content. Such directives and their expected converted
+relatives within the output stream possibly cannot be easily detected without
+some kind of sophisticated "look-behind" mechanism, which is how C<LaTeX::Pod>
+internally functions.
 
 C<LaTeX::Pod> was designed with the intention to be I<context-sensitive> aware.
 This is being achieved by setting which node has been seen before the current one in

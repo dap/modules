@@ -10,6 +10,7 @@ WriteMakefile
                          ],
           'VERSION_FROM' => 'lib/LaTeX/Pod.pm',
           'PREREQ_PM' => {
+                           'boolean' => 0,
                            'Test::More' => 0,
                            'Getopt::Long' => 0,
                            'FindBin' => 0,
