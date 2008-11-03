@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.73_01';
+our $VERSION = '0.73_02';
 
 validation_options(
     on_fail => sub
@@ -113,7 +113,7 @@ sub parse_datetime
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
         if ($date_string =~ /^\S+\b\s+\b\S+/) {
             ($date_string, @{$self->{tokens}}) = split /\s+/, $date_string;
-            $self->{count}{tokens} = 1 + @{$self->{tokens}};
+            $self->{count}{tokens} = 1 + scalar @{$self->{tokens}};
         }
         else {
             $self->{count}{tokens} = 1;
@@ -175,6 +175,7 @@ sub parse_datetime
         $self->_set_modified(1);
 
         if (@{$self->{tokens} || []}) {
+            $self->{count}{tokens}--;
             $self->_unset_valid_exp;
             $self->_unset_modified;
             $self->_process;
@@ -274,12 +275,17 @@ sub _process
 {
     my $self = shift;
 
-    PARSE: foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
+    if (!exists $self->{lookup}) {
+        foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
+            push @{$self->{lookup}{scalar @{$self->{data}->__grammar($keyword)->[0]}}}, $keyword;
+        }
+    }
+
+    PARSE: foreach my $keyword (@{$self->{lookup}{$self->{count}{tokens}} || []}) {
+        last if $self->_get_modified >= $self->{count}{tokens};
+
         my @grammar = @{$self->{data}->__grammar($keyword)};
         my $types = shift @grammar;
-
-        next if @{$self->{tokens}} > @$types;
-        last if $self->_get_modified >= @{$self->{tokens}};
 
         foreach my $expression (@grammar) {
             my $valid_expression = true;
@@ -294,6 +300,7 @@ sub _process
                         }
                         else {
                             $valid_expression = false;
+                            last;
                         }
                     }
                 }
@@ -305,6 +312,7 @@ sub _process
                     }
                     else {
                         $valid_expression = false;
+                        last;
                     }
                 }
                 else {
