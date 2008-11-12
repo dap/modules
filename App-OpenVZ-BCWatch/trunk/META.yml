@@ -1,0 +1,35 @@
+---
+name: App-OpenVZ-BCWatch
+version: 0.01
+author:
+  - 'Steven Schubiger <schubiger@cpan.org>'
+abstract: Monitor the OpenVZ user_beancounters file
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
+requires:
+  Carp: 0
+  Config::File: 0
+  Daemon::Generic: 0
+  File::Basename: 0
+  File::HomeDir: 0
+  File::Spec: 0
+  File::Temp: 0
+  FindBin: 0
+  Mail::Sendmail: 0
+  Storable: 0
+  Sys::Hostname: 0
+  boolean: 0
+build_requires:
+  Test::More: 0
+recommends:
+  Test::Pod: 1.14
+  Test::Pod::Coverage: 1.04
+provides:
+  App::OpenVZ::BCWatch:
+    file: lib/App/OpenVZ/BCWatch.pm
+    version: 0.01
+generated_by: Module::Build version 0.2808
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
