@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.73_03 Thu Nov 13 21:20:53 CET 2008
+
+ - Move some duplicated logic to helper methods.
+
+ - Do not save intermediate data when generating the trace output.
+
+ - Use the proper data structure name in parse_datetime_duration().
+
 0.73_02 Sun Nov  2 21:40:31 CET 2008
 
  - The grammar parser now, for each run, only iterates through

@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.73_02';
+our $VERSION = '0.73_03';
 
 validation_options(
     on_fail => sub
@@ -232,12 +232,12 @@ sub parse_datetime_duration
       ? split /\s+ $timespan_sep \s+/ix, $self->{Date_string}
       : ($self->{Date_string});
 
-    my @stack;
+    my @queue;
     foreach my $date_string (@date_strings) {
-        push @stack, $self->parse_datetime($date_string);
+        push @queue, $self->parse_datetime($date_string);
     }
 
-    return @stack;
+    return @queue;
 }
 
 sub success
@@ -263,12 +263,9 @@ sub trace
 {
     my $self = shift;
 
-    my @modified;
-    foreach my $unit (grep { $_ ne 'total' } keys %{$self->{modified}}) {
-        push @modified, "$unit: $self->{modified}{$unit}";
-    }
-
-    return join "\n", @{$self->{trace}}, @modified;
+    return join "\n", @{$self->{trace}},
+      map  { my $unit = $_; "$unit: $self->{modified}{$unit}" }
+      grep { $_ ne 'total' } keys %{$self->{modified}};
 }
 
 sub _process
@@ -574,7 +571,7 @@ a summary how often certain units have been modified.
 
 =head1 GRAMMAR
 
-The grammar handling has been rewritten to be easily extendable and hence 
+The grammar handling has been rewritten to be easily extendable and hence
 everybody is encouraged to propose sensible new additions and/or changes.
 
 See the classes C<DateTime::Format::Natural::Lang::[language_code]> if
@@ -582,7 +579,7 @@ you're intending to hack a bit on the grammar guts.
 
 =head1 EXAMPLES
 
-See the classes C<DateTime::Format::Natural::Lang::[language_code]> for a 
+See the classes C<DateTime::Format::Natural::Lang::[language_code]> for a
 overview of current valid input.
 
 =head1 CREDITS

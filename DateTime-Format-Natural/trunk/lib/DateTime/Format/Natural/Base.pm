@@ -9,7 +9,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.15';
+our $VERSION = '1.16';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -415,7 +415,7 @@ sub _last_day
     $self->_add_trace;
     my ($day) = @_;
     $self->_day_name(\$day);
-    my $days_diff = $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$day});
+    my $days_diff = $self->_last_wday_diff($day);
     $self->_subtract(day => $days_diff);
     $self->_set_modified(2);
 }
@@ -425,7 +425,7 @@ sub _last_week_day
     my $self = shift;
     $self->_add_trace;
     my $day = ucfirst lc(shift);
-    my $days_diff = $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$day});
+    my $days_diff = $self->_last_wday_diff($day);
     $self->_subtract(day => $days_diff);
     $self->_set_modified(3);
 }
@@ -435,7 +435,7 @@ sub _day_last_week
     my $self = shift;
     $self->_add_trace;
     my $day = ucfirst lc(shift);
-    my $days_diff = $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$day});
+    my $days_diff = $self->_last_wday_diff($day);
     $self->_subtract(day => $days_diff);
     $self->_set_modified(3);
 }
@@ -501,7 +501,7 @@ sub _next_weekday
     $self->_add_trace;
     my ($day) = @_;
     $self->_day_name(\$day);
-    my $days_diff = (7 - $self->{datetime}->wday + Decode_Day_of_Week($day));
+    my $days_diff = $self->_next_wday_diff($day);
     $self->_add(day => $days_diff);
     $self->_set_modified(2);
 }
@@ -512,7 +512,7 @@ sub _weekday_next_week
     $self->_add_trace;
     my ($day) = @_;
     $self->_day_name(\$day);
-    my $days_diff = (7 - $self->{datetime}->wday + Decode_Day_of_Week($day));
+    my $days_diff = $self->_next_wday_diff($day);
     $self->_add(day => $days_diff);
     $self->_set_modified(3);
 }
@@ -839,6 +839,20 @@ sub _month_num
         $month = $self->{data}->{months_abbrev}->{$month};
     }
     return $self->{data}->{months}->{$month};
+}
+
+sub _last_wday_diff
+{
+    my $self = shift;
+    my ($day) = @_;
+    return $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$day});
+}
+
+sub _next_wday_diff
+{
+    my $self = shift;
+    my ($day) = @_;
+    return (7 - $self->{datetime}->wday + Decode_Day_of_Week($day));
 }
 
 sub _add
