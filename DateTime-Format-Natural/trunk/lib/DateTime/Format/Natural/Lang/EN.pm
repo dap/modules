@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 
-our $VERSION = '1.13';
+our $VERSION = '1.14';
 
 our (%init,
      %timespan,
@@ -22,10 +22,10 @@ our (%init,
 
 %RE = ('number'    => qr/^(\d+)$/,
        'year'      => qr/^(\d{4})$/,
-       'time'      => qr/^((?:\d{1,2})(?:\:\d{1,2})?)$/,
-       'time_am'   => qr/^((?:\d+)(?:\:\d+)?)(?:am)?$/,
-       'time_pm'   => qr/^((?:\d+)(?:\:\d+)?)pm$/,
-       'time_full' => qr/^(\d{2}\:\d{2}:\d{2})$/,
+       'time'      => qr/^((?:\d{1,2})(?:\:\d{2})?)$/,
+       'time_am'   => qr/^((?:\d{1,2})(?:\:\d{2})?)(?:am)?$/,
+       'time_pm'   => qr/^((?:\d{1,2})(?:\:\d{2})?)pm$/,
+       'time_full' => qr/^(\d{1,2}\:\d{2}\:\d{2})$/,
        'day_enum'  => qr/^(\d+)(?:st|nd|rd|th)?$/,
        'monthday'  => qr/^(\d{1,2})$/);
 {
@@ -383,19 +383,19 @@ our (%init,
        ],
        [
          { 0 => $RE{time}, 1 => 'pm' },
-         [ [ 0 ] ], 
+         [ [ 0 ] ],
          [ '_at_pm' ],
        ],
     ],
     at_combined => [
        [ 'REGEXP' ],
        [
-         { 0 => qr/^(\d+)(?:am)$/i }, 
+         { 0 => $RE{time_am} },
          [ [ 0 ] ],
          [ '_at_am' ],
        ],
        [
-         { 0 => qr/^(\d+)(?:pm)$/i },
+         { 0 => $RE{time_pm} },
          [ [ 0 ] ],
          [ '_at_pm' ],
        ],
@@ -952,7 +952,7 @@ that the parser does not distinguish between lower/upper case):
  tomorrow evening
  march
  4th february
- november 3rd 
+ november 3rd
  saturday
  last wednesday
  last june
@@ -966,11 +966,13 @@ that the parser does not distinguish between lower/upper case):
  this month
  6 am
  5am
+ 5:30am
  5am yesterday
  5am today
  5am tomorrow
  8 pm
  4pm
+ 4:20pm
  4pm yesterday
  4pm today
  4pm tomorrow
@@ -1088,6 +1090,7 @@ that the parser does not distinguish between lower/upper case):
  27/5/1979
  4:00
  17:00
+ 3:20:00
 
 =head1 SEE ALSO
 

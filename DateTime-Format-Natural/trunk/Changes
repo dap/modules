@@ -1,5 +1,19 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.73_04 Sun Nov 30 12:27:26 CET 2008
+
+ - Be more exact with english time matching regular expressions,
+   which fixes [rt #41266 - Alex Bowley] partly.
+
+ - The date and time validation methods do now honor all their
+   arguments; this reduces the amount of false errors.
+
+ - Wrap the code calling Nth_Weekday_of_Month_Year() in eval
+   blocks to catch errors and add some code to act upon the results.
+
+ - Do not call the setter method multiple times if the values can
+   be set at once.
+
 0.73_03 Thu Nov 13 21:20:53 CET 2008
 
  - Move some duplicated logic to helper methods.

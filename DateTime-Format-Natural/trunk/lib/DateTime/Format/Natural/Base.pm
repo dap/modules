@@ -9,7 +9,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.16';
+our $VERSION = '1.17';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -173,9 +173,11 @@ sub _daytime_in_the_morning
     $self->_add_trace;
     my ($hour) = @_;
     if ($self->_valid_time(hour => $hour)) {
-        $self->_set(hour => $hour);
-        $self->_set(minute => 0);
-        $self->_set(second => 0);
+        $self->_set(
+            hour   => $hour,
+            minute => 0,
+            second => 0,
+        );
     }
     $self->_set_modified(4);
 }
@@ -186,9 +188,11 @@ sub _daytime_in_the_afternoon
     $self->_add_trace;
     my ($hour) = @_;
     if ($self->_valid_time(hour => 12 + $hour)) {
-        $self->_set(hour => 12 + $hour);
-        $self->_set(minute => 0);
-        $self->_set(second => 0);
+        $self->_set(
+            hour   => 12 + $hour,
+            minute => 0,
+            second => 0,
+        );
     }
     $self->_set_modified(4);
 }
@@ -199,9 +203,11 @@ sub _daytime_in_the_evening
     $self->_add_trace;
     my ($hour) = @_;
     if ($self->_valid_time(hour => 12 + $hour)) {
-        $self->_set(hour => 12 + $hour);
-        $self->_set(minute => 0);
-        $self->_set(second => 0);
+        $self->_set(
+            hour   => 12 + $hour,
+            minute => 0,
+            second => 0,
+        );
     }
     $self->_set_modified(4);
 }
@@ -214,9 +220,11 @@ sub _daytime_morning
       ? $self->{Opts}{daytime}{morning}
       : MORNING;
     if ($self->_valid_time(hour => $hour)) {
-        $self->_set(hour => $hour);
-        $self->_set(minute => 0);
-        $self->_set(second => 0);
+        $self->_set(
+            hour   => $hour,
+            minute => 0,
+            second => 0,
+        );
     }
     $self->_set_modified(1);
 }
@@ -225,9 +233,11 @@ sub _daytime_noon
 {
     my $self = shift;
     $self->_add_trace;
-    $self->_set(hour => 12);
-    $self->_set(minute => 0);
-    $self->_set(second => 0);
+    $self->_set(
+        hour   => 12,
+        minute => 0,
+        second => 0,
+    );
     $self->_set_modified(1);
 }
 
@@ -239,9 +249,11 @@ sub _daytime_afternoon
       ? $self->{Opts}{daytime}{afternoon}
       : AFTERNOON;
     if ($self->_valid_time(hour => $hour)) {
-        $self->_set(hour => $hour);
-        $self->_set(minute => 0);
-        $self->_set(second => 0);
+        $self->_set(
+            hour   => $hour,
+            minute => 0,
+            second => 0,
+        );
     }
     $self->_set_modified(1);
 }
@@ -254,9 +266,11 @@ sub _daytime_evening
       ? $self->{Opts}{daytime}{evening}
       : EVENING;
     if ($self->_valid_time(hour => $hour)) {
-        $self->_set(hour => $hour);
-        $self->_set(minute => 0);
-        $self->_set(second => 0);
+        $self->_set(
+            hour   => $hour,
+            minute => 0,
+            second => 0,
+        );
     }
     $self->_set_modified(1);
 }
@@ -265,9 +279,11 @@ sub _daytime_midnight
 {
     my $self = shift;
     $self->_add_trace;
-    $self->_set(hour => 0);
-    $self->_set(minute => 0);
-    $self->_set(second => 0);
+    $self->_set(
+        hour   => 0,
+        minute => 0,
+        second => 0,
+    );
     $self->_set_modified(2);
 }
 
@@ -275,8 +291,10 @@ sub _hourtime_before_noon
 {
     my $self = shift;
     $self->_add_trace;
-    $self->_set(hour => 12);
-    $self->_set(minute => 0);
+    $self->_set(
+        hour   => 12,
+        minute => 0,
+    );
     $self->_subtract(hour => shift);
     $self->_set_modified(4);
 }
@@ -285,8 +303,10 @@ sub _hourtime_after_noon
 {
     my $self = shift;
     $self->_add_trace;
-    $self->_set(hour => 12);
-    $self->_set(minute => 0);
+    $self->_set(
+        hour   => 12,
+        minute => 0,
+    );
     $self->_add(hour => shift);
     $self->_set_modified(4);
 }
@@ -295,8 +315,10 @@ sub _hourtime_before_midnight
 {
     my $self = shift;
     $self->_add_trace;
-    $self->_set(hour => 0);
-    $self->_set(minute => 0);
+    $self->_set(
+        hour   => 0,
+        minute => 0,
+    );
     $self->_subtract(hour => shift);
     $self->_set_modified(4);
 }
@@ -305,8 +327,10 @@ sub _hourtime_after_midnight
 {
     my $self = shift;
     $self->_add_trace;
-    $self->_set(hour => 0);
-    $self->_set(minute => 0);
+    $self->_set(
+        hour   => 0,
+        minute => 0,
+    );
     $self->_add(hour => shift);
     $self->_set_modified(4);
 }
@@ -634,14 +658,26 @@ sub _count_weekday_this_month
     $self->_day_name(\$day);
     $self->_month_name(\$month);
     my $year;
-    ($year, $month, $day) =
-      Nth_Weekday_of_Month_Year($self->{datetime}->year,
-                                $self->{data}->{months}->{$month},
-                                $self->{data}->{weekdays}->{$day},
-                                $count);
-    $self->_set(year => $year);
-    $self->_set(month => $month);
-    $self->_set(day => $day);
+    eval {
+        ($year, $month, $day) =
+          Nth_Weekday_of_Month_Year($self->{datetime}->year,
+                                    $self->{data}->{months}->{$month},
+                                    $self->{data}->{weekdays}->{$day},
+                                    $count);
+    };
+    if (!$@ and defined $year && defined $month && defined $day
+        and $self->_valid_date(year => $year, month => $month, day => $day))
+    {
+        $self->_set(
+            year  => $year,
+            month => $month,
+            day   => $day,
+        );
+    }
+    else {
+        $self->_set_failure;
+        $self->_set_error("(date is not valid)");
+    }
     $self->_set_modified(4);
 }
 
@@ -688,14 +724,18 @@ sub _at_am
     if ($time =~ /:/) {
         my ($hour, $minute) = split /:/, $time;
         if ($self->_valid_time(hour => $hour, minute => $minute)) {
-            $self->_set(hour => $hour);
-            $self->_set(minute => $minute);
+            $self->_set(
+                hour   => $hour,
+                minute => $minute,
+            );
         }
     }
     else {
         if ($self->_valid_time(hour => $time)) {
-            $self->_set(hour => $time);
-            $self->_set(minute => 0);
+            $self->_set(
+                hour   => $time,
+                minute => 0,
+            );
         }
     }
     $self->_set_modified(2);
@@ -709,14 +749,18 @@ sub _at_pm
     if ($time =~ /:/) {
         my ($hour, $minute) = split /:/, $time;
         if ($self->_valid_time(hour => 12 + $hour, minute => $minute)) {
-            $self->_set(hour => 12 + $hour);
-            $self->_set(minute => $minute);
+            $self->_set(
+                hour   => 12 + $hour,
+                minute => $minute,
+            );
         }
     }
     else {
         if ($self->_valid_time(hour => 12 + $time)) {
-            $self->_set(hour => 12 + $time);
-            $self->_set(minute => 0);
+            $self->_set(
+                hour   => 12 + $time,
+                minute => 0,
+            );
         }
     }
     $self->_set_modified(2);
@@ -730,14 +774,18 @@ sub _time
     if ($time =~ /:/) {
         my ($hour, $minute) = split /:/, $time;
         if ($self->_valid_time(hour => $hour, minute => $minute)) {
-            $self->_set(hour => $hour);
-            $self->_set(minute => $minute);
+            $self->_set(
+                hour   => $hour,
+                minute => $minute,
+            );
         }
     }
     else {
         if ($self->_valid_time(hour => $time)) {
-            $self->_set(hour => $time);
-            $self->_set(minute => 0);
+            $self->_set(
+                hour   => $time,
+                minute => 0,
+            );
         }
     }
     $self->_set_modified(1);
@@ -750,9 +798,11 @@ sub _time_full
     my ($time) = @_;
     my ($hour, $minute, $second) = split /:/, $time;
     if ($self->_valid_time(hour => $hour, minute => $minute, second => $second)) {
-        $self->_set(hour => $hour);
-        $self->_set(minute => $minute);
-        $self->_set(second => $second);
+        $self->_set(
+            hour   => $hour,
+            minute => $minute,
+            second => $second,
+        );
     }
     $self->_set_modified(1);
 }
@@ -771,9 +821,11 @@ sub _count_yearday
     my ($day) = @_;
     my ($year, $month);
     ($year, $month, $day) = Add_Delta_Days($self->{datetime}->year, 1, 1, $day - 1);
-    $self->_set(day => $day);
-    $self->{datetime}->set_month($month);
-    $self->{datetime}->set_year($year);
+    $self->_set(
+        year  => $year,
+        month => $month,
+        day   => $day,
+    );
     $self->_set_modified(2);
 }
 
@@ -783,15 +835,26 @@ sub _count_weekday
     $self->_add_trace;
     my ($count, $weekday) = @_;
     $weekday = ucfirst lc $weekday;
-    my ($year, $month, $day) =
-      Nth_Weekday_of_Month_Year($self->{datetime}->year,
-                                $self->{datetime}->month,
-                                $self->{data}->{weekdays}->{$weekday},
-                                $count);
-    if ($self->_valid_date(day => $day, month => $month, year => $year)) {
-        $self->_set(day => $day);
-        $self->_set(month => $month);
-        $self->{datetime}->set_year($year);
+    my ($year, $month, $day);
+    eval {
+        ($year, $month, $day) =
+          Nth_Weekday_of_Month_Year($self->{datetime}->year,
+                                    $self->{datetime}->month,
+                                    $self->{data}->{weekdays}->{$weekday},
+                                    $count);
+    };
+    if (!$@ and defined $year && defined $month && defined $day
+        and $self->_valid_date(year => $year, month => $month, day => $day))
+    {
+        $self->_set(
+            year  => $year,
+            month => $month,
+            day   => $day,
+        );
+    }
+    else {
+        $self->_set_failure;
+        $self->_set_error("(date is not valid)");
     }
     $self->_set_modified(2);
 }
@@ -802,10 +865,10 @@ sub _day_month_year
     $self->_add_trace;
     my ($day, $month, $year) = @_;
     $self->_month_name(\$month);
-    $self->{datetime}->set(
-        year => $year,
+    $self->_set(
+        year  => $year,
         month => $self->_month_num($month),
-        day => $day,
+        day   => $day,
     );
     $self->_set_modified(3);
 }
@@ -859,62 +922,87 @@ sub _add
 {
     my ($self, $unit, $value) = @_;
 
-    $self->{modified}{$unit}++;
-
     $unit .= 's' unless $unit =~ /s$/;
     $self->{datetime}->add($unit => $value);
+
+    chop $unit;
+    $self->{modified}{$unit}++;
 }
 
 sub _subtract
 {
     my ($self, $unit, $value) = @_;
 
-    $self->{modified}{$unit}++;
-
     $unit .= 's' unless $unit =~ /s$/;
     $self->{datetime}->subtract($unit => $value);
+
+    chop $unit;
+    $self->{modified}{$unit}++;
 }
 
 sub _set
 {
-    my ($self, $unit, $value) = @_;
+    my ($self, %values) = @_;
 
-    $self->{modified}{$unit}++;
+    my @units = qw(
+        year
+        month
+        day
+        hour
+        minute
+        second
+    );
 
-    my $setter = 'set_' . $unit;
-    $self->{datetime}->$setter($value);
+    foreach my $unit (@units) {
+        if (exists $values{$unit}) {
+            my $setter = 'set_' . $unit;
+            $self->{datetime}->$setter($values{$unit});
+            $self->{modified}{$unit}++;
+        }
+    }
 }
 
 sub _valid_date
 {
-    my ($self, $type, $value) = @_;
+    my ($self, %values) = @_;
 
     my %set = map { $_ => $self->{datetime}->$_ } qw(year month day);
-    $set{$type} = $value;
+
+    while (my ($unit, $value) = each %values) {
+        $set{$unit} = $value;
+    }
 
     if (check_date($set{year}, $set{month}, $set{day})) {
         return true;
     }
     else {
         $self->_set_failure;
-        $self->_set_error("('$value' is not a valid $type)");
+        $self->_set_error("(date is not valid)");
         return false;
     }
 }
 
 sub _valid_time
 {
-    my ($self, $type, $value) = @_;
+    my ($self, %values) = @_;
 
-    my %set = map { $_ => $self->{datetime}->$_ } qw(hour min sec);
-    $set{$type} = $value;
+    my %abbrev = (
+        second => 'sec',
+        minute => 'min',
+        hour   => 'hour',
+    );
+    my %set = map { $_ => $self->{datetime}->$_ } values %abbrev;
+
+    while (my ($unit, $value) = each %values) {
+        $set{$abbrev{$unit}} = $value;
+    }
 
     if (check_time($set{hour}, $set{min}, $set{sec})) {
         return true;
     }
     else {
         $self->_set_failure;
-        $self->_set_error("('$value' is not a valid $type)");
+        $self->_set_error("(time is not valid)");
         return false;
     }
 }
