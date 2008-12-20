@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.73_04';
+our $VERSION = '0.74';
 
 validation_options(
     on_fail => sub
