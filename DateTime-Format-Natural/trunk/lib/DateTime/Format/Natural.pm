@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.74';
+our $VERSION = '0.74_01';
 
 validation_options(
     on_fail => sub
@@ -128,7 +128,14 @@ sub parse_datetime
         my $format = $self->{Format};
 
         if (exists $length{4}) {
-            $format = join $separator, ($length{4} == 0 ? qw(yyyy mm dd) : qw(dd mm yyyy));
+            $format = join $separator,
+              ($length{4} == 0
+                ? qw(yyyy mm dd)
+                : ($format =~ /^m/
+                    ? qw(mm dd yyyy)
+                    : qw(dd mm yyyy)
+                  )
+              );
         }
         else {
             $separator = do { local $_ = $format;
@@ -607,6 +614,7 @@ valuable suggestions & patches:
  Pat Kale
  Ankur Gupta
  Alex Bowley
+ Elliot Shank
 
 =head1 SEE ALSO
 

@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.74_01 Thu Jan  8 16:06:17 CET 2009
+
+ - When a four digit year is found, also allow for mm/dd/yyyy
+   kind of formats. [Elliot Shank <perl@galumph.com>]
+
 0.74 Sat Dec 20 15:06:50 CET 2008
 
  - Merged development version to stable.
