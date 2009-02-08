@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.74_02 Sun Feb  8 11:47:50 CET 2009
+
+ - New supported format: <count> <weekday>(s) from now.
+   [rt #43088 - Anirvan Chatterjee]
+
+ - Add a new field to the language grammar entries to handle
+   extended checks of captured regex data.
+
 0.74_01 Thu Jan  8 16:06:17 CET 2009
 
  - When a four digit year is found, also allow for mm/dd/yyyy

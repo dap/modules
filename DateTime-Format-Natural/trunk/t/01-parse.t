@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use DateTime::Format::Natural;
-use Test::More tests => 152;
+use Test::More tests => 154;
 
 my ($sec, $min, $hour, $day, $month, $year) = (00, 13, 01, 24, 11, 2006);
 
@@ -149,7 +149,9 @@ my %complex = ('6 in the morning'                => '24.11.2006 06:00:00',
                'saturday 3 months ago at 5:00pm' => '26.08.2006 17:00:00',
                '4th day last week'               => '16.11.2006 01:13:00',
                '3rd wednesday in november'       => '15.11.2006 01:13:00',
-               '3rd month next year'             => '24.03.2007 01:13:00');
+               '3rd month next year'             => '24.03.2007 01:13:00',
+               '6 mondays from now'              => '01.01.2007 01:13:00',
+               '1 friday from now'               => '01.12.2006 01:13:00');
 
 my %specific = ('january 11'        => '11.01.2006 01:13:00',
                 '11 january'        => '11.01.2006 01:13:00',

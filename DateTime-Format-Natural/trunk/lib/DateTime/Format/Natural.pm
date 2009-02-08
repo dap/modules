@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.74_01';
+our $VERSION = '0.74_02';
 
 validation_options(
     on_fail => sub
@@ -324,10 +324,15 @@ sub _process
                         "unknown type $types->[$pos]\n";
                 }
             }
+            if ($valid_expression && @{$expression->[1]}) {
+                foreach my $check (@{$expression->[1]}) {
+                    $valid_expression &= $check->(\%regex_stack);
+                }
+            }
             if ($valid_expression) {
                 $self->_set_valid_exp;
                 my $i;
-                foreach my $positions (@{$expression->[1]}) {
+                foreach my $positions (@{$expression->[2]}) {
                     my ($c, @values);
                     foreach my $pos (@$positions) {
                         $values[$c++] = exists $regex_stack{$pos}
@@ -615,6 +620,7 @@ valuable suggestions & patches:
  Ankur Gupta
  Alex Bowley
  Elliot Shank
+ Anirvan Chatterjee
 
 =head1 SEE ALSO
 
