@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.74_03 Fri Feb 13 13:15:11 CET 2009
+
+ - Guard against invalid expressions with a 's' suffix,
+   but no multiple unit count.  
+
+ - Work around the segmentation fault taking place in 0.74_02
+   on perl 5.8.9 and 5.10.0. 
+
 0.74_02 Sun Feb  8 11:47:50 CET 2009
 
  - New supported format: <count> <weekday>(s) from now.

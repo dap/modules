@@ -10,7 +10,7 @@ use Date::Calc qw(Add_Delta_Days
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.18';
+our $VERSION = '1.19';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -884,19 +884,7 @@ sub _count_weekday_from_now
     my $dow  = Decode_Day_of_Week($weekday);
     my $diff = ($wday < $dow) ? $dow - $wday : (7 - $wday) + $dow;
     my $days = ($count - 1) * 7 + $diff;
-    my $abs_days = Date_to_Days(
-        $self->{datetime}->year,
-        $self->{datetime}->month,
-        $self->{datetime}->day,
-    );
-    my ($year, $month, $day) = Add_Delta_Days(
-        1, 1, 1, ($abs_days + $days) - 1
-    );
-    $self->_set(
-        year  => $year,
-        month => $month,
-        day   => $day,
-    );
+    $self->_add(day => $days);
     $self->_set_modified(4);
 }
 
