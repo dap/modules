@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.74_03';
+our $VERSION = '0.74_04';
 
 validation_options(
     on_fail => sub
@@ -417,28 +417,16 @@ sub _unset_modified  { $_[0]->{modified}{total}  = 0     }
 sub _get_datetime_object
 {
     my $self = shift;
-
-    $self->{Time_zone} = $self->{datetime}->time_zone->name;
-    $self->{year}      = $self->{datetime}->year;
-    $self->{month}     = $self->{datetime}->month;
-    $self->{day}       = $self->{datetime}->day_of_month;
-    $self->{hour}      = $self->{datetime}->hour;
-    $self->{min}       = $self->{datetime}->minute;
-    $self->{sec}       = $self->{datetime}->second;
-
-    $self->{sec}       = sprintf("%02d", $self->{sec});
-    $self->{min}       = sprintf("%02d", $self->{min});
-    $self->{hour}      = sprintf("%02d", $self->{hour});
-    $self->{day}       = sprintf("%02d", $self->{day});
-    $self->{month}     = sprintf("%02d", $self->{month});
-
-    my $dt = DateTime->new(time_zone => $self->{Time_zone},
-                           year      => $self->{year},
-                           month     => $self->{month},
-                           day       => $self->{day},
-                           hour      => $self->{hour},
-                           minute    => $self->{min},
-                           second    => $self->{sec});
+    
+    my $dt = DateTime->new(
+        time_zone => $self->{datetime}->time_zone->name,
+        year      => $self->{datetime}->year,
+        month     => $self->{datetime}->month,
+        day       => $self->{datetime}->day_of_month,
+        hour      => $self->{datetime}->hour,
+        minute    => $self->{datetime}->minute,
+        second    => $self->{datetime}->second,
+    );
 
     foreach my $unit (keys %{$self->{postprocess}}) {
         $dt->add("${unit}s" => $self->{postprocess}{$unit});

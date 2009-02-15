@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.74_04 Son Feb 15 20:59:28 CET 2009
+
+ - Refrain from adding leading zeros to unit values via
+   sprintf() when constructing the final DateTime object.
+
+ - Do not import Date_to_Days(), it's no longer required.
+
 0.74_03 Fri Feb 13 13:15:11 CET 2009
 
  - Guard against invalid expressions with a 's' suffix,

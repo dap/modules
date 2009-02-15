@@ -5,12 +5,11 @@ use warnings;
 use boolean qw(true false);
 
 use Date::Calc qw(Add_Delta_Days
-                  Date_to_Days
                   Decode_Day_of_Week
                   Nth_Weekday_of_Month_Year
                   check_date check_time);
 
-our $VERSION = '1.19';
+our $VERSION = '1.20';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
