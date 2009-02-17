@@ -9,7 +9,7 @@ use File::Spec ();
 
 our ($VERSION, @ISA);
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 @ISA = qw(Tie::StdHandle);
 
 sub redirect
@@ -20,22 +20,22 @@ sub redirect
 Hook::Output::File->redirect(stdout => 'absolute_path1',
                              stderr => 'absolute_path2');
 EOT
-      unless defined($opts{stdout})
-          && defined($opts{stderr})
+      unless defined $opts{stdout}
+          && defined $opts{stderr}
           && File::Spec->file_name_is_absolute($opts{stdout})
           && File::Spec->file_name_is_absolute($opts{stderr});
 
     no strict 'refs';
-    my $caller = caller();
+    my $caller = caller;
 
     tie *{$caller.'::STDOUT'}, 'Hook::Output::File';
     tie *{$caller.'::STDERR'}, 'Hook::Output::File';
 
-    open(STDOUT, '>>', $opts{stdout}) or croak "Can't redirect STDOUT: $!";
-    open(STDERR, '>>', $opts{stderr}) or croak "Can't redirect STDERR: $!";
+    open(STDOUT, '>>', $opts{stdout}) or croak "Cannot redirect STDOUT: $!";
+    open(STDERR, '>>', $opts{stderr}) or croak "Cannot redirect STDERR: $!";
 
-    select(STDERR); $| = 1;
-    select(STDOUT); $| = 1;
+    select STDOUT; $| = 1;
+    select STDERR; $| = 1;
 
     return bless {}, ref($class) || $class;
 }
@@ -43,7 +43,7 @@ EOT
 DESTROY
 {
     no strict 'refs';
-    my $caller = caller();
+    my $caller = caller;
 
     no warnings 'untie';
     untie *{$caller.'::STDOUT'};
@@ -62,24 +62,27 @@ Hook::Output::File - Redirect STDOUT/STDERR to a file
  use Hook::Output::File;
 
  {
-     my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
-                                                stderr => '/tmp/2.out');
-     logged();
-
-     undef $hookout; # restore previous state of handles
-
-     not_logged();
+     my $hook = Hook::Output::File->redirect(
+         stdout => '/tmp/1.out',
+         stderr => '/tmp/2.out',
+     );
+     
+     saved();
+     
+     undef $hook; # restore previous state of streams 
+     
+     not_saved();
  }
 
- sub logged {
-     print STDOUT "logged: stdout!\n"; # stdout is redirected to logfile
-     print STDERR "logged: stderr!\n"; # stderr is redirected to logfile
+ sub saved {
+     print STDOUT "..."; # STDOUT output is appended to file
+     print STDERR "..."; # STDERR output is appended to file
  }
 
- sub not_logged {
-     print STDOUT "not logged: stdout!\n"; # stdout goes to stdout (not logfile)
-     print STDERR "not logged: stderr!\n"; # stderr goes to stderr (not logfile)
-}
+ sub not_saved {
+     print STDOUT "..."; # STDOUT output goes to STDOUT (not to file)
+     print STDERR "..."; # STDERR output goes to STDERR (not to file)
+ }
 
 =head1 DESCRIPTION
 
@@ -89,28 +92,38 @@ C<Hook::Output::File> redirects C<STDOUT/STDERR> to a file.
 
 =head2 redirect
 
-Installs a scoped file-redirection hook for regular output (C<STDOUT & STDERR>). Don't
-intermix the file locations for C<STDOUT & STDERR> output or you will receive unexpected
-results. The filenames will be checked that they're absolute and if not, an exception
-will be thrown (because otherwise, the C<open()> call would fail silently). The hook may
-be uninstalled either explicitly or implicitly; former action requires to undef the
-hook output "variable" (actually, it's a blessed object), latter one will automatically
-be achieved when exiting the current scope.
+Installs a file-redirection hook for regular output streams (i.e.,
+C<STDOUT & STDERR>) with lexical scope. 
+
+A word of caution: do not intermix the file paths for C<STDOUT/STDERR>
+output or you will eventually receive unexpected results. The paths
+will be checked that they are absolute and if not, an usage help will
+be printed (because otherwise, the C<open()> call might silently fail
+to satisfy expectations). 
+
+The hook may be uninstalled either explicitly or implicitly; doing it
+explicit requires to unset the hook "variable" (more concisely, it is
+a blessed object), whereas the implicit end of the hook will
+automatically be triggered when leaving the scope the hook was
+defined in.
 
  {
-     my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
-                                                stderr => '/tmp/2.out');
+     my $hook = Hook::Output::File->redirect(
+         stdout => '/tmp/1.out',
+         stderr => '/tmp/2.out',
+     );
+     
      some_sub();
 
-     undef $hookout; # explicitly uninstall hook
+     undef $hook; # explicitly remove hook
 
      another_sub();
-
- } # implicitly uninstalls hook
+ }
+ ... # hook implicitly removed 
 
 =head1 BUGS & CAVEATS
 
-Doesn't work in a forked environment, such as the case with daemons.
+Does not work in a forked environment, such as the case with daemons.
 
 =head1 SEE ALSO
 

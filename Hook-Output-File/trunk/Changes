@@ -1,5 +1,9 @@
 Revision history for Perl extension Hook::Output::File.
 
+0.05 Mon Feb 16 14:04:44 CET 2009
+
+ - Be more concise with both the documentation and code. 
+
 0.04 Sat Feb  9 17:25:37 CET 2008
 
  - Added test-file redirect.t.

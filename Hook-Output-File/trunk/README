@@ -5,53 +5,63 @@ SYNOPSIS
      use Hook::Output::File;
 
      {
-         my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
-                                                    stderr => '/tmp/2.out');
-         logged();
-
-         undef $hookout; # restore previous state of handles
-
-         not_logged();
+         my $hook = Hook::Output::File->redirect(
+             stdout => '/tmp/1.out',
+             stderr => '/tmp/2.out',
+         );
+     
+         saved();
+     
+         undef $hook; # restore previous state of streams 
+     
+         not_saved();
      }
 
-     sub logged {
-         print STDOUT "logged: stdout!\n"; # stdout is redirected to logfile
-         print STDERR "logged: stderr!\n"; # stderr is redirected to logfile
+     sub saved {
+         print STDOUT "..."; # STDOUT output is appended to file
+         print STDERR "..."; # STDERR output is appended to file
      }
 
-     sub not_logged {
-         print STDOUT "not logged: stdout!\n"; # stdout goes to stdout (not logfile)
-         print STDERR "not logged: stderr!\n"; # stderr goes to stderr (not logfile)
-    }
+     sub not_saved {
+         print STDOUT "..."; # STDOUT output goes to STDOUT (not to file)
+         print STDERR "..."; # STDERR output goes to STDERR (not to file)
+     }
 
 DESCRIPTION
     "Hook::Output::File" redirects "STDOUT/STDERR" to a file.
 
 METHODS
   redirect
-    Installs a scoped file-redirection hook for regular output ("STDOUT &
-    STDERR"). Don't intermix the file locations for "STDOUT & STDERR" output
-    or you will receive unexpected results. The filenames will be checked
-    that they're absolute and if not, an exception will be thrown (because
-    otherwise, the "open()" call would fail silently). The hook may be
-    uninstalled either explicitly or implicitly; former action requires to
-    undef the hook output "variable" (actually, it's a blessed object),
-    latter one will automatically be achieved when exiting the current
-    scope.
+    Installs a file-redirection hook for regular output streams (i.e.,
+    "STDOUT & STDERR") with lexical scope.
+
+    A word of caution: do not intermix the file paths for "STDOUT/STDERR"
+    output or you will eventually receive unexpected results. The paths will
+    be checked that they are absolute and if not, an usage help will be
+    printed (because otherwise, the "open()" call might silently fail to
+    satisfy expectations).
+
+    The hook may be uninstalled either explicitly or implicitly; doing it
+    explicit requires to unset the hook "variable" (more concisely, it is a
+    blessed object), whereas the implicit end of the hook will automatically
+    be triggered when leaving the scope the hook was defined in.
 
      {
-         my $hookout = Hook::Output::File->redirect(stdout => '/tmp/1.out',
-                                                    stderr => '/tmp/2.out');
+         my $hook = Hook::Output::File->redirect(
+             stdout => '/tmp/1.out',
+             stderr => '/tmp/2.out',
+         );
+     
          some_sub();
 
-         undef $hookout; # explicitly uninstall hook
+         undef $hook; # explicitly remove hook
 
          another_sub();
-
-     } # implicitly uninstalls hook
+     }
+     ... # hook implicitly removed 
 
 BUGS & CAVEATS
-    Doesn't work in a forked environment, such as the case with daemons.
+    Does not work in a forked environment, such as the case with daemons.
 
 SEE ALSO
     perltie
