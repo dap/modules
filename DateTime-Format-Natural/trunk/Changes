@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.75 Thu Feb 19 16:50:19 CET 2009
+ 
+ - Merged development version to stable.
+
 0.74_04 Son Feb 15 20:59:28 CET 2009
 
  - Refrain from adding leading zeros to unit values via
