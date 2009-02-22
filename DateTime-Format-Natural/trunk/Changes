@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.75_01 Sun Feb 22 12:09:32 CET 2009
+
+ - When prefer_future is set: Advance the day if the time
+   specified is noticeable in the past. [rt #43417 - Jason May]
+
+ - New supported format: <month> <monthday> <year>.
+   [rt #43467 - Clayton L. Scott <clscott@cpan.org>]  
+
 0.75 Thu Feb 19 16:50:19 CET 2009
  
  - Merged development version to stable.

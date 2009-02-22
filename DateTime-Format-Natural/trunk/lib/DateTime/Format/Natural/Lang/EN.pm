@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Lang::Base);
 use constant true  => 1;
 use constant false => 0; 
 
-our $VERSION = '1.16';
+our $VERSION = '1.17';
 
 our (%init,
      %timespan,
@@ -362,16 +362,26 @@ our (%init,
          [],
          [],
          [ [ 0, 1 ] ],
-         [ '_month_day_before' ],
+         [ '_month_day' ],
        ],
        [
          { 0 => $RE{month}, 1 => $RE{day_enum} },
          [],
          [],
-         [ [ 0, 1 ] ],
-         [ '_month_day_after' ],
+         [ [ 1, 0 ] ],
+         [ '_month_day' ],
        ]
     ],
+    month_day_year => [
+       [ 'REGEXP', 'REGEXP', 'REGEXP' ],
+       [
+         { 0 => $RE{month}, 1 => $RE{day_enum}, 2 => $RE{year} },
+         [],
+         [],
+         [ [ 1, 0 ], [ 2 ] ],
+         [ '_month_day', '_year' ], 
+       ]
+    ], 
     weekday => [
        [ 'REGEXP' ],
        [
@@ -1380,6 +1390,7 @@ that the parser does not distinguish between lower/upper case):
  11 January
  dec 25
  may 27th
+ march 1st 2009 
  October 2006
  february 14, 2004
  Friday

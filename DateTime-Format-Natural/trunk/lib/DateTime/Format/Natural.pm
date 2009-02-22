@@ -11,7 +11,7 @@ use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.75';
+our $VERSION = '0.75_01';
 
 validation_options(
     on_fail => sub
@@ -360,7 +360,14 @@ sub _post_process_options
     if ($self->{Prefer_future}) {
         my %modified = map { $_ => true } grep { $_ ne 'total' } keys %{$self->{modified}};
 
-        if ($self->{count}{tokens} == 1
+        if ((all { /^(?:minute|hour)$/ } keys %modified) 
+            && (exists $self->{modified}{hour} && $self->{modified}{hour} == 1)
+            && (exists $self->{modified}{minute} && $self->{modified}{minute} == 1)
+            && $self->{datetime}->hour < DateTime->now(time_zone => $self->{Time_zone})->hour
+        ) {
+            $self->{postprocess}{day} = 1; 
+        }
+        elsif ($self->{count}{tokens} == 1
             && (any { $self->{tokens}->[0] =~ /$_/i } @{$self->{data}->{weekdays_all}})
             && scalar keys %modified == 1
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1

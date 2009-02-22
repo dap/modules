@@ -6,7 +6,7 @@ use boolean qw(true);
 
 use Test::MockTime qw(set_fixed_time);
 use DateTime::Format::Natural;
-use Test::More tests => 8;
+use Test::More tests => 10;
 
 my ($sec, $min, $hour, $day, $month, $year) = (00, 13, 01, 24, 11, 2006);
 set_fixed_time("$day.$month.$year $hour:$min:$sec", '%d.%m.%Y %H:%M:%S');
@@ -18,7 +18,9 @@ my %prefer_future = ('friday'       => '24.11.2006 01:13:00',
                      'last january' => '24.01.2005 01:13:00',
                      'next january' => '24.01.2007 01:13:00',
                      'next friday'  => '01.12.2006 01:13:00',
-                     'last friday'  => '17.11.2006 01:13:00');
+                     'last friday'  => '17.11.2006 01:13:00',
+                     '00:00'        => '25.11.2006 00:00:00',
+                     '0am'          => '25.11.2006 00:00:00');
 
 compare(\%prefer_future);
 

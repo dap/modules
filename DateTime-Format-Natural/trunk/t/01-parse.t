@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use DateTime::Format::Natural;
-use Test::More tests => 154;
+use Test::More tests => 155;
 
 my ($sec, $min, $hour, $day, $month, $year) = (00, 13, 01, 24, 11, 2006);
 
@@ -157,6 +157,7 @@ my %specific = ('january 11'        => '11.01.2006 01:13:00',
                 '11 january'        => '11.01.2006 01:13:00',
                 'dec 25'            => '25.12.2006 01:13:00',
                 'may 27th'          => '27.05.2006 01:13:00',
+                'march 1st 2009'    => '01.03.2009 01:13:00', 
                 'October 2006'      => '24.10.2006 01:13:00',
                 'february 14, 2004' => '14.02.2004 01:13:00',
                 'Friday'            => '24.11.2006 01:13:00',
