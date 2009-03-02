@@ -2,16 +2,18 @@ package DateTime::Format::Natural;
 
 use strict;
 use warnings;
-use base qw(DateTime::Format::Natural::Base);
+use base qw(
+    DateTime::Format::Natural::Base
+    DateTime::Format::Natural::Compat
+);
 use boolean qw(true false);
 
 use Carp qw(croak);
 use DateTime ();
-use Date::Calc qw(Day_of_Week check_date);
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.75_01';
+our $VERSION = '0.75_02';
 
 validation_options(
     on_fail => sub
@@ -166,7 +168,7 @@ sub parse_datetime
         if ($year > $century) { $century-- };
         if (length $year == 2) { $year = "$century$year" };
 
-        unless (check_date($year, $month, $day)) {
+        unless ($self->_check_date($year, $month, $day)) {
             $self->_set_failure;
             $self->_set_error("(invalid date)");
             return $self->_get_datetime_object;
@@ -371,7 +373,7 @@ sub _post_process_options
             && (any { $self->{tokens}->[0] =~ /$_/i } @{$self->{data}->{weekdays_all}})
             && scalar keys %modified == 1
             && (exists $self->{modified}{day} && $self->{modified}{day} == 1
-            && Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day)
+            && $self->_Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day)
              < DateTime->now(time_zone => $self->{Time_zone})->wday)
         ) {
             $self->{postprocess}{day} = 7;

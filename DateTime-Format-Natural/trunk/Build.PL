@@ -12,7 +12,6 @@ my $build = Module::Build->new
    dist_version_from => 'lib/DateTime/Format/Natural.pm',
    requires => {
                  'boolean' => 0,
-                 'Date::Calc' => 0,
                  'DateTime' => 0,
                  'List::MoreUtils' => 0,
                  'Params::Validate' => 0,
@@ -23,6 +22,7 @@ my $build = Module::Build->new
                        'Test::More' => 0,
                      },
    recommends => {
+                   'Date::Calc' => 0,  
                    'Test::Pod' => '1.14',
                    'Test::Pod::Coverage' => '1.04',
                  },

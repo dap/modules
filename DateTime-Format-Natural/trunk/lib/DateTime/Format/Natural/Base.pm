@@ -2,14 +2,10 @@ package DateTime::Format::Natural::Base;
 
 use strict;
 use warnings;
+use base qw(DateTime::Format::Natural::Compat); 
 use boolean qw(true false);
 
-use Date::Calc qw(Add_Delta_Days
-                  Decode_Day_of_Week
-                  Nth_Weekday_of_Month_Year
-                  check_date check_time);
-
-our $VERSION = '1.21';
+our $VERSION = '1.22';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -626,7 +622,7 @@ sub _weekday_this_week
     $self->_add_trace;
     my ($day) = @_;
     $day = ucfirst lc $day;
-    my $days_diff = Decode_Day_of_Week($day) - $self->{datetime}->wday;
+    my $days_diff = $self->_Decode_Day_of_Week($day) - $self->{datetime}->wday;
     $self->_add(day => $days_diff);
     $self->_set_modified(3);
 }
@@ -646,12 +642,15 @@ sub _count_weekday_this_month
     $self->_day_name(\$day);
     $self->_month_name(\$month);
     my $year;
+    local $@;
     eval {
         ($year, $month, $day) =
-          Nth_Weekday_of_Month_Year($self->{datetime}->year,
-                                    $self->{data}->{months}->{$month},
-                                    $self->{data}->{weekdays}->{$day},
-                                    $count);
+          $self->_Nth_Weekday_of_Month_Year(
+              $self->{datetime}->year,
+              $self->{data}->{months}->{$month},
+              $self->{data}->{weekdays}->{$day},
+              $count,
+          );
     };
     if (!$@ and defined $year && defined $month && defined $day
         and $self->_valid_date(year => $year, month => $month, day => $day))
@@ -808,7 +807,7 @@ sub _count_yearday
     $self->_add_trace;
     my ($day) = @_;
     my ($year, $month);
-    ($year, $month, $day) = Add_Delta_Days($self->{datetime}->year, 1, 1, $day - 1);
+    ($year, $month, $day) = $self->_Add_Delta_Days($self->{datetime}->year, $day);
     $self->_set(
         year  => $year,
         month => $month,
@@ -823,13 +822,17 @@ sub _count_weekday
     $self->_add_trace;
     my ($count, $weekday) = @_;
     $weekday = ucfirst lc $weekday;
+    $self->_day_name(\$weekday);
     my ($year, $month, $day);
+    local $@;
     eval {
         ($year, $month, $day) =
-          Nth_Weekday_of_Month_Year($self->{datetime}->year,
-                                    $self->{datetime}->month,
-                                    $self->{data}->{weekdays}->{$weekday},
-                                    $count);
+          $self->_Nth_Weekday_of_Month_Year(
+              $self->{datetime}->year,
+              $self->{datetime}->month,
+              $self->{data}->{weekdays}->{$weekday},
+              $count,
+          );
     };
     if (!$@ and defined $year && defined $month && defined $day
         and $self->_valid_date(year => $year, month => $month, day => $day))
@@ -868,7 +871,7 @@ sub _count_weekday_from_now
     my ($count, $weekday) = @_;
     chop $weekday if $weekday =~ /s$/;
     my $wday = $self->{datetime}->wday;
-    my $dow  = Decode_Day_of_Week($weekday);
+    my $dow  = $self->_Decode_Day_of_Week($weekday);
     my $diff = ($wday < $dow) ? $dow - $wday : (7 - $wday) + $dow;
     my $days = ($count - 1) * 7 + $diff;
     $self->_add(day => $days);
@@ -917,7 +920,7 @@ sub _next_wday_diff
 {
     my $self = shift;
     my ($day) = @_;
-    return (7 - $self->{datetime}->wday + Decode_Day_of_Week($day));
+    return (7 - $self->{datetime}->wday + $self->_Decode_Day_of_Week($day));
 }
 
 sub _add
@@ -974,7 +977,7 @@ sub _valid_date
         $set{$unit} = $value;
     }
 
-    if (check_date($set{year}, $set{month}, $set{day})) {
+    if ($self->_check_date($set{year}, $set{month}, $set{day})) {
         return true;
     }
     else {
@@ -999,7 +1002,7 @@ sub _valid_time
         $set{$abbrev{$unit}} = $value;
     }
 
-    if (check_time($set{hour}, $set{min}, $set{sec})) {
+    if ($self->_check_time($set{hour}, $set{min}, $set{sec})) {
         return true;
     }
     else {

@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.75_02 Thu Feb 26 11:01:11 CET 2009
+
+ - Date::Calc is no longer a prerequisite; use it when available 
+   for calculations, otherwise fall back to using DateTime.
+   [rt #43521 - Jesse Vincent <jesse@bestpractical.com>]
+
 0.75_01 Sun Feb 22 12:09:32 CET 2009
 
  - When prefer_future is set: Advance the day if the time

@@ -9,13 +9,12 @@ WriteMakefile
                          ],
           'VERSION_FROM' => 'lib/DateTime/Format/Natural.pm',
           'PREREQ_PM' => {
-                           'DateTime' => 0,
-                           'Test::MockTime' => 0,
-                           'Date::Calc' => 0,
-                           'Test::More' => 0,
                            'boolean' => 0,
-                           'Params::Validate' => 0,
+                           'Test::More' => 0,
+                           'DateTime' => 0,
                            'Term::ReadLine' => 0,
+                           'Params::Validate' => 0,
+                           'Test::MockTime' => 0,
                            'List::MoreUtils' => 0
                          }
         )
