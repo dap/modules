@@ -13,7 +13,7 @@ use DateTime ();
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.75_02';
+our $VERSION = '0.75_03';
 
 validation_options(
     on_fail => sub
@@ -330,7 +330,11 @@ sub _process
                 my $i;
                 foreach my $check (@{$expression->[2]}) {
                     my @pos = @{$expression->[1][$i++]};
-                    $valid_expression &= $check->(\%regex_stack, @pos);
+                    $valid_expression &= $check->{code}->(\%regex_stack, @pos);
+                    unless ($valid_expression) {
+                        $self->_set_error("($check->{error})");
+                        last;
+                    }
                 }
             }
             if ($valid_expression) {
@@ -343,7 +347,7 @@ sub _process
                           ? $regex_stack{$pos}
                           : ${$self->_token($pos)};
                     }
-                    @values = map { defined $_ ? $_ : () } @values;
+                    #@values = map { defined $_ ? $_ : () } @values; # unused 
                     my $meth = 'SUPER::'.$expression->[-1]->[$i++];
                     $self->$meth(@values);
                 }

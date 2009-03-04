@@ -175,7 +175,7 @@ compare(\%specific);
 sub compare
 {
     my $href = shift;
-    foreach my $key (sort keys %$href) {
+    foreach my $key (keys %$href) {
         compare_strings($key, $href->{$key});
     }
 }

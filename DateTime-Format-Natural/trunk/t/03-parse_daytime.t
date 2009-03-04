@@ -22,7 +22,7 @@ compare(\%daytime_user, { morning => 06, afternoon => 13, evening => 19 });
 sub compare
 {
     my ($href, $opts) = @_;
-    foreach my $key (sort keys %$href) {
+    foreach my $key (keys %$href) {
         compare_strings($key, $href->{$key}, $opts);
     }
 }

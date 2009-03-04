@@ -7,7 +7,7 @@ use base qw(DateTime::Format::Natural::Lang::Base);
 use constant true  => 1;
 use constant false => 0; 
 
-our $VERSION = '1.17';
+our $VERSION = '1.18';
 
 our (%init,
      %timespan,
@@ -67,15 +67,19 @@ our (%init,
 }
 
 %extended_checks = (
-    suffix => sub {
-        my $captured = shift;
-        my @pos = @_;
-        # XXX constant.pm true/false: workaround for a segmentation fault
-        # in Perl_mg_find() on perl 5.8.9 and 5.10.0 when using boolean.pm
-        # v0.20 (tested as of 12/02/2009).
-        return true if ($captured->{$pos[0]} == 1 && $captured->{$pos[1]} !~ /s$/);
-        return true if ($captured->{$pos[0]} >  1 && $captured->{$pos[1]} =~ /s$/);
-        return false;
+    suffix => { 
+    	code => sub
+	{
+            my $captured = shift;
+            my @pos = @_;
+            # XXX constant.pm true/false: workaround for a segmentation fault
+            # in Perl_mg_find() on perl 5.8.9 and 5.10.0 when using boolean.pm
+            # v0.20 (tested as of 12/02/2009).
+            return true if ($captured->{$pos[0]} == 1 && $captured->{$pos[1]} !~ /s$/);
+            return true if ($captured->{$pos[0]} >  1 && $captured->{$pos[1]} =~ /s$/);
+            return false;
+        },
+        error => "suffix 's' without plural",
     },
 );
 
