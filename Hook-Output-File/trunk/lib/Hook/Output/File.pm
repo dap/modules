@@ -9,7 +9,7 @@ use File::Spec ();
 
 our ($VERSION, @ISA);
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 @ISA = qw(Tie::StdHandle);
 
 sub redirect
