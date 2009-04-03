@@ -1,5 +1,29 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.75_04 Fri Apr  3 15:13:36 CEST 2009
+
+ - New supported formats: some suggested by [rt #44067 - Michael
+   Reddick], while others have been independently added.
+
+ - Fix a regression [rt #44691 - Jason May].
+
+ - Shift common conversion logic within base calculation methods
+   to the grammar class.
+
+ - Introduce a helper class for handling actions related to
+   metadata flags and to serve as container for setter/checker
+   methods.
+
+ - Wrap Decode_Month() in Compat.pm.
+
+ - Test both implementations within each method in Compat.pm.
+
+ - Preserve order of tests.
+
+ - Add a test-file for regressions.
+
+ - Remove the obsoleted internal use of a total-modified counter.
+
 0.75_03 Wed Mar  4 13:39:08 CET 2009
 
  - Enhance the extended checks mechanism further to have it set 

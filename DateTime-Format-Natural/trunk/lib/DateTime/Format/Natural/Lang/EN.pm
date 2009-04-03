@@ -5,9 +5,11 @@ use warnings;
 use base qw(DateTime::Format::Natural::Lang::Base);
 #use boolean qw(true false);
 use constant true  => 1;
-use constant false => 0; 
+use constant false => 0;
 
-our $VERSION = '1.18';
+use DateTime::Format::Natural::Helpers qw(%flag);
+
+our $VERSION = '1.19';
 
 our (%init,
      %timespan,
@@ -18,20 +20,22 @@ our (%init,
      %data_months,
      %data_months_abbrev,
      @data_months_all,
+     %data_conversion,
+     %data_helpers,
      %extended_checks,
      %grammar);
 
-%init = ('tokens' => sub {});
-%timespan = ('literal' => 'to');
+%init = (tokens => sub {});
+%timespan = (literal => 'to');
 
-%RE = ('number'    => qr/^(\d+)$/,
-       'year'      => qr/^(\d{4})$/,
-       'time'      => qr/^((?:\d{1,2})(?:\:\d{2})?)$/,
-       'time_am'   => qr/^((?:\d{1,2})(?:\:\d{2})?)(?:am)?$/,
-       'time_pm'   => qr/^((?:\d{1,2})(?:\:\d{2})?)pm$/,
-       'time_full' => qr/^(\d{1,2}\:\d{2}\:\d{2})$/,
-       'day_enum'  => qr/^(\d+)(?:st|nd|rd|th)?$/,
-       'monthday'  => qr/^(\d{1,2})$/);
+%RE = (number    => qr/^(\d+)$/,
+       year      => qr/^(\d{4})$/,
+       time      => qr/^((?:\d{1,2})(?:\:\d{2})?)$/,
+       time_am   => qr/^((?:\d{1,2})(?:\:\d{2})?)(?:am)?$/,
+       time_pm   => qr/^((?:\d{1,2})(?:\:\d{2})?)pm$/,
+       time_full => qr/^(\d{1,2}\:\d{2}\:\d{2})$/,
+       day       => qr/^(\d+)(?:st|nd|rd|th)?$/,
+       monthday  => qr/^(\d{1,2})(?:st|nd|rd|th)?$/);
 {
     my $i = 1;
 
@@ -64,22 +68,46 @@ our (%init,
 
     my $months_re = join '|', @data_months_all;
     $RE{month} = qr/^($months_re)$/i;
+
+    %data_conversion = (
+        last_this_next    => { do { $i = -1; map { $_ => $i++ } qw(last this next)           } },
+        yes_today_tom     => { do { $i = -1; map { $_ => $i++ } qw(yesterday today tomorrow) } },
+        noon_midnight     => { noon => 12, midnight => 0                                       },
+        morn_aftern_even  => { do { $i = 0; map { $_ => $i++ } qw(morning afternoon evening) } },
+        before_after_from => { before => -1, after => 1, from => 1                             },
+    );
+
+    %data_helpers = (
+        suffix      => qr/s$/,
+        normalize   => sub { ${$_[0]} = ucfirst lc ${$_[0]} },
+        abbreviated => sub { length ${$_[0]} == 3 },
+    );
 }
 
 %extended_checks = (
-    suffix => { 
-    	code => sub
-	{
-            my $captured = shift;
-            my @pos = @_;
-            # XXX constant.pm true/false: workaround for a segmentation fault
-            # in Perl_mg_find() on perl 5.8.9 and 5.10.0 when using boolean.pm
-            # v0.20 (tested as of 12/02/2009).
-            return true if ($captured->{$pos[0]} == 1 && $captured->{$pos[1]} !~ /s$/);
-            return true if ($captured->{$pos[0]} >  1 && $captured->{$pos[1]} =~ /s$/);
-            return false;
-        },
-        error => "suffix 's' without plural",
+    suffix => sub
+    {
+        my ($captured, $pos, $error) = @_;
+
+        my @checks = (
+            { cond  => sub { $captured->{$pos->[0]} == 1 && $captured->{$pos->[1]} =~ $data_helpers{suffix} },
+              error => "suffix 's' without plural",
+            },
+            { cond  => sub { $captured->{$pos->[0]} >  1 && $captured->{$pos->[1]} !~ $data_helpers{suffix} },
+              error => "plural without suffix 's'",
+            },
+        );
+
+        # XXX constant.pm true/false: workaround for a segmentation fault
+        # in Perl_mg_find() on perl 5.8.9 and 5.10.0 when using boolean.pm
+        # v0.20 (tested as of 12/02/2009).
+        foreach my $check (@checks) {
+            if ($check->{cond}->()) {
+                $$error = $check->{error};
+                return false;
+            }
+        }
+        return true;
     },
 );
 
@@ -87,9 +115,10 @@ our (%init,
 #    [ <PERL TYPE DECLARATION>, ... ], ---------------------> declares how the tokens will be evaluated
 #    [
 #      { <token index> => <token value>, ... }, ------------> declares the index <-> value map
-#      [ [ <index(es) of token(s) to be passed> ], ... ], --> declares which tokens will be passed to the extended check(s) 
+#      [ [ <index(es) of token(s) to be passed> ], ... ], --> declares which tokens will be passed to the extended check(s)
 #      [ <subroutine(s) for extended check(s)>, ... ] ------> declares the extended check(s)
 #      [ [ <index(es) of token(s) to be passed> ], ... ], --> declares which tokens will be passed to the worker method(s)
+#      [ { <additional options to be passed> }, ... ] ------> declares additional options
 #      [ <name of method to dispatch to>, ... ], -----------> declares the worker method(s)
 #    ],
 
@@ -101,252 +130,464 @@ our (%init,
          [],
          [],
          [ [] ],
-         [ '_day_today' ],
+         [ {} ],
+         [ '_no_op' ],
        ],
     ],
     day => [
-       [ 'SCALAR' ],
+       [ 'REGEXP' ],
        [
-         { 0 => 'today' },
+         { 0 => qr/^(today)$/i },
          [],
          [],
-         [ [] ],
-         [ '_day_today' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_unit_variant' ],
        ],
        [
-         { 0 => 'yesterday' },
+         { 0 => qr/^(yesterday)$/i },
          [],
          [],
-         [ [] ],
-         [ '_day_yesterday' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_unit_variant' ],
        ],
        [
-         { 0 => 'tomorrow' },
+         { 0 => qr/^(tomorrow)$/i },
          [],
          [],
-         [ [] ],
-         [ '_day_tomorrow' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_unit_variant' ],
        ],
     ],
     dayframe => [
-       [ 'SCALAR' ],
+       [ 'REGEXP' ],
        [
-         { 0 => 'morning' },
+         { 0 => qr/^(morning)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_morning' ],
+         [
+           [
+             { 0 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_variant' ],
        ],
        [
-         { 0 => 'afternoon' },
+         { 0 => qr/^(afternoon)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_afternoon' ],
+         [
+           [
+             { 0 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_variant' ],
        ],
        [
-         { 0 => 'evening' },
+         { 0 => qr/^(evening)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_evening' ],
+         [
+           [
+             { 0 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_variant' ],
        ]
     ],
     daytime_noon_midnight => [
-       [ 'SCALAR' ],
+       [ 'REGEXP' ],
        [
-         { 0 => 'noon' },
+         { 0 => qr/^(noon)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_noon' ],
+         [
+           [
+             { 0 => [ $flag{noon_midnight} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime' ],
        ],
        [
-         { 0 => 'midnight' },
+         { 0 => qr/^(midnight)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_midnight' ],
+         [
+           [
+             { 0 => [ $flag{noon_midnight} ] },
+           ]
+         ],
+         [ {} ],
+         [ '_daytime' ],
        ],
     ],
     daytime_noon_midnight_at => [
-       [ 'SCALAR', 'SCALAR', 'SCALAR' ],
+       [ 'REGEXP', 'SCALAR', 'REGEXP' ],
        [
-         { 0 => 'yesterday', 1 => 'at', 2 => 'noon' },
+         { 0 => qr/^(yesterday)$/i, 1 => 'at', 2 => qr/^(noon)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_yesterday', '_daytime_noon' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 2 => [ $flag{noon_midnight} ] },
+           ],
+         ],
+         [ { unit => 'day' }, { hour => 12 } ],
+         [ '_unit_variant', '_daytime' ],
        ],
        [
-         { 0 => 'yesterday', 1 => 'at', 2 => 'midnight' },
+         { 0 => qr/^(yesterday)$/i, 1 => 'at', 2 => qr/^(midnight)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_yesterday', '_daytime_midnight' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 2 => [ $flag{noon_midnight} ] },
+           ],
+         ],
+         [ { unit => 'day' }, { hour => 0 } ],
+         [ '_unit_variant', '_daytime' ],
        ],
        [
-         { 0 => 'today', 1 => 'at', 2 => 'noon' },
+         { 0 => qr/^(today)$/i, 1 => 'at', 2 => qr/^(noon)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_today', '_daytime_noon' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 2 => [ $flag{noon_midnight} ] },
+           ],
+         ],
+         [ { unit => 'day' }, { hour => 12 } ],
+         [ '_unit_variant', '_daytime' ],
        ],
        [
-         { 0 => 'today', 1 => 'at', 2 => 'midnight' },
+         { 0 => qr/^(today)$/i, 1 => 'at', 2 => qr/^(midnight)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_today', '_daytime_midnight' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 2 => [ $flag{noon_midnight} ] },
+           ],
+         ],
+         [ { unit => 'day' }, { hour => 0 } ],
+         [ '_unit_variant', '_daytime' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => 'at', 2 => 'noon' },
+         { 0 => qr/^(tomorrow)$/i, 1 => 'at', 2 => qr/^(noon)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_tomorrow', '_daytime_noon' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 2 => [ $flag{noon_midnight} ] },
+           ]
+         ],
+         [ { unit => 'day' }, { hour => 12 } ],
+         [ '_unit_variant', '_daytime' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => 'at', 2 => 'midnight' },
+         { 0 => qr/^(tomorrow)$/i, 1 => 'at', 2 => qr/^(midnight)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_tomorrow', '_daytime_midnight' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 2 => [ $flag{noon_midnight} ] },
+           ],
+         ],
+         [ { unit => 'day' }, { hour => 0 } ],
+         [ '_unit_variant', '_daytime' ],
        ],
     ],
     this_daytime => [
-       [ 'SCALAR', 'SCALAR' ],
+       [ 'SCALAR', 'REGEXP' ],
        [
-         { 0 => 'this', 1 => 'morning' },
+         { 0 => 'this', 1 => qr/^(morning)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_morning' ],
+         [
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_variant' ],
        ],
        [
-         { 0 => 'this', 1 => 'afternoon' },
+         { 0 => 'this', 1 => qr/^(afternoon)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_afternoon' ],
+         [
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ]
+         ],
+         [ {} ],
+         [ '_daytime_variant' ],
        ],
        [
-         { 0 => 'this', 1 => 'evening' },
+         { 0 => 'this', 1 => qr/^(evening)$/i },
          [],
          [],
-         [ [] ],
-         [ '_daytime_evening' ],
+         [
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_variant' ],
        ],
     ],
     dayframe_day => [
-       [ 'SCALAR', 'SCALAR' ],
+       [ 'REGEXP', 'REGEXP' ],
        [
-         { 0 => 'yesterday', 1 => 'morning' },
+         { 0 => qr/^(yesterday)$/i, 1 => qr/^(morning)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_yesterday', '_daytime_morning' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => 'afternoon' },
+         { 0 => qr/^(yesterday)$/i, 1 => qr/^(afternoon)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_yesterday', '_daytime_afternoon' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ]
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => 'evening' },
+         { 0 => qr/^(yesterday)$/i, 1 => qr/^(evening)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_yesterday', '_daytime_evening' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'today', 1 => 'morning' },
+         { 0 => qr/^(today)$/i, 1 => qr/^(morning)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_today', '_daytime_morning' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ]
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'today', 1 => 'afternoon' },
+         { 0 => qr/^(today)$/i, 1 => qr/^(afternoon)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_today', '_daytime_afternoon' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'today', 1 => 'evening' },
+         { 0 => qr/^(today)$/i, 1 => qr/^(evening)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_today', '_daytime_evening' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => 'morning' },
+         { 0 => qr/^(tomorrow)$/i, 1 => qr/^(morning)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_tomorrow', '_daytime_morning' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ]
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => 'afternoon' },
+         { 0 => qr/^(tomorrow)$/i, 1 => qr/^(afternoon)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_tomorrow', '_daytime_afternoon' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => 'evening' },
+         { 0 => qr/^(tomorrow)$/i, 1 => qr/^(evening)$/i },
          [],
          [],
-         [ [], [] ],
-         [ '_day_tomorrow', '_daytime_evening' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [
+             { 1 => [ $flag{morn_aftern_even} ] },
+           ]
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_daytime_variant' ],
        ]
     ],
     at_daytime => [
-       [ 'REGEXP', 'SCALAR' ],
+       [ 'REGEXP', 'REGEXP' ],
        [
-         { 0 => $RE{time_am}, 1 => 'yesterday' },
+         { 0 => $RE{time_am}, 1 => qr/^(yesterday)$/i },
          [],
          [],
-         [ [ 0 ], [] ],
-         [ '_time', '_day_yesterday' ],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ {}, { unit => 'day' } ],
+         [ '_time', '_unit_variant' ],
        ],
        [
-         { 0 => $RE{time_am}, 1 => 'today' },
+         { 0 => $RE{time_am}, 1 => qr/^(today)$/i },
          [],
          [],
-         [ [ 0 ], [] ],
-         [ '_time', '_day_today' ],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ {}, { unit => 'day' } ],
+         [ '_time', '_unit_variant' ],
        ],
        [
-         { 0 => $RE{time_am}, 1 => 'tomorrow' },
+         { 0 => $RE{time_am}, 1 => qr/^(tomorrow)$/i },
          [],
          [],
-         [ [ 0 ], [] ],
-         [ '_time', '_day_tomorrow' ],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ {}, { unit => 'day' } ],
+         [ '_time', '_unit_variant' ],
        ],
        [
-         { 0 => $RE{time_pm}, 1 => 'yesterday' },
+         { 0 => $RE{time_pm}, 1 => qr/^(yesterday)$/i },
          [],
          [],
-         [ [ 0 ], [] ],
-         [ '_at_pm', '_day_yesterday' ],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ { hours => 12 }, { unit => 'day' } ],
+         [ '_at', '_unit_variant' ],
        ],
        [
-         { 0 => $RE{time_pm}, 1 => 'today' },
+         { 0 => $RE{time_pm}, 1 => qr/^(today)$/i },
          [],
          [],
-         [ [ 0 ], [] ],
-         [ '_at_pm', '_day_today' ],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ { hours => 12 }, { unit => 'day' } ],
+         [ '_at', '_unit_variant' ],
        ],
        [
-         { 0 => $RE{time_pm}, 1 => 'tomorrow' },
+         { 0 => $RE{time_pm}, 1 => qr/^(tomorrow)$/i },
          [],
          [],
-         [ [ 0 ], [] ],
-         [ '_at_pm', '_day_tomorrow' ],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ { hours => 12 }, { unit => 'day' } ],
+         [ '_at', '_unit_variant' ],
        ],
     ],
     month => [
@@ -355,155 +596,487 @@ our (%init,
          { 0 => $RE{month} },
          [],
          [],
-         [ [ 0 ] ],
-         [ '_month' ],
+         [
+           [
+             { 0 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ { unit => 'month' } ],
+         [ '_unit_date' ],
        ],
     ],
     month_day => [
        [ 'REGEXP', 'REGEXP' ],
        [
-         { 0 => $RE{day_enum}, 1 => $RE{month} },
+         { 0 => $RE{monthday}, 1 => $RE{month} },
          [],
          [],
-         [ [ 0, 1 ] ],
+         [
+           [
+               0,
+             { 1 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
          [ '_month_day' ],
        ],
        [
-         { 0 => $RE{month}, 1 => $RE{day_enum} },
+         { 0 => $RE{month}, 1 => $RE{monthday} },
          [],
          [],
-         [ [ 1, 0 ] ],
+         [
+           [
+               1,
+             { 0 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
          [ '_month_day' ],
        ]
+    ],
+    day_month_year_ago => [
+      [ 'REGEXP', 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
+      [
+        { 0 => $RE{monthday}, 1 => $RE{month}, 2 => $RE{number}, 3 => qr/^(years?)$/i, 4 => 'ago' },
+        [ [ 2, 3 ] ],
+        [ $extended_checks{suffix} ],
+        [
+          [
+              0,
+            { 1 => [ $flag{month_name}, $flag{month_num} ] },
+          ],
+          [ 2 ],
+        ],
+        [ {}, { unit => 'year' } ],
+        [ '_month_day', '_ago_variant' ],
+      ],
+    ],
+    day_month_variant_year => [
+      [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
+      [
+        { 0 => $RE{monthday}, 1 => $RE{month}, 2 => qr/^(next)$/i, 3 => 'year' },
+        [],
+        [],
+        [
+          [
+              0,
+            { 1 => [ $flag{month_name}, $flag{month_num} ] },
+          ],
+          [
+            { 2 => [ $flag{last_this_next} ] },
+          ],
+        ],
+        [ {}, { unit => 'year' } ],
+        [ '_month_day', '_unit_variant' ],
+      ],
+      [
+        { 0 => $RE{monthday}, 1 => $RE{month}, 2 => qr/^(this)$/i, 3 => 'year' },
+        [],
+        [],
+        [
+          [
+              0,
+            { 1 => [ $flag{month_name}, $flag{month_num} ] },
+          ],
+          [
+            { 2 => [ $flag{last_this_next} ] },
+          ],
+        ],
+        [ {}, { unit => 'year' } ],
+        [ '_month_day', '_unit_variant' ],
+      ],
+      [
+        { 0 => $RE{monthday}, 1 => $RE{month}, 2 => qr/^(last)$/i, 3 => 'year' },
+        [],
+        [],
+        [
+          [
+              0,
+            { 1 => [ $flag{month_name}, $flag{month_num} ] },
+          ],
+          [
+            { 2 => [ $flag{last_this_next} ] },
+          ]
+        ],
+        [ {}, { unit => 'year' } ],
+        [ '_month_day', '_unit_variant' ],
+      ],
     ],
     month_day_year => [
        [ 'REGEXP', 'REGEXP', 'REGEXP' ],
        [
-         { 0 => $RE{month}, 1 => $RE{day_enum}, 2 => $RE{year} },
+         { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{year} },
          [],
          [],
-         [ [ 1, 0 ], [ 2 ] ],
-         [ '_month_day', '_year' ], 
+         [
+           [
+               1,
+             { 0 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+           [ 2 ],
+         ],
+         [ {}, { unit => 'year' } ],
+         [ '_month_day', '_unit_date' ],
        ]
-    ], 
+    ],
+    week_variant => [
+       [ 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => qr/^(next)$/i, 1 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'week' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'week' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(last)$/i, 1 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ]
+         ],
+         [ { unit => 'week' } ],
+         [ '_unit_variant' ],
+       ]
+    ],
     weekday => [
        [ 'REGEXP' ],
        [
          { 0 => $RE{weekday} },
          [],
          [],
-         [ [ 0 ] ],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ]
+         ],
+         [ {} ],
          [ '_weekday' ],
        ],
     ],
-    last_day => [
-       [ 'SCALAR', 'REGEXP' ],
+    weekday_variant => [
+       [ 'REGEXP', 'REGEXP' ],
        [
-         { 0 => 'last', 1 => $RE{weekday} },
+         { 0 => qr/^(next)$/i, 1 => $RE{weekday} },
          [],
          [],
-         [ [ 1 ] ],
-         [ '_last_day' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => $RE{weekday} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
+       ],
+       [
+         { 0 => qr/^(last)$/i, 1 => $RE{weekday} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
        ],
     ],
-    last_month => [
-       [ 'SCALAR', 'REGEXP' ],
+    year_variant => [
+       [ 'REGEXP', 'SCALAR' ],
        [
-         { 0 => 'last', 1 => $RE{month} },
+         { 0 => qr/^(last)$/i, 1 => 'year' },
          [],
          [],
-         [ [ 1 ] ],
-         [ '_last_month' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'year' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => 'year' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'year' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(next)$/i, 1 => 'year' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'year' } ],
+         [ '_unit_variant' ],
        ],
     ],
-    last_month_literal => [
-       [ 'SCALAR', 'SCALAR' ],
+    month_variant => [
+       [ 'REGEXP', 'REGEXP' ],
        [
-         { 0 => 'last', 1 => 'month' },
+         { 0 => qr/^(last)$/i, 1 => $RE{month} },
          [],
          [],
-         [ [] ],
-         [ '_last_month_literal' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_month_variant' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{month_name}, $flag{month_num} ] },
+           ]
+         ],
+         [ {} ],
+         [ '_month_variant' ],
+       ],
+       [
+         { 0 => qr/^(next)$/i, 1 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_month_variant' ],
        ],
     ],
-    last_year => [
-       [ 'SCALAR', 'SCALAR' ],
+    unit_literal_variant => [
+       [ 'REGEXP', 'SCALAR' ],
        [
-         { 0 => 'last', 1 => 'year' },
+         { 0 => qr/^(last)$/i, 1 => 'second' },
          [],
          [],
-         [ [] ],
-         [ '_last_year' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'second' } ],
+         [ '_unit_variant' ],
        ],
-    ],
-    next_weekday => [
-       [ 'SCALAR', 'REGEXP' ],
        [
-         { 0 => 'next', 1 => $RE{weekday} },
+         { 0 => qr/^(this)$/i, 1 => 'second' },
          [],
          [],
-         [ [ 1 ] ],
-         [ '_next_weekday' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'second' } ],
+         [ '_unit_variant' ],
        ],
-    ],
-    next_month => [
-       [ 'SCALAR', 'REGEXP' ],
        [
-         { 0 => 'next', 1 => $RE{month} },
+         { 0 => qr/^(next)$/i, 1 => 'second' },
          [],
          [],
-         [ [ 1 ] ],
-         [ '_next_month' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'second' } ],
+         [ '_unit_variant' ],
        ],
-    ],
-    next_month_literal => [
-       [ 'SCALAR', 'SCALAR' ],
        [
-         { 0 => 'next', 1 => 'month' },
+         { 0 => qr/^(last)$/i, 1 => 'minute' },
          [],
          [],
-         [ [] ],
-         [ '_next_month_literal' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'minute' } ],
+         [ '_unit_variant' ],
        ],
-    ],
-    next_year => [
-       [ 'SCALAR', 'SCALAR' ],
        [
-         { 0 => 'next', 1 => 'year' },
+         { 0 => qr/^(this)$/i, 1 => 'minute' },
          [],
          [],
-         [ [] ],
-         [ '_next_year' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'minute' } ],
+         [ '_unit_variant' ],
        ],
-    ],
-    this_second => [
-       [ 'SCALAR', 'SCALAR' ],
        [
-         { 0 => 'this', 1 => 'second' },
+         { 0 => qr/^(next)$/i, 1 => 'minute' },
          [],
          [],
-         [ [] ],
-         [ '_this_second' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'minute' } ],
+         [ '_unit_variant' ],
        ],
-    ],
-    this_weekday => [
-       [ 'SCALAR', 'REGEXP' ],
        [
-         { 0 => 'this', 1 => $RE{weekday} },
+         { 0 => qr/^(last)$/i, 1 => 'hour' },
          [],
          [],
-         [ [ 1 ] ],
-         [ '_this_weekday' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'hour' } ],
+         [ '_unit_variant' ],
        ],
-    ],
-    this_month => [
-       [ 'SCALAR', 'SCALAR' ],
        [
-         { 0 => 'this', 1 => 'month' },
+         { 0 => qr/^(this)$/i, 1 => 'hour' },
          [],
          [],
-         [ [] ],
-         [ '_this_month' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'hour' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(next)$/i, 1 => 'hour' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'hour' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(last)$/i, 1 => 'day' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => 'day' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(next)$/i, 1 => 'day' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(last)$/i, 1 => 'month' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'month' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => 'month' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'month' } ],
+         [ '_unit_variant' ],
+       ],
+       [
+         { 0 => qr/^(next)$/i, 1 => 'month' },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+           ],
+         ],
+         [ { unit => 'month' } ],
+         [ '_unit_variant' ],
        ],
     ],
     at => [
@@ -513,14 +1086,16 @@ our (%init,
          [],
          [],
          [ [ 0 ] ],
-         [ '_at_am' ],
+         [ { hours => 0 } ],
+         [ '_at' ],
        ],
        [
          { 0 => $RE{time}, 1 => 'pm' },
          [],
          [],
          [ [ 0 ] ],
-         [ '_at_pm' ],
+         [ { hours => 12 } ],
+         [ '_at' ],
        ],
     ],
     at_combined => [
@@ -530,14 +1105,16 @@ our (%init,
          [],
          [],
          [ [ 0 ] ],
-         [ '_at_am' ],
+         [ { hours => 0 } ],
+         [ '_at' ],
        ],
        [
          { 0 => $RE{time_pm} },
          [],
          [],
          [ [ 0 ] ],
-         [ '_at_pm' ],
+         [ { hours => 12 } ],
+         [ '_at' ],
        ],
     ],
     weekday_time => [
@@ -546,7 +1123,13 @@ our (%init,
          { 0 => $RE{weekday}, 1 => $RE{time} },
          [],
          [],
-         [ [ 0 ], [ 1 ] ],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 1 ],
+         ],
+         [ {}, {} ],
          [ '_weekday', '_time' ],
        ],
     ],
@@ -557,6 +1140,7 @@ our (%init,
          [],
          [],
          [ [ 0 ] ],
+         [ {} ],
          [ '_time' ],
        ],
     ],
@@ -567,6 +1151,7 @@ our (%init,
          [],
          [],
          [ [ 0 ] ],
+         [ {} ],
          [ '_time_full' ],
        ],
     ],
@@ -576,8 +1161,14 @@ our (%init,
          { 0 => $RE{month}, 1 => $RE{year} },
          [],
          [],
-         [ [ 0 ], [ 1 ] ],
-         [ '_month', '_year' ],
+         [
+           [
+             { 0 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'month' }, { unit => 'year' } ],
+         [ '_unit_date', '_unit_date' ],
        ],
     ],
     year => [
@@ -587,311 +1178,575 @@ our (%init,
          [],
          [],
          [ [ 0 ] ],
-         [ '_year' ],
+         [ { unit => 'year' } ],
+         [ '_unit_date' ],
        ],
     ],
     count_weekday => [
        [ 'REGEXP', 'REGEXP' ],
        [
-         { 0 => $RE{day_enum}, 1 => $RE{weekday} },
+         { 0 => $RE{day}, 1 => $RE{weekday} },
          [],
          [],
-         [ [ 0, 1 ] ],
+         [
+           [
+               0,
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
          [ '_count_weekday' ],
        ],
     ],
     count_yearday => [
        [ 'REGEXP', 'SCALAR' ],
        [
-         { 0 => $RE{day_enum}, 1 => 'day' },
+         { 0 => $RE{day}, 1 => 'day' },
          [],
          [],
-         [ [ 0 ] ],
-         [ '_count_yearday' ],
+         [
+           [
+             0,
+             { VALUE => 0 }
+           ],
+         ],
+         [ {} ],
+         [ '_count_yearday_variant_year' ],
        ],
     ],
-    daytime => [
+    count_yearday_variant_year => [
+        [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
+        [
+          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(next)$/i, 3 => 'year' },
+          [],
+          [],
+          [
+            [
+                0,
+              { 2 => [ $flag{last_this_next} ] },
+            ],
+          ],
+          [ {} ],
+          [ '_count_yearday_variant_year' ],
+        ],
+        [
+          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(this)$/i, 3 => 'year' },
+          [],
+          [],
+          [
+            [
+                0,
+              { 2 => [ $flag{last_this_next} ] },
+            ],
+          ],
+          [ {} ],
+          [ '_count_yearday_variant_year' ],
+        ],
+        [
+          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(last)$/i, 3 => 'year' },
+          [],
+          [],
+          [
+            [
+                0,
+              { 2 => [ $flag{last_this_next} ] },
+            ],
+          ],
+          [ {} ],
+          [ '_count_yearday_variant_year' ],
+        ],
+    ],
+    daytime_in_the_variant => [
        [ 'REGEXP', 'SCALAR', 'SCALAR', 'SCALAR' ],
        [
          { 0 => $RE{number}, 1 => 'in', 2 => 'the', 3 => 'morning' },
          [],
          [],
          [ [ 0 ] ],
-         [ '_daytime_in_the_morning' ],
+         [ { hours => 0 } ],
+         [ '_daytime_in_the_variant' ],
        ],
        [
          { 0 => $RE{number}, 1 => 'in', 2 => 'the', 3 => 'afternoon' },
          [],
          [],
          [ [ 0 ] ],
-         [ '_daytime_in_the_afternoon' ],
+         [ { hours => 12 } ],
+         [ '_daytime_in_the_variant' ],
        ],
        [
          { 0 => $RE{number}, 1 => 'in', 2 => 'the', 3 => 'evening' },
          [],
          [],
          [ [ 0 ] ],
-         [ '_daytime_in_the_evening' ],
+         [ { hours => 12 } ],
+         [ '_daytime_in_the_variant' ],
        ],
     ],
     ago => [
        [ 'REGEXP', 'REGEXP', 'SCALAR' ],
        [
-         { 0 => $RE{number}, 1 => qr/(seconds?)/i, 2 => 'ago' },
+         { 0 => $RE{number}, 1 => qr/^(seconds?)$/i, 2 => 'ago' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
          [ [ 0 ] ],
-         [ '_ago_seconds' ],
+         [ { unit => 'second' } ],
+         [ '_ago_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(minutes?)/i, 2 => 'ago' },
+         { 0 => $RE{number}, 1 => qr/^(minutes?)$/i, 2 => 'ago' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
          [ [ 0 ] ],
-         [ '_ago_minutes' ],
+         [ { unit => 'minute' } ],
+         [ '_ago_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'ago' },
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => 'ago' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
          [ [ 0 ] ],
-         [ '_ago_hours' ],
+         [ { unit => 'hour' } ],
+         [ '_ago_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(days?)/i, 2 => 'ago' },
+         { 0 => $RE{number}, 1 => qr/^(days?)$/i, 2 => 'ago' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
          [ [ 0 ] ],
-         [ '_ago_days' ],
+         [ { unit => 'day' } ],
+         [ '_ago_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(weeks?)/i, 2 => 'ago' },
+         { 0 => $RE{number}, 1 => qr/^(weeks?)$/i, 2 => 'ago' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
          [ [ 0 ] ],
-         [ '_ago_weeks' ],
+         [ { unit => 'week' } ],
+         [ '_ago_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(months?)/i, 2 => 'ago' },
+         { 0 => $RE{number}, 1 => qr/^(months?)$/i, 2 => 'ago' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
          [ [ 0 ] ],
-         [ '_ago_months' ],
+         [ { unit => 'month' } ],
+         [ '_ago_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(years?)/i, 2 => 'ago' },
+         { 0 => $RE{number}, 1 => qr/^(years?)$/i, 2 => 'ago' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
          [ [ 0 ] ],
-         [ '_ago_years' ],
+         [ { unit => 'year' } ],
+         [ '_ago_variant' ],
        ],
     ],
     ago_tomorrow => [
-       [ 'SCALAR', 'REGEXP', 'REGEXP', 'SCALAR' ],
+       [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
        [
-         { 0 => 'tomorrow', 1 => $RE{number}, 2 => qr/(seconds?)/i, 3 => 'ago' },
+         { 0 => qr/^(tomorrow)$/i, 1 => $RE{number}, 2 => qr/^(seconds?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_tomorrow', '_ago_seconds' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'second' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => $RE{number}, 2 => qr/(minutes?)/i, 3 => 'ago' },
+         { 0 => qr/^(tomorrow)$/i, 1 => $RE{number}, 2 => qr/^(minutes?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_tomorrow', '_ago_minutes' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'minute' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => $RE{number}, 2 => qr/(hours?)/i, 3 => 'ago' },
+         { 0 => qr/^(tomorrow)$/i, 1 => $RE{number}, 2 => qr/^(hours?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_tomorrow', '_ago_hours' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'hour' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => $RE{number}, 2 => qr/(days?)/i, 3 => 'ago' },
+         { 0 => qr/^(tomorrow)$/i, 1 => $RE{number}, 2 => qr/^(days?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_tomorrow', '_ago_days' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'day' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => $RE{number}, 2 => qr/(weeks?)/i, 3 => 'ago' },
+         { 0 => qr/^(tomorrow)$/i, 1 => $RE{number}, 2 => qr/^(weeks?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_tomorrow', '_ago_weeks' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'week' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => $RE{number}, 2 => qr/(months?)/i, 3 => 'ago' },
+         { 0 => qr/^(tomorrow)$/i, 1 => $RE{number}, 2 => qr/^(months?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_tomorrow', '_ago_months' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'month' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => $RE{number}, 2 => qr/(years?)/i, 3 => 'ago' },
+         { 0 => qr/^(tomorrow)$/i, 1 => $RE{number}, 2 => qr/^(years?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_tomorrow', '_ago_years' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'year' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
     ],
     ago_yesterday => [
        [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
        [
-         { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/(seconds?)/i, 3 => 'ago' },
+         { 0 => qr/^(yesterday)$/i, 1 => $RE{number}, 2 => qr/^(seconds?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_yesterday', '_ago_seconds' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'second' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/(minutes?)/i, 3 => 'ago' },
+         { 0 => qr/^(yesterday)$/i, 1 => $RE{number}, 2 => qr/^(minutes?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_yesterday', '_ago_minutes' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'minute' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/(hours?)/i, 3 => 'ago' },
+         { 0 => qr/^(yesterday)$/i, 1 => $RE{number}, 2 => qr/^(hours?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_yesterday', '_ago_hours' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'hour' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/(days?)/i, 3 => 'ago' },
+         { 0 => qr/^(yesterday)$/i, 1 => $RE{number}, 2 => qr/^(days?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_yesterday', '_ago_days' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'day' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/(weeks?)/i, 3 => 'ago' },
+         { 0 => qr/^(yesterday)$/i, 1 => $RE{number}, 2 => qr/^(weeks?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_yesterday', '_ago_weeks' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'week' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/(months?)/i, 3 => 'ago' },
+         { 0 => qr/^(yesterday)$/i, 1 => $RE{number}, 2 => qr/^(months?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_yesterday', '_ago_months' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'month' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
        [
-         { 0 => 'yesterday', 1 => $RE{number}, 2 => qr/(years?)/i, 3 => 'ago' },
+         { 0 => qr/^(yesterday)$/i, 1 => $RE{number}, 2 => qr/^(years?)$/i, 3 => 'ago' },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [], [ 1 ] ],
-         [ '_day_yesterday', '_ago_years' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 1 ],
+         ],
+         [ { unit => 'day' }, { unit => 'year' } ],
+         [ '_unit_variant', '_ago_variant' ],
        ],
     ],
     weekday_ago_at_time => [
        [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR', 'SCALAR', 'REGEXP' ],
        [
-         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/(months?)/, 3 => 'ago', 4 => 'at', 5 => $RE{time_am} },
+         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/^(months?)$/, 3 => 'ago', 4 => 'at', 5 => $RE{time_am} },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 1 ], [ 0 ], [ 5 ] ],
-         [ '_ago_months', '_weekday', '_time' ],
+         [
+           [ 1 ],
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 5 ],
+         ],
+         [ { unit => 'month' }, {}, {} ],
+         [ '_ago_variant', '_weekday', '_time' ],
        ],
        [
-         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/(months?)/, 3 => 'ago', 4 => 'at', 5 => $RE{time_pm} },
+         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/^(months?)$/, 3 => 'ago', 4 => 'at', 5 => $RE{time_pm} },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 1 ], [ 0 ], [ 5 ] ],
-         [ '_ago_months', '_weekday', '_at_pm' ],
+         [
+           [ 1 ],
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 5 ],
+         ],
+         [ { unit => 'month' }, {}, { hours => 12 } ],
+         [ '_ago_variant', '_weekday', '_at' ],
        ],
     ],
-    now_variant => [
-       [ 'REGEXP', 'REGEXP', 'SCALAR', 'SCALAR' ],
+    now_variant_before => [
+       [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
        [
-         { 0 => $RE{number}, 1 => qr/(minutes?)/i, 2 => 'before', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(seconds?)$/i, 2 => qr/^(before)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_minutes_before' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'second' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(minutes?)/i, 2 => 'from', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(minutes?)$/i, 2 => qr/^(before)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_minutes_from' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'minute' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'before', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(before)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_hours_before' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'hour' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'from', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(days?)$/i,  2 => qr/^(before)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_hours_from' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/^(days?)/i,  2 => 'before', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(weeks?)$/i, 2 => qr/^(before)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_days_before' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'week' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/^(days?)/i, 2 => 'from', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(months?)$/i, 2 => qr/^(before)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_days_from' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ]
+         ],
+         [ { unit => 'month' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(weeks?)/i, 2 => 'before', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(years?)$/i, 2 => qr/^(before)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_weeks_before' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'year' } ],
+         [ '_now_variant' ],
+       ],
+    ],
+    now_variant_from => [
+       [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(seconds?)$/i, 2 => qr/^(from)$/i, 3 => 'now' },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'second' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(weeks?)/i, 2 => 'from', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(minutes?)$/i, 2 => qr/^(from)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_weeks_from' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'minute' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(months?)/i, 2 => 'before', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(from)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_months_before' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'hour' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(months?)/i, 2 => 'from', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(days?)$/i, 2 => qr/^(from)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_months_from' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(years?)/i, 2 => 'before', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(weeks?)$/i, 2 => qr/^(from)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_years_before' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'week' } ],
+         [ '_now_variant' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(years?)/i, 2 => 'from', 3 => 'now' },
+         { 0 => $RE{number}, 1 => qr/^(months?)$/i, 2 => qr/^(from)$/i, 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_now_years_from' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'month' } ],
+         [ '_now_variant' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(years?)$/i, 2 => qr/^(from)$/i, 3 => 'now' },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { unit => 'year' } ],
+         [ '_now_variant' ],
        ],
     ],
     day_daytime => [
@@ -900,240 +1755,558 @@ our (%init,
          { 0 => $RE{weekday}, 1 => $RE{number}, 2 => 'in', 3 => 'the', 4 => 'morning' },
          [],
          [],
-         [ [ 0 ], [ 1 ] ],
-         [ '_weekday', '_daytime_in_the_morning' ],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 1 ],
+         ],
+         [ {}, { hours => 0 } ],
+         [ '_weekday', '_daytime_in_the_variant' ],
        ],
        [
          { 0 => $RE{weekday}, 1 => $RE{number}, 2 => 'in', 3 => 'the', 4 => 'afternoon' },
          [],
          [],
-         [ [ 0 ], [ 1 ] ],
-         [ '_weekday', '_daytime_in_the_afternoon' ],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 1 ],
+         ],
+         [ {}, { hours => 12 } ],
+         [ '_weekday', '_daytime_in_the_variant' ],
        ],
        [
          { 0 => $RE{weekday}, 1 => $RE{number}, 2 => 'in', 3 => 'the', 4 => 'evening' },
          [],
          [],
-         [ [ 0 ], [ 1 ] ],
-         [ '_weekday', '_daytime_in_the_evening' ],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 1 ],
+         ],
+         [ {}, { hours => 12 } ],
+         [ '_weekday', '_daytime_in_the_variant' ],
        ],
     ],
-
-    last_day_at_time => [
-       [ 'SCALAR', 'REGEXP', 'SCALAR', 'REGEXP' ],
-       [
-         { 0 => 'last', 1 => $RE{weekday}, 2 => 'at', 3 => $RE{time} },
-         [],
-         [],
-         [ [ 1 ], [ 3 ] ],
-         [ '_last_day', '_time' ],
-       ],
-    ],
-    last_week_day => [
-       [ 'SCALAR', 'SCALAR', 'REGEXP' ],
-       [
-         { 0 => 'last', 1 => 'week', 2 => $RE{weekday} },
-         [],
-         [],
-         [ [ 2 ] ],
-         [ '_last_week_day' ],
-       ],
-    ],
-    day_last_week => [
-       [ 'REGEXP', 'SCALAR', 'SCALAR' ],
-       [
-         { 0 => $RE{weekday}, 1 => 'last', 2 => 'week' },
-         [],
-         [],
-         [ [ 0 ] ],
-         [ '_day_last_week' ],
-       ],
-    ],
-    count_day_last_week => [
-       [ 'REGEXP', 'SCALAR', 'SCALAR', 'SCALAR' ],
-       [
-         { 0 => $RE{day_enum}, 1 => 'day', 2 => 'last', 3 => 'week' },
-         [],
-         [],
-         [ [ 0 ] ],
-         [ '_count_day_last_week' ],
-       ],
-    ],
-    count_day_last_month => [
-       [ 'REGEXP', 'SCALAR', 'SCALAR', 'SCALAR' ],
-       [
-         { 0 => $RE{day_enum}, 1 => 'day', 2 => 'last', 3 => 'month' },
-         [],
-         [],
-         [ [ 0 ] ],
-         [ '_count_day_last_month' ],
-       ],
-    ],
-
-    weekday_next_week => [
-       [ 'REGEXP', 'SCALAR', 'SCALAR' ],
-       [
-         { 0 => $RE{weekday}, 1 => 'next', 2 => 'week' },
-         [],
-         [],
-         [ [ 0 ] ],
-         [ '_weekday_next_week' ],
-       ],
-    ],
-    count_day_next_month => [
-       [ 'REGEXP', 'SCALAR', 'SCALAR', 'SCALAR' ],
-       [
-         { 0 => $RE{day_enum}, 1 => 'day', 2 => 'next', 3 => 'month' },
-         [],
-         [],
-         [ [ 0 ] ],
-         [ '_count_day_next_month' ],
-       ],
-    ],
-    count_month_next_year => [
-       [ 'REGEXP', 'SCALAR', 'SCALAR', 'SCALAR' ],
-       [
-         { 0 => $RE{day_enum}, 1 => 'month', 2 => 'next', 3 => 'year' },
-         [],
-         [],
-         [ [ 0 ] ],
-         [ '_count_month_next_year' ],
-       ],
-    ],
-    in_count_minutes => [
-       [ 'SCALAR', 'REGEXP', 'REGEXP' ],
-       [
-         { 0 => 'in', 1 => $RE{number}, 2 => qr/(minutes?)/i },
-         [ [ 1, 2 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 1 ] ],
-         [ '_in_count_minutes' ],
-       ]
-    ],
-    in_count_hours => [
-       [ 'SCALAR', 'REGEXP', 'REGEXP' ],
-       [
-         { 0 => 'in', 1 => $RE{number}, 2 => qr/(hours?)/i },
-         [ [ 1, 2 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 1 ] ],
-         [ '_in_count_hours' ],
-       ],
-    ],
-    in_count_days => [
-       [ 'SCALAR', 'REGEXP', 'REGEXP' ],
-       [
-         { 0 => 'in', 1 => $RE{number}, 2 => qr/(days?)/i },
-         [ [ 1, 2 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 1 ] ],
-         [ '_in_count_days' ],
-       ],
-    ],
-    weekday_this_week => [
-       [ 'REGEXP', 'SCALAR', 'SCALAR' ],
-       [
-         { 0 => $RE{weekday}, 1 => 'this', 2 => 'week' },
-         [],
-         [],
-         [ [ 0 ] ],
-         [ '_weekday_this_week' ],
-       ],
-    ],
-    count_weekday_this_month => [
+    variant_weekday_at_time => [
        [ 'REGEXP', 'REGEXP', 'SCALAR', 'REGEXP' ],
        [
-         { 0 => $RE{day_enum}, 1 => $RE{weekday}, 2 => 'this', 3 => $RE{month} },
+         { 0 => qr/^(next)$/i, 1 => $RE{weekday}, 2 => 'at', 3 => $RE{time} },
          [],
          [],
-         [ [ 0, 1, 3 ] ],
-         [ '_count_weekday_this_month' ],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 3 ],
+         ],
+         [ {}, {} ],
+         [ '_count_day_variant_week', '_time' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => $RE{weekday}, 2 => 'at', 3 => $RE{time} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 3 ],
+         ],
+         [ {}, {} ],
+         [ '_count_day_variant_week', '_time' ],
+       ],
+       [
+         { 0 => qr/^(last)$/i, 1 => $RE{weekday}, 2 => 'at', 3 => $RE{time} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 3 ],
+         ],
+         [ {}, {} ],
+         [ '_count_day_variant_week', '_time' ],
        ],
     ],
-    day_variant => [
-       [ 'REGEXP', 'REGEXP', 'SCALAR', 'SCALAR' ],
+    count_day_variant_week => [
+       [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'before', 3 => 'yesterday' },
-         [ [ 0, 1 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_daytime_variant_before_yesterday' ],
+         { 0 => $RE{day}, 1 => 'day', 2 => qr/^(next)$/i, 3 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'before', 3 => 'tomorrow' },
-         [ [ 0, 1 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_daytime_variant_before_tomorrow' ],
+         { 0 => $RE{day}, 1 => 'day', 2 => qr/^(this)$/i, 3 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'after', 3 => 'yesterday' },
-         [ [ 0, 1 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_daytime_variant_after_yesterday' ],
-       ],
-       [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'after', 3 => 'tomorrow' },
-         [ [ 0, 1 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_daytime_variant_after_tomorrow' ],
+         { 0 => $RE{day}, 1 => 'day', 2 => qr/^(last)$/i, 3 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
        ],
     ],
-    hourtime => [
-       [ 'REGEXP', 'REGEXP', 'SCALAR', 'SCALAR' ],
+    count_day_variant_month => [
+       [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'before', 3 => 'noon' },
-         [ [ 0, 1 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_hourtime_before_noon' ],
+         { 0 => $RE{day}, 1 => 'day', 2 => qr/^(next)$/i, 3 => 'month' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_month' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'after', 3 => 'noon' },
-         [ [ 0, 1 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_hourtime_after_noon' ],
+         { 0 => $RE{day}, 1 => 'day', 2 => qr/^(this)$/i, 3 => 'month' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_month' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'before', 3 => 'midnight' },
-         [ [ 0, 1 ] ],
-         [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_hourtime_before_midnight' ],
+         { 0 => $RE{day}, 1 => 'day', 2 => qr/^(last)$/i, 3 => 'month' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_month' ],
+       ],
+    ],
+    weekday_variant_week => [
+       [ 'REGEXP', 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => $RE{weekday}, 1 => qr/^(next)$/i, 2 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 1 => [ $flag{last_this_next} ] },
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
        ],
        [
-         { 0 => $RE{number}, 1 => qr/(hours?)/i, 2 => 'after', 3 => 'midnight' },
+         { 0 => $RE{weekday}, 1 => qr/^(this)$/i, 2 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 1 => [ $flag{last_this_next} ] },
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
+       ],
+       [
+         { 0 => $RE{weekday}, 1 => qr/^(last)$/i, 2 => 'week' },
+         [],
+         [],
+         [
+           [
+             { 1 => [ $flag{last_this_next} ] },
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ]
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
+       ],
+    ],
+    variant_week_weekday => [
+       [ 'REGEXP', 'SCALAR', 'REGEXP' ],
+       [
+         { 0 => qr/^(next)$/i, 1 => 'week', 2 => $RE{weekday} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 2 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
+       ],
+       [
+         { 0 => qr/^(this)$/i, 1 => 'week', 2 => $RE{weekday} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 2 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
+       ],
+       [
+         { 0 => qr/^(last)$/i, 1 => 'week', 2 => $RE{weekday} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{last_this_next} ] },
+             { 2 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_day_variant_week' ],
+       ],
+    ],
+    count_month_variant_year => [
+       [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => $RE{day}, 1 => 'month', 2 => qr/^(next)$/i, 3 => 'year' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_month_variant_year' ],
+       ],
+       [
+         { 0 => $RE{day}, 1 => 'month', 2 => qr/^(this)$/i, 3 => 'year' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_month_variant_year' ],
+       ],
+       [
+         { 0 => $RE{day}, 1 => 'month', 2 => qr/^(last)$/i, 3 => 'year' },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+           ],
+         ],
+         [ {} ],
+         [ '_count_month_variant_year' ],
+       ],
+    ],
+    in_count_unit => [
+       [ 'SCALAR', 'REGEXP', 'REGEXP' ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/^(seconds?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [ [ 1 ] ],
+         [ { unit => 'second' } ],
+         [ '_in_count_variant' ],
+       ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/^(minutes?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [ [ 1 ] ],
+         [ { unit => 'minute' } ],
+         [ '_in_count_variant' ],
+       ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/^(hours?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [ [ 1 ] ],
+         [ { unit => 'hour' } ],
+         [ '_in_count_variant' ],
+       ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/^(days?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [ [ 1 ] ],
+         [ { unit => 'day' } ],
+         [ '_in_count_variant' ],
+       ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/^(weeks?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [ [ 1 ] ],
+         [ { unit => 'week' } ],
+         [ '_in_count_variant' ],
+       ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/^(months?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [ [ 1 ] ],
+         [ { unit => 'month' } ],
+         [ '_in_count_variant' ],
+       ],
+       [
+         { 0 => 'in', 1 => $RE{number}, 2 => qr/^(years?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [ [ 1 ] ],
+         [ { unit => 'year' } ],
+         [ '_in_count_variant' ],
+       ],
+    ],
+    count_weekday_variant_month => [
+       [ 'REGEXP', 'REGEXP', 'REGEXP', 'REGEXP' ],
+       [
+         { 0 => $RE{day}, 1 => $RE{weekday}, 2 => qr/^(next)$/i, 3 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+             { 3 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_weekday_variant_month' ],
+       ],
+       [
+         { 0 => $RE{day}, 1 => $RE{weekday}, 2 => qr/^(this)$/i, 3 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+             { 3 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_weekday_variant_month' ],
+       ],
+       [
+         { 0 => $RE{day}, 1 => $RE{weekday}, 2 => qr/^(last)$/i, 3 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 2 => [ $flag{last_this_next} ] },
+               0,
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+             { 3 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_weekday_variant_month' ],
+       ],
+    ],
+    daytime_hours_variant => [
+       [ 'REGEXP', 'REGEXP', 'REGEXP', 'REGEXP' ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(before)$/i, 3 => qr/^(yesterday)$/i },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0 ] ],
-         [ '_hourtime_after_midnight' ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+             { 3 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_hours_variant' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(before)$/i, 3 => qr/^(tomorrow)$/i },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+             { 3 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_hours_variant' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(after)$/i, 3 => qr/^(yesterday)$/i },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+             { 3 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_hours_variant' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(after)$/i, 3 => qr/^(tomorrow)$/i },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+             { 3 => [ $flag{yes_today_tom} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_daytime_hours_variant' ],
+       ],
+    ],
+    hourtime_before_variant => [
+       [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(before)$/i, 3 => 'noon' },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { hour => 12 } ],
+         [ '_hourtime_variant' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(before)$/i, 3 => 'midnight' },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { hour => 0 } ],
+         [ '_hourtime_variant' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(after)$/i, 3 => 'noon' },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { hour => 12 } ],
+         [ '_hourtime_variant' ],
+       ],
+       [
+         { 0 => $RE{number}, 1 => qr/^(hours?)$/i, 2 => qr/^(after)$/i, 3 => 'midnight' },
+         [ [ 0, 1 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [
+               0,
+             { 2 => [ $flag{before_after_from} ] },
+           ],
+         ],
+         [ { hour => 0 } ],
+         [ '_hourtime_variant' ],
        ],
     ],
     day_at => [
-       [ 'SCALAR', 'SCALAR', 'REGEXP' ],
+       [ 'REGEXP', 'SCALAR', 'REGEXP' ],
        [
-         { 0 => 'yesterday', 1 => 'at', 2 => $RE{time_am} },
+         { 0 => qr/^(yesterday)$/i, 1 => 'at', 2 => $RE{time_am} },
          [],
          [],
-         [ [], [ 2 ] ],
-         [ '_day_yesterday', '_time' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 2 ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_time' ],
        ],
        [
-         { 0 => 'today', 1 => 'at', 2 => $RE{time_am} },
+         { 0 => qr/^(today)$/i, 1 => 'at', 2 => $RE{time_am} },
          [],
          [],
-         [ [], [ 2 ] ],
-         [ '_day_today', '_time' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 2 ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_time' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => 'at', 2 => $RE{time_am} },
+         { 0 => qr/^(tomorrow)$/i, 1 => 'at', 2 => $RE{time_am} },
          [],
          [],
-         [ [], [ 2 ] ],
-         [ '_day_tomorrow', '_time' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 2 ],
+         ],
+         [ { unit => 'day' }, {} ],
+         [ '_unit_variant', '_time' ],
        ],
     ],
     weekday_at_time => [
@@ -1142,32 +2315,56 @@ our (%init,
          { 0 => $RE{weekday}, 1 => 'at', 2 => $RE{time_am} },
          [],
          [],
-         [ [ 0 ], [ 2 ] ],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 2 ],
+         ],
+         [ {}, {} ],
          [ '_weekday', '_time' ],
        ],
     ],
     day_at_pm => [
-       [ 'SCALAR', 'SCALAR', 'REGEXP' ],
+       [ 'REGEXP', 'SCALAR', 'REGEXP' ],
        [
-         { 0 => 'yesterday', 1 => 'at', 2 => $RE{time_pm} },
+         { 0 => qr/^(yesterday)$/i, 1 => 'at', 2 => $RE{time_pm} },
          [],
          [],
-         [ [], [ 2 ] ],
-         [ '_day_yesterday', '_at_pm' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 2 ],
+         ],
+         [ { unit => 'day' }, { hours => 12 } ],
+         [ '_unit_variant', '_at' ],
        ],
        [
-         { 0 => 'today', 1 => 'at', 2 => $RE{time_pm} },
+         { 0 => qr/^(today)$/i, 1 => 'at', 2 => $RE{time_pm} },
          [],
          [],
-         [ [], [ 2 ] ],
-         [ '_day_today', '_at_pm' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 2 ],
+         ],
+         [ { unit => 'day' }, { hours => 12 } ],
+         [ '_unit_variant', '_at' ],
        ],
        [
-         { 0 => 'tomorrow', 1 => 'at', 2 => $RE{time_pm} },
+         { 0 => qr/^(tomorrow)$/i, 1 => 'at', 2 => $RE{time_pm} },
          [],
          [],
-         [ [], [ 2 ] ],
-         [ '_day_tomorrow', '_at_pm' ],
+         [
+           [
+             { 0 => [ $flag{yes_today_tom} ] },
+           ],
+           [ 2 ],
+         ],
+         [ { unit => 'day' }, { hours => 12 } ],
+         [ '_unit_variant', '_at' ],
        ],
     ],
     weekday_at_time_pm => [
@@ -1176,8 +2373,14 @@ our (%init,
          { 0 => $RE{weekday}, 1 => 'at', 2 => $RE{time_pm} },
          [],
          [],
-         [ [ 0 ], [ 2 ] ],
-         [ '_weekday', '_at_pm' ],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 2 ],
+         ],
+         [ {}, { hours => 12 } ],
+         [ '_weekday', '_at' ],
        ],
     ],
     day_month_year => [
@@ -1186,25 +2389,47 @@ our (%init,
          { 0 => $RE{monthday}, 1 => $RE{month}, 2 => $RE{year} },
          [],
          [],
-         [ [ 0, 1, 2 ] ],
+         [
+           [
+               0,
+             { 1 => [ $flag{month_name}, $flag{month_num} ] },
+               2,
+           ],
+         ],
+         [ {} ],
          [ '_day_month_year' ],
        ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{year} },
          [],
          [],
-         [ [ 1, 0, 2 ] ],
+         [
+           [
+               1,
+             { 0 => [ $flag{month_name}, $flag{month_num} ] },
+               2,
+           ],
+         ],
+         [ {} ],
          [ '_day_month_year' ],
        ],
     ],
     count_weekday_in_month => [
        [ 'REGEXP', 'REGEXP', 'SCALAR', 'REGEXP' ],
        [
-         { 0 => $RE{day_enum}, 1 => $RE{weekday}, 2 => 'in', 3 => $RE{month} },
+         { 0 => $RE{day}, 1 => $RE{weekday}, 2 => 'in', 3 => $RE{month} },
          [],
          [],
-         [ [ 0, 1, 3 ] ],
-         [ '_count_weekday_this_month' ],
+         [
+           [
+             { VALUE => 0 },
+               0,
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+             { 3 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_count_weekday_variant_month' ],
        ],
     ],
     count_weekday_from_now => [
@@ -1213,7 +2438,13 @@ our (%init,
          { 0 => $RE{number}, 1 => $RE{weekdays}, 2 => 'from', 3 => 'now' },
          [ [ 0, 1 ] ],
          [ $extended_checks{suffix} ],
-         [ [ 0, 1 ] ],
+         [
+           [
+               0,
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {} ],
          [ '_count_weekday_from_now' ],
        ],
     ]
@@ -1229,7 +2460,7 @@ DateTime::Format::Natural::Lang::EN - English language metadata
 =head1 DESCRIPTION
 
 C<DateTime::Format::Natural::Lang::EN> provides the english specific grammar
-and variables. This class is loaded if the user either specifies the english 
+and variables. This class is loaded if the user either specifies the english
 language or implicitly.
 
 =head1 EXAMPLES
@@ -1240,14 +2471,20 @@ that the parser does not distinguish between lower/upper case):
 =head2 Simple
 
  now
- today
  yesterday
+ today
  tomorrow
  morning
  afternoon
  evening
  noon
  midnight
+ yesterday at noon
+ yesterday at midnight
+ today at noon
+ today at midnight
+ tomorrow at noon
+ tomorrow at midnight
  this morning
  this afternoon
  this evening
@@ -1260,128 +2497,159 @@ that the parser does not distinguish between lower/upper case):
  tomorrow morning
  tomorrow afternoon
  tomorrow evening
- march
- 4th february
- november 3rd
- saturday
- last wednesday
- last june
- last month
- last year
- next friday
- next october
- next month
- next year
- this thursday
- this month
- 6 am
- 5am
- 5:30am
  5am yesterday
  5am today
  5am tomorrow
- 8 pm
- 4pm
- 4:20pm
  4pm yesterday
  4pm today
  4pm tomorrow
+ last second
+ this second
+ next second
+ last minute
+ this minute
+ next minute
+ last hour
+ this hour
+ next hour
+ last day
+ this day
+ next day
+ last week
+ this week
+ next week
+ last month
+ this month
+ next month
+ last year
+ this year
+ next year
+ last friday
+ this friday
+ next friday
+ tuesday last week
+ tuesday this week
+ tuesday next week
+ last week wednesday
+ this week wednesday
+ next week wednesday
+ 10 seconds ago
+ 10 minutes ago
+ 10 hours ago
+ 10 days ago
+ 10 weeks ago
+ 10 months ago
+ 10 years ago
+ in 5 seconds
+ in 5 minutes
+ in 5 hours
+ in 5 days
+ in 5 weeks
+ in 5 months
+ in 5 years
+ saturday
  sunday 11:00
- mon 2:35
- 13:45
- may 2002
+ yesterday at 4:00
+ today at 4:00
+ tomorrow at 4:00
+ yesterday at 6:45pm
+ today at 6:45pm
+ tomorrow at 6:45pm
+ wednesday at 14:30
+ wednesday at 02:30pm
  2nd monday
  100th day
- 6 in the morning
- sat 7 in the evening
- this second
- yesterday at 4:00
- last january
- last friday at 20:00
- tomorrow at 6:45pm
- yesterday afternoon
- thursday last week
+ 4th february
+ november 3rd
+ last june
+ next october
+ 6 am
+ 5am
+ 5:30am
+ 8 pm
+ 4pm
+ 4:20pm
+ mon 2:35
 
 =head2 Complex
 
+ yesterday 7 seconds ago
+ yesterday 7 minutes ago
+ yesterday 7 hours ago
+ yesterday 7 days ago
+ yesterday 7 weeks ago
+ yesterday 7 months ago
+ yesterday 7 years ago
+ tomorrow 3 seconds ago
+ tomorrow 3 minutes ago
+ tomorrow 3 hours ago
+ tomorrow 3 days ago
+ tomorrow 3 weeks ago
+ tomorrow 3 months ago
+ tomorrow 3 years ago
+ 2 seconds before now
+ 2 minutes before now
+ 2 hours before now
+ 2 days before now
+ 2 weeks before now
+ 2 months before now
+ 2 years before now
+ 4 seconds from now
+ 4 minutes from now
+ 4 hours from now
+ 4 days from now
+ 4 weeks from now
+ 4 months from now
+ 4 years from now
  6 in the morning
  4 in the afternoon
  9 in the evening
- 25 seconds ago
- 10 minutes ago
- 7 hours ago
- 40 days ago
- 2 weeks ago
- 5 months ago
- 3 years ago
- tomorrow 25 seconds ago
- tomorrow 10 minutes ago
- tomorrow 7 hours ago
- tomorrow 40 day ago
- tomorrow 2 weeks ago
- tomorrow 5 months ago
- tomorrow 3 years ago
- yesterday 25 seconds ago
- yesterday 10 minutes ago
- yesterday 7 hours ago
- yesterday 40 days ago
- yesterday 2 weeks ago
- yesterday 5 months ago
- yesterday 3 years ago
- fri 3 months ago at 5am
- wednesday 1 month ago at 8pm
- 8 hours before now
- 8 hours from now
- 7 days before now
- 7 days from now
- 4 weeks before now
- 4 weeks from now
- 13 months before now
- 13 months from now
- 2 years before now
- 2 years from now
- tuesday 4 in the morning
- thursday 2 in the afternoon
- monday 6 in the evening
+ monday 6 in the morning
+ monday 4 in the afternoon
+ monday 9 in the evening
  last sunday at 21:45
- last week friday
  monday last week
- 2nd day last week
- 10th day last month
- tuesday next week
- 3rd day next month
- 10th month next year
- in 42 minutes
- in 3 hours
- in 5 days
- wednesday this week
- 3rd tuesday this november
- 3 hours before tomorrow
+ 6th day last week
+ 6th day this week
+ 6th day next week
+ 12th day last month
+ 12th day this month
+ 12th day next month
+ 1st day last year
+ 1st day this year
+ 1st day next year
+ 1st tuesday last november
+ 1st tuesday this november
+ 1st tuesday next november
+ 11 january next year
+ 11 january this year
+ 11 january last year
  6 hours before yesterday
- 9 hours after tomorrow
- 12 hours after yesterday
- 3 hours before noon
- 6 hours after noon
- 9 hours before midnight
- 12 hours after midnight
- yesterday at noon
- yesterday at midnight
- today at noon
- today at midnight
- tomorrow at noon
- tomorrow at midnight
- yesterday at 16:00
- today at 6:00
- tomorrow at 12
- wednesday at 14:30
+ 6 hours before tomorrow
+ 3 hours after yesterday
+ 3 hours after tomorrow
+ 10 hours before noon
+ 10 hours before midnight
+ 5 hours after noon
+ 5 hours after midnight
+ last friday at 20:00
+ this friday at 20:00
+ next friday at 20:00
+ yesterday at 13:00
+ today at 13:00
+ tomorrow at 13
  2nd friday in august
+ 3rd wednesday in november
  tomorrow 1 year ago
  saturday 3 months ago at 5:00pm
+ 11 january 2 years ago
  4th day last week
- 3rd wednesday in november
- 3rd month next year
+ 8th month last year
+ 8th month this year
+ 8th month next year
  6 mondays from now
- 1 friday from now
+ fri 3 months ago at 5am
+ wednesday 1 month ago at 8pm
 
 =head2 Timespans
 
@@ -1390,14 +2658,15 @@ that the parser does not distinguish between lower/upper case):
 
 =head2 Specific Dates
 
+ march
  January 11
  11 January
  dec 25
  may 27th
- march 1st 2009 
+ 2005
+ march 1st 2009
  October 2006
  february 14, 2004
- Friday
  jan 3 2010
  3 jan 2000
  27/5/1979

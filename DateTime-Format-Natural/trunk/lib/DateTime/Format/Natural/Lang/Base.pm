@@ -5,7 +5,7 @@ use warnings;
 
 our ($VERSION, $AUTOLOAD);
 
-$VERSION = '0.9';
+$VERSION = '1.00';
 
 sub __new
 {
@@ -20,6 +20,8 @@ sub __new
     $obj->{months}          = \%{$class.'::'.'data_months'};
     $obj->{months_abbrev}   = \%{$class.'::'.'data_months_abbrev'};
     $obj->{months_all}      = \@{$class.'::'.'data_months_all'};
+    $obj->{conversion}      = \%{$class.'::'.'data_conversion'};
+    $obj->{helpers}         = \%{$class.'::'.'data_helpers'};
 
     return bless $obj, ref($class) || $class;
 }

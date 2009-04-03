@@ -2,171 +2,92 @@ package DateTime::Format::Natural::Base;
 
 use strict;
 use warnings;
-use base qw(DateTime::Format::Natural::Compat); 
-use boolean qw(true false);
+use base qw(DateTime::Format::Natural::Compat);
 
-our $VERSION = '1.22';
+our $VERSION = '1.23';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
 use constant EVENING   => '20';
 
-sub _ago_seconds
+sub _no_op
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(second => shift);
-    $self->_set_modified(3);
+    $self->_register_trace;
+    my $opts = pop;
 }
 
-sub _ago_minutes
+sub _ago_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(minute => shift);
-    $self->_set_modified(3);
+    $self->_register_trace;
+    my $opts = pop;
+    $self->_subtract($opts->{unit} => shift);
 }
 
-sub _ago_hours
+sub _now_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(hour => shift);
-    $self->_set_modified(3);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($value, $when) = @_;
+    $self->_add_or_subtract({
+        when  => $when,
+        unit  => $opts->{unit},
+        value => $value,
+    });
 }
 
-sub _ago_days
+sub _daytime_in_the_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(day => shift);
-    $self->_set_modified(3);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($hour) = @_;
+    $hour += $opts->{hours};
+    if ($self->_valid_time(hour => $hour)) {
+        $self->_set(
+            hour   => $hour,
+            minute => 0,
+            second => 0,
+        );
+    }
 }
 
-sub _ago_weeks
+sub _daytime_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(week => shift);
-    $self->_set_modified(3);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($daytime) = @_;
+    my %lookup = (
+        0 => 'morning',
+        1 => 'afternoon',
+        2 => 'evening',
+    );
+    $daytime = $lookup{$daytime};
+    my %daytimes = (
+        morning   => MORNING,
+        afternoon => AFTERNOON,
+        evening   => EVENING,
+    );
+    my $hour = $self->{Opts}{daytime}{$daytime}
+      ? $self->{Opts}{daytime}{$daytime}
+      : $daytimes{$daytime};
+    if ($self->_valid_time(hour => $hour)) {
+        $self->_set(
+            hour   => $hour,
+            minute => 0,
+            second => 0,
+        );
+    }
 }
 
-sub _ago_months
+sub _daytime
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(month => shift);
-    $self->_set_modified(3);
-}
-
-sub _ago_years
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(year => shift);
-    $self->_set_modified(3);
-}
-
-sub _now_minutes_before
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(minute => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_minutes_from
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(minute => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_hours_before
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(hour => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_hours_from
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(hour => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_days_before
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(day => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_days_from
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(day => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_weeks_before
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(day => (7 * shift));
-    $self->_set_modified(4);
-}
-
-sub _now_weeks_from
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(day => (7 * shift));
-    $self->_set_modified(4);
-}
-
-sub _now_months_before
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(month => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_months_from
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(month => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_years_before
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(year => shift);
-    $self->_set_modified(4);
-}
-
-sub _now_years_from
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(year => shift);
-    $self->_set_modified(4);
-}
-
-sub _daytime_in_the_morning
-{
-    my $self = shift;
-    $self->_add_trace;
+    $self->_register_trace;
+    my $opts = pop;
     my ($hour) = @_;
     if ($self->_valid_time(hour => $hour)) {
         $self->_set(
@@ -175,480 +96,157 @@ sub _daytime_in_the_morning
             second => 0,
         );
     }
-    $self->_set_modified(4);
 }
 
-sub _daytime_in_the_afternoon
+sub _hourtime_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($hour) = @_;
-    if ($self->_valid_time(hour => 12 + $hour)) {
+    $self->_register_trace;
+    my $opts = pop;
+    my ($hours, $when) = @_;
+    if ($self->_valid_time(hour => $opts->{hour})) {
         $self->_set(
-            hour   => 12 + $hour,
+            hour   => $opts->{hour},
             minute => 0,
-            second => 0,
         );
+        $self->_add_or_subtract({
+            when  => $when,
+            unit  => 'hour',
+            value => $hours,
+        });
     }
-    $self->_set_modified(4);
-}
-
-sub _daytime_in_the_evening
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($hour) = @_;
-    if ($self->_valid_time(hour => 12 + $hour)) {
-        $self->_set(
-            hour   => 12 + $hour,
-            minute => 0,
-            second => 0,
-        );
-    }
-    $self->_set_modified(4);
-}
-
-sub _daytime_morning
-{
-    my $self = shift;
-    $self->_add_trace;
-    my $hour = $self->{Opts}{daytime}{morning}
-      ? $self->{Opts}{daytime}{morning}
-      : MORNING;
-    if ($self->_valid_time(hour => $hour)) {
-        $self->_set(
-            hour   => $hour,
-            minute => 0,
-            second => 0,
-        );
-    }
-    $self->_set_modified(1);
-}
-
-sub _daytime_noon
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set(
-        hour   => 12,
-        minute => 0,
-        second => 0,
-    );
-    $self->_set_modified(1);
-}
-
-sub _daytime_afternoon
-{
-    my $self = shift;
-    $self->_add_trace;
-    my $hour = $self->{Opts}{daytime}{afternoon}
-      ? $self->{Opts}{daytime}{afternoon}
-      : AFTERNOON;
-    if ($self->_valid_time(hour => $hour)) {
-        $self->_set(
-            hour   => $hour,
-            minute => 0,
-            second => 0,
-        );
-    }
-    $self->_set_modified(1);
-}
-
-sub _daytime_evening
-{
-    my $self = shift;
-    $self->_add_trace;
-    my $hour = $self->{Opts}{daytime}{evening}
-      ? $self->{Opts}{daytime}{evening}
-      : EVENING;
-    if ($self->_valid_time(hour => $hour)) {
-        $self->_set(
-            hour   => $hour,
-            minute => 0,
-            second => 0,
-        );
-    }
-    $self->_set_modified(1);
-}
-
-sub _daytime_midnight
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set(
-        hour   => 0,
-        minute => 0,
-        second => 0,
-    );
-    $self->_set_modified(2);
-}
-
-sub _hourtime_before_noon
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set(
-        hour   => 12,
-        minute => 0,
-    );
-    $self->_subtract(hour => shift);
-    $self->_set_modified(4);
-}
-
-sub _hourtime_after_noon
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set(
-        hour   => 12,
-        minute => 0,
-    );
-    $self->_add(hour => shift);
-    $self->_set_modified(4);
-}
-
-sub _hourtime_before_midnight
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set(
-        hour   => 0,
-        minute => 0,
-    );
-    $self->_subtract(hour => shift);
-    $self->_set_modified(4);
-}
-
-sub _hourtime_after_midnight
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set(
-        hour   => 0,
-        minute => 0,
-    );
-    $self->_add(hour => shift);
-    $self->_set_modified(4);
-}
-
-sub _day
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    if ($self->_valid_date(day => $day)) {
-        $self->_set(day => $day);
-    }
-    $self->_set_modified(1);
-}
-
-sub _day_today
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set_modified(1);
-}
-
-sub _day_yesterday
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(day => 1);
-    $self->_set_modified(1);
-}
-
-sub _day_tomorrow
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(day => 1);
-    $self->_set_modified(1);
-}
-
-sub _month
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($month) = @_;
-    $self->_set(month => $self->_month_num($month));
-    $self->_set_modified(1);
 }
 
 sub _month_day
 {
     my $self = shift;
-    $self->_add_trace;
+    $self->_register_trace;
+    my $opts = pop;
     my ($day, $month) = @_;
-    $self->_set(month => $self->_month_num($month));
-    if ($self->_valid_date(day => $day)) {
-        $self->_set(day => $day);
+    if ($self->_valid_date(month => $month, day => $day)) {
+        $self->_set(
+            month => $month,
+            day   => $day,
+        );
     }
-    $self->_set_modified(2);
 }
 
-sub _year
+sub _unit_date
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($year) = @_;
-    if ($self->_valid_date(year => $year)) {
-        $self->_set(year => $year);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($value) = @_;
+    if ($self->_valid_date($opts->{unit} => $value)) {
+        $self->_set($opts->{unit} => $value);
     }
-    $self->_set_modified(1);
 }
 
 sub _weekday
 {
     my $self = shift;
-    $self->_add_trace;
+    $self->_register_trace;
+    my $opts = pop;
     my ($day) = @_;
-    $self->_day_name(\$day);
-    my $days_diff;
-    # Set current weekday by adding the day difference
-    if ($self->{data}->{weekdays}->{$day} > $self->{datetime}->wday) {
-        $days_diff = $self->{data}->{weekdays}->{$day} - $self->{datetime}->wday;
-        $self->_add(day => $days_diff);
+    if ($day > $self->{datetime}->wday) {
+        $self->_add(day => ($day - $self->{datetime}->wday));
     }
-    # Set current weekday by subtracting the difference
     else {
-        $days_diff = $self->{datetime}->wday - $self->{data}->{weekdays}->{$day};
-        $self->_subtract(day => $days_diff);
+        $self->_subtract(day => ($self->{datetime}->wday - $day));
     }
-    $self->_set_modified(1);
 }
 
-sub _last_day
+sub _count_day_variant_week
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $self->_day_name(\$day);
-    my $days_diff = $self->_last_wday_diff($day);
-    $self->_subtract(day => $days_diff);
-    $self->_set_modified(2);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($when, $day) = @_;
+    my %days = (
+        -1 => ($self->{datetime}->wday + (7 - $day)),
+         0 => ($day - $self->{datetime}->wday),
+         1 => (7 - $self->{datetime}->wday + $day),
+    );
+    $self->_add_or_subtract({
+        when  => ($when == 0) ? 1 : $when,
+        unit  => 'day',
+        value => $days{$when},
+    });
 }
 
-sub _last_week_day
+sub _count_day_variant_month
 {
     my $self = shift;
-    $self->_add_trace;
-    my $day = ucfirst lc(shift);
-    my $days_diff = $self->_last_wday_diff($day);
-    $self->_subtract(day => $days_diff);
-    $self->_set_modified(3);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($when, $day) = @_;
+    if ($self->_valid_date(day => $day)) {
+        $self->_add(month => $when);
+        $self->_set(day => $day);
+    }
 }
 
-sub _day_last_week
+sub _unit_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    my $day = ucfirst lc(shift);
-    my $days_diff = $self->_last_wday_diff($day);
-    $self->_subtract(day => $days_diff);
-    $self->_set_modified(3);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($when) = @_;
+    $self->_add_or_subtract({
+        when  => $when,
+        unit  => $opts->{unit},
+        value => 1,
+    });
 }
 
-sub _count_day_last_week
+sub _count_month_variant_year
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    my $days_diff = (7 + $self->{datetime}->wday);
-    $self->_subtract(day => $days_diff);
-    $self->_add(day => $day);
-    $self->_set_modified(4);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($when, $month) = @_;
+    if ($self->_valid_date(month => $month)) {
+        $self->_add(year => $when);
+        $self->_set(month => $month);
+    }
 }
 
-sub _last_week
+sub _in_count_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(day => 7);
-    $self->_set_modified(2);
+    $self->_register_trace;
+    my $opts = pop;
+    $self->_add_or_subtract($opts->{unit} => shift);
 }
 
-sub _last_month
+sub _month_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($month) = @_;
-    $self->_subtract(year => 1);
-    $self->_set(month => $self->_month_num($month));
-    $self->_set_modified(4);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($when, $month) = @_;
+    if ($self->_valid_date(month => $month)) {
+        $self->_add(year => $when);
+        $self->_set(month => $month);
+    }
 }
 
-sub _last_month_literal
+sub _count_weekday_variant_month
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(month => 1);
-    $self->_set_modified(2);
-}
-
-sub _count_day_last_month
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $self->_subtract(month => 1);
-    $self->_set(day => $day);
-    $self->_set_modified(4);
-}
-
-sub _last_year
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(year => 1);
-    $self->_set_modified(2);
-}
-
-sub _next_weekday
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $self->_day_name(\$day);
-    my $days_diff = $self->_next_wday_diff($day);
-    $self->_add(day => $days_diff);
-    $self->_set_modified(2);
-}
-
-sub _weekday_next_week
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $self->_day_name(\$day);
-    my $days_diff = $self->_next_wday_diff($day);
-    $self->_add(day => $days_diff);
-    $self->_set_modified(3);
-}
-
-sub _next_month
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($month) = @_;
-    $self->_add(year => 1);
-    $self->_set(month => $self->_month_num($month));
-    $self->_set_modified(2);
-}
-
-sub _next_month_literal
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(month => 1);
-    $self->_set_modified(2);
-}
-
-sub _count_day_next_month
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $self->_add(month => 1);
-    $self->_set(day => $day);
-    $self->_set_modified(4);
-}
-
-sub _next_year
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(year => 1);
-    $self->_set_modified(2);
-}
-
-sub _count_month_next_year
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($month) = @_;
-    $self->_add(year => 1);
-    $self->_set(month => $month);
-    $self->_set_modified(4);
-}
-
-sub _in_count_minutes
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($minute) = @_;
-    $self->_add(minute => $minute);
-    $self->_set_modified(3);
-}
-
-sub _in_count_hours
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($hour) = @_;
-    $self->_add(hour => $hour);
-    $self->_set_modified(3);
-}
-
-sub _in_count_days
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $self->_add(day => $day);
-    $self->_set_modified(3);
-}
-
-sub _this_second
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set_modified(2);
-}
-
-sub _this_weekday
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $self->_day_name(\$day);
-    my $days_diff = $self->{data}->{weekdays}->{$day} - $self->{datetime}->wday;
-    $self->_add(day => $days_diff);
-    $self->_set_modified(2);
-}
-
-sub _weekday_this_week
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
-    $day = ucfirst lc $day;
-    my $days_diff = $self->_Decode_Day_of_Week($day) - $self->{datetime}->wday;
-    $self->_add(day => $days_diff);
-    $self->_set_modified(3);
-}
-
-sub _this_month
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set_modified(2);
-}
-
-sub _count_weekday_this_month
-{
-    my $self = shift;
-    my ($count, $day, $month) = @_;
-    $self->_add_trace;
-    $self->_day_name(\$day);
-    $self->_month_name(\$month);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($when, $count, $day, $month) = @_;
     my $year;
     local $@;
     eval {
         ($year, $month, $day) =
           $self->_Nth_Weekday_of_Month_Year(
-              $self->{datetime}->year,
-              $self->{data}->{months}->{$month},
-              $self->{data}->{weekdays}->{$day},
+              $self->{datetime}->year + $when,
+              defined $month
+                ? $month
+                : $self->{datetime}->month,
+              $day,
               $count,
           );
     };
@@ -665,123 +263,61 @@ sub _count_weekday_this_month
         $self->_set_failure;
         $self->_set_error("(date is not valid)");
     }
-    $self->_set_modified(4);
 }
 
-sub _daytime_variant_before_yesterday
+sub _daytime_hours_variant
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(day => 2);
-    $self->_set(hour => (24 - shift));
-    $self->_set_modified(4);
+    $self->_register_trace;
+    my $opts = pop;
+    my ($hours, $when, $days) = @_;
+    my %values = (
+        -1 => { day => ($days - 1), hours => (24 - $hours) },
+         1 => { day => $days,       hours => (0  + $hours) },
+    );
+    if ($self->_valid_time(hour => $values{$when}->{hours})) {
+        $self->_add(day => $values{$when}->{day});
+        $self->_set(hour => $values{$when}->{hours});
+    }
 }
 
-sub _daytime_variant_after_yesterday
+sub _at
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_subtract(day => 1);
-    $self->_set(hour => (0 + shift));
-    $self->_set_modified(4);
-}
-
-sub _daytime_variant_before_tomorrow
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_set(hour => (24 - shift));
-    $self->_set_modified(4);
-}
-
-sub _daytime_variant_after_tomorrow
-{
-    my $self = shift;
-    $self->_add_trace;
-    $self->_add(day => 1);
-    $self->_set(hour => (0 + shift));
-    $self->_set_modified(4);
-}
-
-sub _at_am
-{
-    my $self = shift;
-    $self->_add_trace;
+    $self->_register_trace;
+    my $opts = pop;
+    my $hours = $opts->{hours} || 0;
     my ($time) = @_;
     if ($time =~ /:/) {
         my ($hour, $minute) = split /:/, $time;
-        if ($self->_valid_time(hour => $hour, minute => $minute)) {
+        if ($self->_valid_time(hour => $hours + $hour, minute => $minute)) {
             $self->_set(
-                hour   => $hour,
+                hour   => $hours + $hour,
                 minute => $minute,
             );
         }
     }
     else {
-        if ($self->_valid_time(hour => $time)) {
+        if ($self->_valid_time(hour => $hours + $time)) {
             $self->_set(
-                hour   => $time,
+                hour   => $hours + $time,
                 minute => 0,
             );
         }
     }
-    $self->_set_modified(2);
-}
-
-sub _at_pm
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($time) = @_;
-    if ($time =~ /:/) {
-        my ($hour, $minute) = split /:/, $time;
-        if ($self->_valid_time(hour => 12 + $hour, minute => $minute)) {
-            $self->_set(
-                hour   => 12 + $hour,
-                minute => $minute,
-            );
-        }
-    }
-    else {
-        if ($self->_valid_time(hour => 12 + $time)) {
-            $self->_set(
-                hour   => 12 + $time,
-                minute => 0,
-            );
-        }
-    }
-    $self->_set_modified(2);
 }
 
 sub _time
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($time) = @_;
-    if ($time =~ /:/) {
-        my ($hour, $minute) = split /:/, $time;
-        if ($self->_valid_time(hour => $hour, minute => $minute)) {
-            $self->_set(
-                hour   => $hour,
-                minute => $minute,
-            );
-        }
-    }
-    else {
-        if ($self->_valid_time(hour => $time)) {
-            $self->_set(
-                hour   => $time,
-                minute => 0,
-            );
-        }
-    }
-    $self->_set_modified(1);
+    $self->_at(@_);
 }
 
 sub _time_full
 {
     my $self = shift;
-    $self->_add_trace;
+    $self->_register_trace;
+    my $opts = pop;
     my ($time) = @_;
     my ($hour, $minute, $second) = split /:/, $time;
     if ($self->_valid_time(hour => $hour, minute => $minute, second => $second)) {
@@ -791,225 +327,54 @@ sub _time_full
             second => $second,
         );
     }
-    $self->_set_modified(1);
 }
 
-sub _today
+sub _count_yearday_variant_year
 {
     my $self = shift;
-    $self->_add_trace;
-    $self->_set_modified(1);
-}
-
-sub _count_yearday
-{
-    my $self = shift;
-    $self->_add_trace;
-    my ($day) = @_;
+    $self->_register_trace;
+    my $opts = pop;
+    my ($day, $when) = @_;
     my ($year, $month);
     ($year, $month, $day) = $self->_Add_Delta_Days($self->{datetime}->year, $day);
     $self->_set(
-        year  => $year,
+        year  => $year + $when,
         month => $month,
         day   => $day,
     );
-    $self->_set_modified(2);
 }
 
 sub _count_weekday
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($count, $weekday) = @_;
-    $weekday = ucfirst lc $weekday;
-    $self->_day_name(\$weekday);
-    my ($year, $month, $day);
-    local $@;
-    eval {
-        ($year, $month, $day) =
-          $self->_Nth_Weekday_of_Month_Year(
-              $self->{datetime}->year,
-              $self->{datetime}->month,
-              $self->{data}->{weekdays}->{$weekday},
-              $count,
-          );
-    };
-    if (!$@ and defined $year && defined $month && defined $day
-        and $self->_valid_date(year => $year, month => $month, day => $day))
-    {
-        $self->_set(
-            year  => $year,
-            month => $month,
-            day   => $day,
-        );
-    }
-    else {
-        $self->_set_failure;
-        $self->_set_error("(date is not valid)");
-    }
-    $self->_set_modified(2);
+    $self->_count_weekday_variant_month(0, @_[0,1], undef, $_[-1]);
 }
 
 sub _day_month_year
 {
     my $self = shift;
-    $self->_add_trace;
+    $self->_register_trace;
+    my $opts = pop;
     my ($day, $month, $year) = @_;
-    $self->_month_name(\$month);
     $self->_set(
         year  => $year,
-        month => $self->_month_num($month),
+        month => $month,
         day   => $day,
     );
-    $self->_set_modified(3);
 }
 
 sub _count_weekday_from_now
 {
     my $self = shift;
-    $self->_add_trace;
-    my ($count, $weekday) = @_;
-    chop $weekday if $weekday =~ /s$/;
+    $self->_register_trace;
+    my $opts = pop;
+    my ($count, $day) = @_;
     my $wday = $self->{datetime}->wday;
-    my $dow  = $self->_Decode_Day_of_Week($weekday);
-    my $diff = ($wday < $dow) ? $dow - $wday : (7 - $wday) + $dow;
-    my $days = ($count - 1) * 7 + $diff;
-    $self->_add(day => $days);
-    $self->_set_modified(4);
-}
-
-sub _day_name
-{
-    my $self = shift;
-    my ($day) = @_;
-    $$day = ucfirst lc $$day;
-    if (length $$day == 3) {
-        $$day = $self->{data}->{weekdays_abbrev}->{$$day};
-    }
-}
-
-sub _month_name
-{
-    my $self = shift;
-    my ($month) = @_;
-    $$month = ucfirst lc $$month;
-    if (length $$month == 3) {
-        $$month = $self->{data}->{months_abbrev}->{$$month};
-    }
-}
-
-sub _month_num
-{
-    my $self = shift;
-    my ($month) = @_;
-    $month = ucfirst lc $month;
-    if (length $month == 3) {
-        $month = $self->{data}->{months_abbrev}->{$month};
-    }
-    return $self->{data}->{months}->{$month};
-}
-
-sub _last_wday_diff
-{
-    my $self = shift;
-    my ($day) = @_;
-    return $self->{datetime}->wday + (7 - $self->{data}->{weekdays}->{$day});
-}
-
-sub _next_wday_diff
-{
-    my $self = shift;
-    my ($day) = @_;
-    return (7 - $self->{datetime}->wday + $self->_Decode_Day_of_Week($day));
-}
-
-sub _add
-{
-    my ($self, $unit, $value) = @_;
-
-    $unit .= 's' unless $unit =~ /s$/;
-    $self->{datetime}->add($unit => $value);
-
-    chop $unit;
-    $self->{modified}{$unit}++;
-}
-
-sub _subtract
-{
-    my ($self, $unit, $value) = @_;
-
-    $unit .= 's' unless $unit =~ /s$/;
-    $self->{datetime}->subtract($unit => $value);
-
-    chop $unit;
-    $self->{modified}{$unit}++;
-}
-
-sub _set
-{
-    my ($self, %values) = @_;
-
-    my @units = qw(
-        year
-        month
-        day
-        hour
-        minute
-        second
+    $self->_add(day => ($count - 1) * 7 +
+        (($wday < $day)
+          ? $day - $wday
+          : (7 - $wday) + $day)
     );
-
-    foreach my $unit (@units) {
-        if (exists $values{$unit}) {
-            my $setter = 'set_' . $unit;
-            $self->{datetime}->$setter($values{$unit});
-            $self->{modified}{$unit}++;
-        }
-    }
-}
-
-sub _valid_date
-{
-    my ($self, %values) = @_;
-
-    my %set = map { $_ => $self->{datetime}->$_ } qw(year month day);
-
-    while (my ($unit, $value) = each %values) {
-        $set{$unit} = $value;
-    }
-
-    if ($self->_check_date($set{year}, $set{month}, $set{day})) {
-        return true;
-    }
-    else {
-        $self->_set_failure;
-        $self->_set_error("(date is not valid)");
-        return false;
-    }
-}
-
-sub _valid_time
-{
-    my ($self, %values) = @_;
-
-    my %abbrev = (
-        second => 'sec',
-        minute => 'min',
-        hour   => 'hour',
-    );
-    my %set = map { $_ => $self->{datetime}->$_ } values %abbrev;
-
-    while (my ($unit, $value) = each %values) {
-        $set{$abbrev{$unit}} = $value;
-    }
-
-    if ($self->_check_time($set{hour}, $set{min}, $set{sec})) {
-        return true;
-    }
-    else {
-        $self->_set_failure;
-        $self->_set_error("(time is not valid)");
-        return false;
-    }
 }
 
 1;

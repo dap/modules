@@ -8,23 +8,24 @@ use DateTime ();
 
 our ($VERSION, $Pure);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 BEGIN
 {
     if (eval "require Date::Calc") {
         Date::Calc->import(qw(
-            Add_Delta_Days 
+            Add_Delta_Days
             Day_of_Week
             Decode_Day_of_Week
+            Decode_Month
             Nth_Weekday_of_Month_Year
             check_date
             check_time
         ));
-        $Pure = false; 
-    } 
+        $Pure = false;
+    }
     else {
-        $Pure = true; 
+        $Pure = true;
     }
 }
 
@@ -33,13 +34,13 @@ sub _Add_Delta_Days
     my $self = shift;
 
     if ($Pure) {
-        my ($year, $day) = @_;      
+        my ($year, $day) = @_;
         my $dt = DateTime->from_day_of_year(year => $year, day_of_year => $day);
-        return ($dt->year, $dt->month, $dt->mday);  
+        return ($dt->year, $dt->month, $dt->mday);
     }
     else {
         my ($year, $day) = @_;
-        return Add_Delta_Days($year, 1, 1, $day - 1); 
+        return Add_Delta_Days($year, 1, 1, $day - 1);
     }
 }
 
@@ -61,25 +62,37 @@ sub _Decode_Day_of_Week
 
     if ($Pure) {
         my ($day) = @_;
-        $day = ucfirst lc $day;
-        return $self->{data}->{weekdays}->{$day}; 
+        return $self->{data}->{weekdays}->{$day};
     }
     else {
-        return Decode_Day_of_Week(@_); 
-    } 
+        return Decode_Day_of_Week(@_);
+    }
+}
+
+sub _Decode_Month
+{
+    my $self = shift;
+
+    if ($Pure) {
+        my ($month) = @_;
+        return $self->{data}->{months}->{$month};
+    }
+    else {
+        return Decode_Month(@_);
+    }
 }
 
 sub _Nth_Weekday_of_Month_Year
 {
    my $self = shift;
- 
+
    if ($Pure) {
-       (undef) = shift;
-       my ($month, $weekday, $count) = @_;
+       my ($year, $month, $weekday, $count) = @_;
        my $dt = $self->{datetime}->clone;
+       $dt->set_year($year);
        $dt->set_month($month);
        $dt->set_day(1);
-       $dt->set_day($dt->day + 1) 
+       $dt->set_day($dt->day + 1)
          while ($weekday ne $dt->dow);
        $dt->set_day($dt->day + 7 * ($count - 1));
        return ($dt->year, $dt->month, $dt->day);
@@ -94,7 +107,7 @@ sub _check_date
     my $self = shift;
 
     if ($Pure) {
-        my ($year, $month, $day) = @_; 
+        my ($year, $month, $day) = @_;
         local $@;
         eval {
             my $dt = $self->{datetime}->clone;
@@ -106,7 +119,7 @@ sub _check_date
     }
     else {
         return check_date(@_);
-    } 
+    }
 }
 
 sub _check_time
@@ -117,10 +130,10 @@ sub _check_time
         my ($hour, $minute, $second) = @_;
         local $@;
         eval {
-	    my $dt = $self->{datetime}->clone;
-	    $dt->set_hour($hour);
-	    $dt->set_minute($minute);
-	    $dt->set_second($second);
+            my $dt = $self->{datetime}->clone;
+            $dt->set_hour($hour);
+            $dt->set_minute($minute);
+            $dt->set_second($second);
         };
         return !$@;
     }
@@ -134,7 +147,7 @@ __END__
 
 =head1 NAME
 
-DateTime::Format::Natural::Compat - Methods with more than one implementation 
+DateTime::Format::Natural::Compat - Methods with more than one implementation
 
 =head1 SYNOPSIS
 
@@ -142,7 +155,7 @@ DateTime::Format::Natural::Compat - Methods with more than one implementation
 
 =head1 DESCRIPTION
 
-The C<DateTime::Format::Natural::Compat> class defines methods which must retain 
+The C<DateTime::Format::Natural::Compat> class defines methods which must retain
 more than one possible implementation due to compatibility issues on certain
 platforms.
 

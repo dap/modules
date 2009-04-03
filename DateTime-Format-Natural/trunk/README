@@ -23,13 +23,14 @@ SYNOPSIS
      }
 
 DESCRIPTION
-    "DateTime::Format::Natural" takes a string with a human readable
+    `DateTime::Format::Natural' takes a string with a human readable
     date/time and creates a machine readable one by applying natural parsing
     logic.
 
 CONSTRUCTOR
   new
-    Creates a new "DateTime::Format::Natural" object. Arguments to "new()"
+
+    Creates a new `DateTime::Format::Natural' object. Arguments to `new()'
     are options and not necessarily required.
 
      $parser = DateTime::Format::Natural->new(
@@ -43,53 +44,58 @@ CONSTRUCTOR
                                 },
      );
 
-    * "lang"
-        Contains the language selected, currently limited to "en" (english).
-        Defaults to '"en"'.
+    * `lang'
+        Contains the language selected, currently limited to `en' (english).
+        Defaults to '`en''.
 
-    * "format"
-        Specifies the format of numeric dates, defaults to '"d/m/y"'.
+    * `format'
+        Specifies the format of numeric dates, defaults to '`d/m/y''.
 
-    * "prefer_future"
+    * `prefer_future'
         Turns ambiguous weekdays/months to their futuristic relatives.
         Accepts a boolean, defaults to false.
 
-    * "time_zone"
+    * `time_zone'
         The time zone to use when parsing and for output. Accepts any time
         zone recognized by DateTime. Defaults to 'floating'.
 
-    * "daytime"
+    * `daytime'
         A hash reference consisting of customized daytime hours, which may
         be selectively changed.
 
 METHODS
   parse_datetime
-    Creates a "DateTime" object from a human readable date/time string.
+
+    Creates a `DateTime' object from a human readable date/time string.
 
      $dt = $parser->parse_datetime($date_string);
      $dt = $parser->parse_datetime(string => $date_string);
 
-    * "string"
+    * `string'
         The date string.
 
     Returns a DateTime object.
 
   parse_datetime_duration
-    Creates one or more "DateTime" object(s) from a human readable date/time
+
+    Creates one or more `DateTime' object(s) from a human readable date/time
     string which may contain timespans/durations. 'Same' interface & options
-    as "parse_datetime()", but must be explicitly called in list context.
+    as `parse_datetime()', but must be explicitly called in list context.
 
      @dt = $parser->parse_datetime_duration($date_string);
      @dt = $parser->parse_datetime_duration(string => $date_string);
 
   success
+
     Returns a boolean indicating success or failure for parsing the
     date/time string given.
 
   error
+
     Returns the error message if the parsing did not succeed.
 
   trace
+
     Returns a trace of methods which were called within the Base class and a
     summary how often certain units have been modified.
 
@@ -98,16 +104,16 @@ GRAMMAR
     hence everybody is encouraged to propose sensible new additions and/or
     changes.
 
-    See the classes "DateTime::Format::Natural::Lang::[language_code]" if
+    See the classes `DateTime::Format::Natural::Lang::[language_code]' if
     you're intending to hack a bit on the grammar guts.
 
 EXAMPLES
-    See the classes "DateTime::Format::Natural::Lang::[language_code]" for a
+    See the classes `DateTime::Format::Natural::Lang::[language_code]' for a
     overview of current valid input.
 
 CREDITS
     Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's
-    journal entry <http://use.perl.org/~miyagawa/journal/31378> for more
+    journal entry http://use.perl.org/~miyagawa/journal/31378 for more
     information.
 
     Furthermore, thanks to (in order of appearance) who have contributed
@@ -132,9 +138,10 @@ CREDITS
      Alex Bowley
      Elliot Shank
      Anirvan Chatterjee
+     Michael Reddick
 
 SEE ALSO
-    DateTime, Date::Calc, <http://datetime.perl.org>
+    DateTime, Date::Calc, http://datetime.perl.org
 
 AUTHOR
     Steven Schubiger <schubiger@cpan.org>
@@ -143,5 +150,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See <http://www.perl.com/perl/misc/Artistic.html>
+    See http://www.perl.com/perl/misc/Artistic.html
 

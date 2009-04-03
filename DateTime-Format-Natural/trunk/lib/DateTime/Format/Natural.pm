@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(
     DateTime::Format::Natural::Base
-    DateTime::Format::Natural::Compat
+    DateTime::Format::Natural::Helpers
 );
 use boolean qw(true false);
 
@@ -13,7 +13,7 @@ use DateTime ();
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.75_03';
+our $VERSION = '0.75_04';
 
 validation_options(
     on_fail => sub
@@ -39,7 +39,8 @@ sub new
 
 sub _init
 {
-    my ($self, %opts) = @_;
+    my $self = shift;
+    my %opts = @_;
 
     $self->{Format}        = $opts{format}        || 'd/m/y';
     $self->{Lang}          = $opts{lang}          || 'en';
@@ -181,12 +182,10 @@ sub parse_datetime
         );
 
         $self->_set_valid_exp;
-        $self->_set_modified(1);
 
         if (@{$self->{tokens} || []}) {
             $self->{count}{tokens}--;
             $self->_unset_valid_exp;
-            $self->_unset_modified;
             $self->_process;
         }
     }
@@ -226,7 +225,6 @@ sub _parse_init
     $self->_unset_error;
     $self->_unset_valid_exp;
     $self->_unset_trace;
-    $self->_unset_modified;
 }
 
 sub parse_datetime_duration
@@ -274,7 +272,7 @@ sub trace
 
     return join "\n", @{$self->{trace}},
       map  { my $unit = $_; "$unit: $self->{modified}{$unit}" }
-      grep { $_ ne 'total' } keys %{$self->{modified}};
+      keys %{$self->{modified}};
 }
 
 sub _process
@@ -288,8 +286,6 @@ sub _process
     }
 
     PARSE: foreach my $keyword (@{$self->{lookup}{$self->{count}{tokens}} || []}) {
-        last if $self->_get_modified >= $self->{count}{tokens};
-
         my @grammar = @{$self->{data}->__grammar($keyword)};
         my $types = shift @grammar;
 
@@ -330,26 +326,31 @@ sub _process
                 my $i;
                 foreach my $check (@{$expression->[2]}) {
                     my @pos = @{$expression->[1][$i++]};
-                    $valid_expression &= $check->{code}->(\%regex_stack, @pos);
+                    my $error;
+                    $valid_expression &= $check->(\%regex_stack, \@pos, \$error);
                     unless ($valid_expression) {
-                        $self->_set_error("($check->{error})");
+                        $self->_set_error("($error)");
                         last;
                     }
                 }
             }
             if ($valid_expression) {
                 $self->_set_valid_exp;
-                my $i;
+                my $i = 0;
                 foreach my $positions (@{$expression->[3]}) {
                     my ($c, @values);
                     foreach my $pos (@$positions) {
-                        $values[$c++] = exists $regex_stack{$pos}
-                          ? $regex_stack{$pos}
-                          : ${$self->_token($pos)};
+                        my $index = ref $pos eq 'HASH' ? (keys %$pos)[0] : $pos;
+                        $values[$c++] = ref $pos
+                          ? $index eq 'VALUE'
+                            ? $pos->{$index}
+                            : $self->SUPER::_helper($pos->{$index}, $regex_stack{$index})
+                          : exists $regex_stack{$index}
+                            ? $regex_stack{$index}
+                            : ${$self->_token($index)};
                     }
-                    #@values = map { defined $_ ? $_ : () } @values; # unused 
-                    my $meth = 'SUPER::'.$expression->[-1]->[$i++];
-                    $self->$meth(@values);
+                    my $meth = 'SUPER::'.$expression->[-1]->[$i];
+                    $self->$meth(@values, $expression->[4]->[$i++]);
                 }
                 last PARSE;
             }
@@ -364,14 +365,14 @@ sub _post_process_options
     my $self = shift;
 
     if ($self->{Prefer_future}) {
-        my %modified = map { $_ => true } grep { $_ ne 'total' } keys %{$self->{modified}};
+        my %modified = map { $_ => true } keys %{$self->{modified}};
 
-        if ((all { /^(?:minute|hour)$/ } keys %modified) 
+        if ((all { /^(?:minute|hour)$/ } keys %modified)
             && (exists $self->{modified}{hour} && $self->{modified}{hour} == 1)
             && (exists $self->{modified}{minute} && $self->{modified}{minute} == 1)
             && $self->{datetime}->hour < DateTime->now(time_zone => $self->{Time_zone})->hour
         ) {
-            $self->{postprocess}{day} = 1; 
+            $self->{postprocess}{day} = 1;
         }
         elsif ($self->{count}{tokens} == 1
             && (any { $self->{tokens}->[0] =~ /$_/i } @{$self->{data}->{weekdays_all}})
@@ -398,7 +399,8 @@ sub _post_process_options
 
 sub _token
 {
-    my ($self, $pos) = @_;
+    my $self = shift;
+    my ($pos) = @_;
 
     my $str = '';
     my $token = $self->{tokens}->[0 + $pos];
@@ -408,7 +410,7 @@ sub _token
       : \$str;
 }
 
-sub _add_trace       { push @{$_[0]->{trace}}, (caller(1))[3] }
+sub _register_trace  { push @{$_[0]->{trace}}, (caller(1))[3] }
 sub _unset_trace     { @{$_[0]->{trace}} = ()                 }
 
 sub _get_error       { $_[0]->{error}         }
@@ -423,14 +425,10 @@ sub _get_valid_exp   { $_[0]->{valid_expression}         }
 sub _set_valid_exp   { $_[0]->{valid_expression} = true  }
 sub _unset_valid_exp { $_[0]->{valid_expression} = false }
 
-sub _get_modified    { $_[0]->{modified}{total} || 0     }
-sub _set_modified    { $_[0]->{modified}{total} += $_[1] }
-sub _unset_modified  { $_[0]->{modified}{total}  = 0     }
-
 sub _get_datetime_object
 {
     my $self = shift;
-    
+
     my $dt = DateTime->new(
         time_zone => $self->{datetime}->time_zone->name,
         year      => $self->{datetime}->year,
@@ -451,15 +449,18 @@ sub _get_datetime_object
 # solely for testing purpose
 sub _set_datetime
 {
-    my ($self, $year, $month, $day, $hour, $min, $sec, $tz) = @_;
+    my $self = shift;
+    my ($year, $month, $day, $hour, $min, $sec, $tz) = @_;
 
-    $self->{datetime} = DateTime->new(time_zone => $tz || 'floating',
-                                      year      => $year,
-                                      month     => $month,
-                                      day       => $day,
-                                      hour      => $hour,
-                                      minute    => $min,
-                                      second    => $sec);
+    $self->{datetime} = DateTime->new(
+        time_zone => $tz || 'floating',
+        year      => $year,
+        month     => $month,
+        day       => $day,
+        hour      => $hour,
+        minute    => $min,
+        second    => $sec
+    );
     $self->{running_tests} = true;
 }
 
@@ -624,6 +625,7 @@ valuable suggestions & patches:
  Alex Bowley
  Elliot Shank
  Anirvan Chatterjee
+ Michael Reddick
 
 =head1 SEE ALSO
 
