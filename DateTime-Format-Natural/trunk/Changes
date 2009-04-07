@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.75_05 Mon Apr  6 12:42:26 CEST 2009
+
+ - New supported format: final <weekday> in <month>.
+   [rt #44810 - Christian Brink]
+
+ - Wrap Days_in_Month() in Compat.pm.
+
 0.75_04 Fri Apr  3 15:13:36 CEST 2009
 
  - New supported formats: some suggested by [rt #44067 - Michael

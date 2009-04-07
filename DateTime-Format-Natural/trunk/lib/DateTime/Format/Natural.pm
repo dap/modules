@@ -13,7 +13,7 @@ use DateTime ();
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.75_04';
+our $VERSION = '0.75_05';
 
 validation_options(
     on_fail => sub
@@ -626,6 +626,7 @@ valuable suggestions & patches:
  Elliot Shank
  Anirvan Chatterjee
  Michael Reddick
+ Christian Brink
 
 =head1 SEE ALSO
 

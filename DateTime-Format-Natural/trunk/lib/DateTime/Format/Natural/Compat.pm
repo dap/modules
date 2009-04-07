@@ -8,7 +8,7 @@ use DateTime ();
 
 our ($VERSION, $Pure);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 BEGIN
 {
@@ -16,6 +16,7 @@ BEGIN
         Date::Calc->import(qw(
             Add_Delta_Days
             Day_of_Week
+            Days_in_Month
             Decode_Day_of_Week
             Decode_Month
             Nth_Weekday_of_Month_Year
@@ -53,6 +54,20 @@ sub _Day_of_Week
     }
     else {
         return Day_of_Week(@_);
+    }
+}
+
+sub _Days_in_Month
+{
+    my $self = shift;
+
+    if ($Pure) {
+        my ($year, $month) = @_;
+        my $dt = DateTime->last_day_of_month(year => $year, month => $month);
+        return $dt->day;
+    }
+    else {
+        return Days_in_Month(@_);
     }
 }
 

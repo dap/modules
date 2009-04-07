@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.19';
+our $VERSION = '1.20';
 
 our (%init,
      %timespan,
@@ -2447,7 +2447,23 @@ our (%init,
          [ {} ],
          [ '_count_weekday_from_now' ],
        ],
-    ]
+    ],
+    final_weekday_in_month => [
+       [ 'SCALAR', 'REGEXP', 'SCALAR', 'REGEXP' ],
+       [
+         { 0 => 'final', 1 => $RE{weekday}, 2 => 'in', 3 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+             { 3 => [ $flag{month_name}, $flag{month_num} ] },
+           ],
+         ],
+         [ {} ],
+         [ '_final_weekday_in_month' ],
+       ],
+    ],
 );
 
 1;
@@ -2650,6 +2666,7 @@ that the parser does not distinguish between lower/upper case):
  6 mondays from now
  fri 3 months ago at 5am
  wednesday 1 month ago at 8pm
+ final thursday in april
 
 =head2 Timespans
 

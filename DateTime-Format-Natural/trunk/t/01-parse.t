@@ -190,6 +190,8 @@ my @complex = (
     { '6 mondays from now'              => '01.01.2007 01:13:00' },
     { 'fri 3 months ago at 5am'         => '25.08.2006 05:00:00' },
     { 'wednesday 1 month ago at 8pm'    => '25.10.2006 20:00:00' },
+    { 'final thursday in april'         => '27.04.2006 01:13:00' },
+    { 'final sunday in april'           => '30.04.2006 01:13:00' }, # edge case
 );
 
 my @specific = (
@@ -211,7 +213,7 @@ my @specific = (
 );
 
 {
-    my $tests = 191;
+    my $tests = 193;
 
     local $@;
 

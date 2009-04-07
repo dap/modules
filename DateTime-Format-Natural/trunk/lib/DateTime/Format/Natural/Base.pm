@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Compat);
 
-our $VERSION = '1.23';
+our $VERSION = '1.24';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -374,6 +374,30 @@ sub _count_weekday_from_now
         (($wday < $day)
           ? $day - $wday
           : (7 - $wday) + $day)
+    );
+}
+
+sub _final_weekday_in_month
+{
+    my $self = shift;
+    $self->_register_trace;
+    my $opts = pop;
+    my ($wday, $month) = @_;
+    my $days = $self->_Days_in_Month($self->{datetime}->year, $month);
+    my ($year, $day);
+    ($year, $month, $day) = $self->_Nth_Weekday_of_Month_Year(
+        $self->{datetime}->year,
+        $month,
+        $wday,
+        1,
+    );
+    while ($day <= $days - 7) {
+        $day += 7;
+    }
+    $self->_set(
+        year  => $year,
+        month => $month,
+        day   => $day,
     );
 }
 
