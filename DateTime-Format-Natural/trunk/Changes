@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.76 Thu Apr  9 12:08:32 CEST 2009
+
+ - Merged development version to stable.
+
 0.75_05 Mon Apr  6 12:42:26 CEST 2009
 
  - New supported format: final <weekday> in <month>.
