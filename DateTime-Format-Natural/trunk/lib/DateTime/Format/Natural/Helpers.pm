@@ -5,20 +5,23 @@ use warnings;
 use base qw(Exporter);
 use boolean qw(true false);
 
+use constant REAL_FLAG => true;
+use constant VIRT_FLAG => false;
+
 our ($VERSION, @EXPORT_OK, %flag);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 my @flags = (
-    { weekday_name      =>  true },
-    { weekday_num       =>  true },
-    { month_name        =>  true },
-    { month_num         =>  true },
-    { last_this_next    => false },
-    { yes_today_tom     => false },
-    { noon_midnight     => false },
-    { morn_aftern_even  => false },
-    { before_after_from => false },
+    { weekday_name      => REAL_FLAG },
+    { weekday_num       => REAL_FLAG },
+    { month_name        => REAL_FLAG },
+    { month_num         => REAL_FLAG },
+    { last_this_next    => VIRT_FLAG },
+    { yes_today_tom     => VIRT_FLAG },
+    { noon_midnight     => VIRT_FLAG },
+    { morn_aftern_even  => VIRT_FLAG },
+    { before_after_from => VIRT_FLAG },
 );
 
 {

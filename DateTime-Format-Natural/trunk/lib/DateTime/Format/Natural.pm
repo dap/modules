@@ -13,7 +13,7 @@ use DateTime ();
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.76';
+our $VERSION = '0.76_01';
 
 validation_options(
     on_fail => sub
@@ -42,10 +42,20 @@ sub _init
     my $self = shift;
     my %opts = @_;
 
-    $self->{Format}        = $opts{format}        || 'd/m/y';
-    $self->{Lang}          = $opts{lang}          || 'en';
-    $self->{Prefer_future} = $opts{prefer_future} || false;
-    $self->{Time_zone}     = $opts{time_zone}     || 'floating';
+    my %presets = (
+        lang          => 'en',
+        format        => 'd/m/y',
+        prefer_future => false,
+        time_zone     => 'floating',
+    );
+    foreach my $opt (keys %presets) {
+        $self->{ucfirst $opt} = $presets{$opt};
+    }
+    foreach my $opt (keys %opts) {
+        if (defined $opts{$opt}) {
+            $self->{ucfirst $opt} = $opts{$opt};
+        }
+    }
     $self->{Opts}{daytime} = $opts{daytime};
 
     my $mod = __PACKAGE__.'::Lang::'.uc($self->{Lang});
@@ -180,6 +190,7 @@ sub parse_datetime
             month => $month,
             day   => $day,
         );
+        $self->{datetime}->truncate(to => 'day');
 
         $self->_set_valid_exp;
 
@@ -279,6 +290,8 @@ sub _process
 {
     my $self = shift;
 
+    my %opts;
+
     if (!exists $self->{lookup}) {
         foreach my $keyword (keys %{$self->{data}->__grammar('')}) {
             push @{$self->{lookup}{scalar @{$self->{data}->__grammar($keyword)->[0]}}}, $keyword;
@@ -349,20 +362,26 @@ sub _process
                             ? $regex_stack{$index}
                             : ${$self->_token($index)};
                     }
-                    my $meth = 'SUPER::'.$expression->[-1]->[$i];
+                    my $meth = 'SUPER::'.$expression->[5]->[$i];
                     $self->$meth(@values, $expression->[4]->[$i++]);
                 }
+                %opts = %{$expression->[6]};
                 last PARSE;
             }
         }
     }
 
-    $self->_post_process_options;
+    $self->_post_process(%opts);
 }
 
-sub _post_process_options
+sub _post_process
 {
     my $self = shift;
+    my %opts = @_;
+
+    if (exists $opts{truncate_to}) {
+        $self->{datetime}->truncate(to => $opts{truncate_to});
+    }
 
     if ($self->{Prefer_future}) {
         my %modified = map { $_ => true } keys %{$self->{modified}};
@@ -507,7 +526,7 @@ not necessarily required.
  $parser = DateTime::Format::Natural->new(
            lang          => 'en',
            format        => 'mm/dd/yy',
-           prefer_future => '[0|1]'
+           prefer_future => '[0|1]',
            time_zone     => 'floating',
            daytime       => { morning   => 06,
                               afternoon => 13,

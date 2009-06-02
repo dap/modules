@@ -7,7 +7,7 @@ use boolean qw(true);
 use DateTime::Format::Natural;
 use Test::More;
 
-my ($sec, $min, $hour, $day, $month, $year) = (00, 13, 01, 24, 11, 2006);
+my ($sec, $min, $hour, $day, $month, $year) = (8, 13, 1, 24, 11, 2006);
 
 my @daytime_regular = (
     { 'morning'   => '24.11.2006 08:00:00' },

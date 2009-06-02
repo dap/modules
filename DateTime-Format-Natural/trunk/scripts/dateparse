@@ -29,7 +29,7 @@ sub parse_switches
     GetOptions(\%opts, qw(f|format=s
                           h|help
                           l|lang=s
-                          p|prefer_future
+                          p|prefer_future!
                           s|supported
                           t|time_zone=s
                           T|trace
@@ -117,20 +117,20 @@ EOT
             next;
         }
 
-        my $parse = DateTime::Format::Natural->new(%args);
-        my @dt = $parse->parse_datetime_duration(string => $input);
+        my $parser = DateTime::Format::Natural->new(%args);
+        my @dt = $parser->parse_datetime_duration(string => $input);
 
-        if ($parse->success) {
+        if ($parser->success) {
             foreach my $dt (@dt) {
                 printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
             }
         }
         else {
-            warn $parse->error, "\n";
+            warn $parser->error, "\n";
         }
 
         if ($trace) {
-            print $parse->trace, "\n";
+            print $parser->trace, "\n";
         }
     }
 }

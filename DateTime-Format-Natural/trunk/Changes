@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.76_01 Mon Jun  1 21:34:06 CEST 2009
+
+ - Change in default behavior: Use DateTime's truncate method
+   to reset time components. Inspired by [rt #43468 - Clayton
+   L. Scott] and suggestions from others.
+
 0.76 Thu Apr  9 12:08:32 CEST 2009
 
  - Merged development version to stable.

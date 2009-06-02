@@ -36,7 +36,7 @@ CONSTRUCTOR
      $parser = DateTime::Format::Natural->new(
                lang          => 'en',
                format        => 'mm/dd/yy',
-               prefer_future => '[0|1]'
+               prefer_future => '[0|1]',
                time_zone     => 'floating',
                daytime       => { morning   => 06,
                                   afternoon => 13,
