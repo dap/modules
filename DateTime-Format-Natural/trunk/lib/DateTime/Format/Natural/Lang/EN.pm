@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.21';
+our $VERSION = '1.22';
 
 our (%init,
      %timespan,
@@ -637,7 +637,10 @@ our (%init,
          ],
          [ { unit => 'month' } ],
          [ '_unit_date' ],
-         { truncate_to => 'month' },
+         {
+           prefer_future => true,
+           truncate_to   => 'month',
+         },
        ],
     ],
     month_day => [
@@ -654,7 +657,10 @@ our (%init,
          ],
          [ {} ],
          [ '_month_day' ],
-         { truncate_to => 'day' },
+         {
+           prefer_future => true,
+           truncate_to   => 'day',
+         },
        ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday} },
@@ -668,7 +674,10 @@ our (%init,
          ],
          [ {} ],
          [ '_month_day' ],
-         { truncate_to => 'day' },
+         {
+           prefer_future => true,
+           truncate_to   => 'day',
+         },
        ]
     ],
     day_month_year_ago => [
@@ -816,7 +825,10 @@ our (%init,
          ],
          [ {} ],
          [ '_weekday' ],
-         { truncate_to => 'day' },
+         {
+           prefer_future => true,
+           truncate_to   => 'day',
+         },
        ],
     ],
     weekday_variant => [
@@ -1158,7 +1170,10 @@ our (%init,
          [ [ 0 ] ],
          [ { hours => 0 } ],
          [ '_at' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
        [
          { 0 => $RE{time}, 1 => 'pm' },
@@ -1167,7 +1182,10 @@ our (%init,
          [ [ 0 ] ],
          [ { hours => 12 } ],
          [ '_at' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
     ],
     at_combined => [
@@ -1179,7 +1197,10 @@ our (%init,
          [ [ 0 ] ],
          [ { hours => 0 } ],
          [ '_at' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
        [
          { 0 => $RE{time_pm} },
@@ -1188,13 +1209,16 @@ our (%init,
          [ [ 0 ] ],
          [ { hours => 12 } ],
          [ '_at' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
     ],
     weekday_time => [
        [ 'REGEXP', 'REGEXP' ],
        [
-         { 0 => $RE{weekday}, 1 => $RE{time} },
+         { 0 => $RE{weekday}, 1 => $RE{time_am} },
          [],
          [],
          [
@@ -1203,9 +1227,29 @@ our (%init,
            ],
            [ 1 ],
          ],
-         [ {}, {} ],
+         [ {}, { hours => 0 } ],
          [ '_weekday', '_time' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
+       ],
+       [
+         { 0 => $RE{weekday}, 1 => $RE{time_pm} },
+         [],
+         [],
+         [
+           [
+             { 0 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+           [ 1 ],
+         ],
+         [ {}, { hours => 12 } ],
+         [ '_weekday', '_time' ],
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
     ],
     time => [
@@ -1217,7 +1261,10 @@ our (%init,
          [ [ 0 ] ],
          [ {} ],
          [ '_time' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
     ],
     time_full => [
@@ -1229,7 +1276,7 @@ our (%init,
          [ [ 0 ] ],
          [ {} ],
          [ '_time_full' ],
-         {},
+         { prefer_future => true },
        ],
     ],
     month_year => [
@@ -2489,7 +2536,10 @@ our (%init,
          ],
          [ {}, {} ],
          [ '_weekday', '_time' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
     ],
     day_at_pm => [
@@ -2551,7 +2601,10 @@ our (%init,
          ],
          [ {}, { hours => 12 } ],
          [ '_weekday', '_at' ],
-         { truncate_to => 'minute' },
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
        ],
     ],
     day_month_year => [
@@ -2749,6 +2802,8 @@ that the parser does not distinguish between lower/upper case):
  tomorrow at 6:45pm
  wednesday at 14:30
  wednesday at 02:30pm
+ wednesday 14:30
+ wednesday 02:30pm
  2nd monday
  100th day
  4th february

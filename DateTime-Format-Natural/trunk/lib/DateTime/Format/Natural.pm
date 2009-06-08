@@ -13,7 +13,7 @@ use DateTime ();
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
 
-our $VERSION = '0.76_01';
+our $VERSION = '0.76_02';
 
 validation_options(
     on_fail => sub
@@ -383,26 +383,37 @@ sub _post_process
         $self->{datetime}->truncate(to => $opts{truncate_to});
     }
 
-    if ($self->{Prefer_future}) {
+    if ($self->{Prefer_future} &&
+        (exists $opts{prefer_future} && $opts{prefer_future})
+    ) {
         my %modified = map { $_ => true } keys %{$self->{modified}};
+        my $token_contains = sub
+        {
+            my ($identifier) = @_;
+            return any {
+              my $data = $_;
+              any {
+                my $token = $_;
+                $token =~ /$data/i;
+              } @{$self->{tokens}}
+            } @{$self->{data}->{$identifier}};
+        };
 
-        if ((all { /^(?:minute|hour)$/ } keys %modified)
+        if ((all { /^(?:second|minute|hour)$/ } keys %modified)
             && (exists $self->{modified}{hour} && $self->{modified}{hour} == 1)
             && (exists $self->{modified}{minute} && $self->{modified}{minute} == 1)
             && $self->{datetime}->hour < DateTime->now(time_zone => $self->{Time_zone})->hour
         ) {
             $self->{postprocess}{day} = 1;
         }
-        elsif ($self->{count}{tokens} == 1
-            && (any { $self->{tokens}->[0] =~ /$_/i } @{$self->{data}->{weekdays_all}})
-            && scalar keys %modified == 1
-            && (exists $self->{modified}{day} && $self->{modified}{day} == 1
-            && $self->_Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day)
+        elsif ($token_contains->('weekdays_all')
+            && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
+            && ($self->_Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day)
              < DateTime->now(time_zone => $self->{Time_zone})->wday)
         ) {
             $self->{postprocess}{day} = 7;
         }
-        elsif ((any { my $month = $_; any { $_ =~ /$month/i } @{$self->{tokens}} } @{$self->{data}->{months_all}})
+        elsif ($token_contains->('months_all')
             && (all { /^(?:day|month)$/ } keys %modified)
             && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
             && (exists $self->{modified}{day}

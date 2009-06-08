@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.76_02 Sat Jun  6 13:24:58 CEST 2009
+
+ - When using prefer_future, also allow for weekdays combined with
+   the time of day to be parsed correctly. [rt #46689 - Jason May]
+
+ - New supported format: <weekday> <time>. [rt #46689 - Jason May]
+
 0.76_01 Mon Jun  1 21:34:06 CEST 2009
 
  - Change in default behavior: Use DateTime's truncate method
