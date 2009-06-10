@@ -34,6 +34,7 @@ CONSTRUCTOR
     are options and not necessarily required.
 
      $parser = DateTime::Format::Natural->new(
+               datetime      => DateTime->new(...),
                lang          => 'en',
                format        => 'mm/dd/yy',
                prefer_future => '[0|1]',
@@ -43,6 +44,9 @@ CONSTRUCTOR
                                   evening   => 20,
                                 },
      );
+
+    * `datetime'
+        Overrides the present now with a DateTime object provided.
 
     * `lang'
         Contains the language selected, currently limited to `en' (english).
@@ -140,6 +144,7 @@ CREDITS
      Anirvan Chatterjee
      Michael Reddick
      Christian Brink
+     Giovanni Pensa
 
 SEE ALSO
     DateTime, Date::Calc, http://datetime.perl.org

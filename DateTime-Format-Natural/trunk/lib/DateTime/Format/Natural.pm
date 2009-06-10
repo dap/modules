@@ -12,8 +12,10 @@ use Carp qw(croak);
 use DateTime ();
 use List::MoreUtils qw(all any);
 use Params::Validate ':all';
+use Scalar::Util qw(blessed);
+use Storable qw(dclone);
 
-our $VERSION = '0.76_02';
+our $VERSION = '0.76_03';
 
 validation_options(
     on_fail => sub
@@ -94,11 +96,22 @@ sub _init_check
                     eval { DateTime::TimeZone->new(name => shift) };
                     !$@;
                 }
-            }
+            },
         },
         daytime => {
             type => HASHREF,
             optional => true,
+        },
+        datetime => {
+            type => OBJECT,
+            optional => true,
+            callbacks => {
+                'valid object' => sub
+                {
+                    my $obj = shift;
+                    blessed($obj) && $obj->isa('DateTime');
+                }
+            },
         },
     });
 }
@@ -107,8 +120,9 @@ sub _init_vars
 {
     my $self = shift;
 
-    delete $self->{modified};
-    delete $self->{postprocess};
+    foreach my $member (qw(modified postprocess)) {
+        delete $self->{$member};
+    }
 }
 
 sub parse_datetime
@@ -199,6 +213,14 @@ sub parse_datetime
             $self->_unset_valid_exp;
             $self->_process;
         }
+
+        if ($self->{duration}) {
+            %{$self->{formatted}} = (
+                year  => $year,
+                month => $month,
+                day   => $day,
+            );
+        }
     }
     else {
         @{$self->{tokens}} = split ' ', $date_string;
@@ -211,23 +233,55 @@ sub parse_datetime
     return $self->_get_datetime_object;
 }
 
+sub _params_init
+{
+    my $self = shift;
+    my $params = pop;
+
+    if (@_ > 1) {
+        validate(@_, { string => { type => SCALAR }});
+        my %opts = @_;
+        foreach my $opt (keys %opts) {
+            ${$params->{$opt}} = $opts{$opt};
+        }
+        (undef) = $opts{debug}; # legacy
+    }
+    else {
+        validate_pos(@_, { type => SCALAR });
+        (${$params->{string}}) = @_;
+    }
+}
+
 sub _parse_init
 {
     my $self = shift;
 
-    if (@_ > 1) {
-        validate(@_, { string => { type => SCALAR }});
-        my %opts             = @_;
-        $self->{Date_string} = $opts{string};
-        (undef)              = $opts{debug}; # legacy
-    }
-    else {
-        validate_pos(@_, { type => SCALAR });
-        ($self->{Date_string}) = @_;
-    }
+    $self->_params_init(@_, { string => \$self->{Date_string} });
+
+    my $set_datetime = sub
+    {
+        my ($method, $args) = @_;
+
+        if (exists $self->{Datetime} && $method eq 'now') {
+            $self->{datetime} = dclone($self->{Datetime});
+        }
+        else {
+            $self->{datetime} = DateTime->$method(
+                time_zone => $self->{Time_zone},
+                %$args,
+            );
+        }
+    };
 
     unless ($self->{running_tests}) {
-        $self->{datetime} = DateTime->now(time_zone => $self->{Time_zone});
+        if (exists $self->{formatted}) {
+            $set_datetime->('new', {
+                map { $_ => $self->{formatted}{$_} } qw(year month day)
+            });
+        }
+        else {
+            $set_datetime->('now', {});
+        }
     }
 
     $self->_init_vars;
@@ -242,17 +296,34 @@ sub parse_datetime_duration
 {
     my $self = shift;
 
-    $self->_parse_init(@_);
-
+    my $duration_string;
+    $self->_params_init(@_, { string => \$duration_string });
     my $timespan_sep = $self->{data}->__timespan('literal');
 
-    my @date_strings = $self->{Date_string} =~ /$timespan_sep/i
-      ? split /\s+ $timespan_sep \s+/ix, $self->{Date_string}
-      : ($self->{Date_string});
+    my @date_strings = $duration_string =~ /$timespan_sep/i
+      ? do { $self->{duration} = true;
+             split /\s+ $timespan_sep \s+/ix, $duration_string }
+      : do { $self->{duration} = false;
+             ($duration_string) };
+
+    my $dt_now;
+    if (scalar @date_strings == 1
+         && $date_strings[0] =~ /^for\s+/i
+    ) {
+        $dt_now = $self->parse_datetime('now');
+    }
 
     my @queue;
     foreach my $date_string (@date_strings) {
         push @queue, $self->parse_datetime($date_string);
+    }
+
+    if ($self->success && defined $dt_now) {
+        unshift @queue, $dt_now;
+    }
+
+    foreach my $member (qw(duration formatted)) {
+        delete $self->{$member};
     }
 
     return @queue;
@@ -535,6 +606,7 @@ Creates a new C<DateTime::Format::Natural> object. Arguments to C<new()> are opt
 not necessarily required.
 
  $parser = DateTime::Format::Natural->new(
+           datetime      => DateTime->new(...),
            lang          => 'en',
            format        => 'mm/dd/yy',
            prefer_future => '[0|1]',
@@ -546,6 +618,10 @@ not necessarily required.
  );
 
 =over 4
+
+=item * C<datetime>
+
+Overrides the present now with a DateTime object provided.
 
 =item * C<lang>
 
@@ -657,6 +733,7 @@ valuable suggestions & patches:
  Anirvan Chatterjee
  Michael Reddick
  Christian Brink
+ Giovanni Pensa
 
 =head1 SEE ALSO
 

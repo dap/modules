@@ -1,5 +1,16 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.76_03 Wed Jun 10 11:50:42 CEST 2009
+
+ - The current "now" can be overridden through the 'datetime'
+   option. [rt #45127 - Giovanni Pensa]
+
+ - parse_datetime_duration() handles durations where the second
+   part is relative to the first one. [rt #45127 - Giovanni Pensa]
+
+ - New supported relative duration: for <count> <unit>.
+   [rt #45127 - Giovanni Pensa]
+
 0.76_02 Sat Jun  6 13:24:58 CEST 2009
 
  - When using prefer_future, also allow for weekdays combined with

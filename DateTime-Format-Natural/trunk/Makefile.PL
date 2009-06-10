@@ -10,12 +10,15 @@ WriteMakefile
                          ],
           'VERSION_FROM' => 'lib/DateTime/Format/Natural.pm',
           'PREREQ_PM' => {
+                           'Scalar::Util' => 0,
+                           'DateTime' => 0,
+                           'Test::MockTime' => 0,
+                           'Storable' => 0,
+                           'Carp' => 0,
                            'boolean' => 0,
                            'Test::More' => 0,
-                           'DateTime' => 0,
                            'Term::ReadLine' => 0,
                            'Params::Validate' => 0,
-                           'Test::MockTime' => 0,
                            'List::MoreUtils' => 0
                          }
         )

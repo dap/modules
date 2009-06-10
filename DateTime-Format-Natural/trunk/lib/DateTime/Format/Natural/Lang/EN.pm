@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.22';
+our $VERSION = '1.23';
 
 our (%init,
      %timespan,
@@ -2693,6 +2693,86 @@ our (%init,
          { truncate_to => 'day' },
        ],
     ],
+    for_count_unit => [
+       [ 'SCALAR', 'REGEXP', 'REGEXP' ],
+       [
+         { 0 => 'for', 1 => $RE{number}, 2 => qr/^(seconds?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [ 1 ],
+         ],
+         [ { unit => 'second' } ],
+         [ '_in_count_variant' ],
+         {},
+       ],
+       [
+         { 0 => 'for', 1 => $RE{number}, 2 => qr/^(minutes?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [ 1 ],
+         ],
+         [ { unit => 'minute' } ],
+         [ '_in_count_variant' ],
+         {},
+       ],
+       [
+         { 0 => 'for', 1 => $RE{number}, 2 => qr/^(hours?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [ 1 ],
+         ],
+         [ { unit => 'hour' } ],
+         [ '_in_count_variant' ],
+         {},
+       ],
+       [
+         { 0 => 'for', 1 => $RE{number}, 2 => qr/^(days?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [ 1 ],
+         ],
+         [ { unit => 'day' } ],
+         [ '_in_count_variant' ],
+         {},
+       ],
+       [
+         { 0 => 'for', 1 => $RE{number}, 2 => qr/^(weeks?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [ 1 ],
+         ],
+         [ { unit => 'week' } ],
+         [ '_in_count_variant' ],
+         {},
+       ],
+       [
+         { 0 => 'for', 1 => $RE{number}, 2 => qr/^(months?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [ 1 ],
+         ],
+         [ { unit => 'month' } ],
+         [ '_in_count_variant' ],
+         {},
+       ],
+       [
+         { 0 => 'for', 1 => $RE{number}, 2 => qr/^(years?)$/i },
+         [ [ 1, 2 ] ],
+         [ $extended_checks{suffix} ],
+         [
+           [ 1 ],
+         ],
+         [ { unit => 'year' } ],
+         [ '_in_count_variant' ],
+         {},
+       ],
+    ],
 );
 
 1;
@@ -2903,6 +2983,14 @@ that the parser does not distinguish between lower/upper case):
 
  Monday to Friday
  1 April to 31 August
+ 2009-03-10 9:00 to 11:00
+ for 4 seconds
+ for 4 minutes
+ for 4 hours
+ for 4 days
+ for 4 weeks
+ for 4 months
+ for 4 years
 
 =head2 Specific Dates
 

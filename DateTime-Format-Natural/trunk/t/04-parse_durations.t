@@ -9,20 +9,32 @@ use Test::More;
 
 my ($sec, $min, $hour, $day, $month, $year) = (8, 13, 1, 24, 11, 2006);
 
-my @durations = (
+my @absolute = (
     { 'monday to friday' => [ '20.11.2006 00:00:00', '24.11.2006 00:00:00' ] },
     { 'march to august'  => [ '01.03.2006 00:00:00', '01.08.2006 00:00:00' ] },
     { '1999 to 2006'     => [ '01.01.1999 00:00:00', '01.01.2006 00:00:00' ] },
 );
 
+my @relative = (
+    { '2009-03-10 9:00 to 11:00' => [ '10.03.2009 09:00:00', '10.03.2009 11:00:00' ] },
+    { 'for 4 seconds'            => [ '24.11.2006 01:13:08', '24.11.2006 01:13:12' ] },
+    { 'for 4 minutes'            => [ '24.11.2006 01:13:08', '24.11.2006 01:17:08' ] },
+    { 'for 4 hours'              => [ '24.11.2006 01:13:08', '24.11.2006 05:13:08' ] },
+    { 'for 4 days'               => [ '24.11.2006 01:13:08', '28.11.2006 01:13:08' ] },
+    { 'for 4 weeks'              => [ '24.11.2006 01:13:08', '22.12.2006 01:13:08' ] },
+    { 'for 4 months'             => [ '24.11.2006 01:13:08', '24.03.2007 01:13:08' ] },
+    { 'for 4 years'              => [ '24.11.2006 01:13:08', '24.11.2010 01:13:08' ] },
+);
+
 {
-    my $tests = 3;
+    my $tests = 11;
 
     local $@;
 
     if (eval "require Date::Calc") {
         plan tests => $tests * 2;
-        compare(\@durations);
+        compare(\@absolute);
+        compare(\@relative);
     }
     else {
         plan tests => $tests;
@@ -30,7 +42,8 @@ my @durations = (
 
     $DateTime::Format::Natural::Compat::Pure = true;
 
-    compare(\@durations);
+    compare(\@absolute);
+    compare(\@relative);
 }
 
 sub compare
