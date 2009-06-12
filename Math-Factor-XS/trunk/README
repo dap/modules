@@ -1,5 +1,5 @@
 NAME
-    Math::Factor::XS - Factorise numbers and calculate matching
+    Math::Factor::XS - Factorize numbers and calculate matching
     multiplications
 
 SYNOPSIS
@@ -10,54 +10,55 @@ SYNOPSIS
      $number = 30107;
 
      @factors = factors($number);
-     @matches = matches($number, @factors);
+     @matches = matches($number, \@factors);
 
      print "$factors[1]\n";
      print "$number == $matches[0][0] * $matches[0][1]\n";
 
 DESCRIPTION
-    "Math::Factor::XS" factorises numbers by applying modulo operator
-    divisons.
+    `Math::Factor::XS' factorizes numbers by applying trial divisions.
 
 FUNCTIONS
   factors
-    Factorises numbers.
+
+    Factorizes numbers.
 
      @factors = factors($number);
 
-    The number will be entirely factorised and its factors will be returned
-    as list.
+    The number will be entirely factorized and its factors will be returned
+    as a list.
 
   matches
-    Evaluates matching multiplications.
 
-     @matches = matches($number, @factors);
+    Calculates matching multiplications.
 
-    The factors will be multplicated against each other and results that
-    equal the number itself, will be returned as two-multidimensional list.
-    The matches are accessible through the indexes, for example, the first
-    two numbers that matched the number, may be accessed by $matches[0][0]
-    and $matches[0][1], the second ones by $matches[1][0] and
-    $matches[1][1], and so on.
+     @matches = matches($number, \@factors, { skip_multiples => [0|1] });
 
-    If $Math::Factor::XS::Skip_multiple is set to a true value, matching
-    multiplications that contain multiplicated (small) factors will be
-    discarded.
+    The factors will be multiplicated against each other and all
+    combinations that equal the number itself will be returned as a
+    two-dimensional list. The matches are accessible through the indexes;
+    for example, the first two numbers that matched the number may be
+    accessed by `$matches[0][0]' and `$matches[0][1]', the second pair by
+    `$matches[1][0]' and `$matches[1][1]', and so on.
 
-    Example:
+    The hashref provided at the end is optional. If `skip_multiples' is set
+    to a true value, then matching multiplications that contain
+    multiplicated small factors will be discarded. Example:
 
-     # accepted
-     30107 == 11 * 2737
+     11 * 2737 == 30107 # accepted
+     77 * 391  == 30107 # discarded
 
-     # discarded
-     30107 == 77 * 391
+    Direct use of `$Math::Factor::XS::Skip_multiple' does no longer have an
+    effect as it has been superseded by `skip_multiples'.
 
 EXPORT
   Functions
-    "factors(), matches()" are exportable.
+
+    `factors(), matches()' are exportable.
 
   Tags
-    ":all - *()"
+
+    `:all - *()'
 
 AUTHOR
     Steven Schubiger <schubiger@cpan.org>
@@ -66,5 +67,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See <http://www.perl.com/perl/misc/Artistic.html>
+    See http://www.perl.com/perl/misc/Artistic.html
 

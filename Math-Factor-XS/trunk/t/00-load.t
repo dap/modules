@@ -5,8 +5,7 @@ use warnings;
 
 use Test::More tests => 1;
 
-BEGIN {
+BEGIN
+{
     use_ok('Math::Factor::XS');
 }
-
-diag("Testing Math::Factor::XS $Math::Factor::XS::VERSION, Perl $], $^X");

@@ -4,60 +4,90 @@
 
 #include "ppport.h"
 
+enum { false, true };
 
 MODULE = Math::Factor::XS               PACKAGE = Math::Factor::XS
 
 void
-factors(number)
-        long number
+xs_factors (number)
+      unsigned long number
     PROTOTYPE: $
     INIT:
-        long i;
+      unsigned long i;
     PPCODE:
-        for (i = 2; i <= number; i++) {
-            if (i > (number / 2)) break;
-            if (number % i == 0) {
-                EXTEND(SP,1);
-                PUSHs(sv_2mortal(newSViv(i)));
+      for (i = 2; i <= number; i++)
+        {
+          if (i > (number / 2))
+            break;
+          if (number % i == 0)
+            {
+              EXTEND (SP, 1);
+              PUSHs (sv_2mortal(newSVuv(i)));
             }
         }
 
 void
-matches(number, ...)
-        long number
-    PROTOTYPE: $@
+xs_matches (number, factors, ...)
+      unsigned long number
+      AV *factors
+    PROTOTYPE: $\@
     INIT:
-        long base[items], cmp[items], prev_base[items];
-        long b, c, i, p = 0;
-        bool Skip_multiple, skip = 0;
-        SV* skip_multiple;
-        AV* match;
+      unsigned long *prev_base = NULL;
+      unsigned int b, c, p = 0;
+      unsigned int top = items - 1;
+      bool Skip_multiples = false;
+      bool skip = false;
     PPCODE:
-        skip_multiple = get_sv("Math::Factor::XS::Skip_multiple", FALSE);
-        Skip_multiple = skip_multiple != NULL ? SvIV(skip_multiple) : 0;
-        for (i = 0; i < items; i++) {
-            base[i] = SvIV(ST(i));
-            cmp[i]  = SvIV(ST(i));
+      if (SvROK (ST(top)) && SvTYPE (SvRV(ST(top))) == SVt_PVHV)
+        {
+          const char *opt = "skip_multiples";
+          unsigned int len = strlen (opt);
+          HV *opts = (HV*)SvRV (ST(top));
+
+          if (hv_exists (opts, opt, len))
+            {
+              SV **val = hv_fetch (opts, opt, len, 0);
+              if (val)
+                Skip_multiples = SvTRUE (*val);
+            }
         }
-        for (b = 0; b < items; b++) {
-            for (c = 0; c < items; c++) {
-                if (cmp[c] >= base[b] && base[b] * cmp[c] == number) {
-                    if (Skip_multiple) {
-                        skip = 0;
-                        for (i = 0; i < p; i++) {
-                            if (base[b] % prev_base[i] == 0) skip = 1;
-                        }
+
+      for (b = 0; b <= av_len (factors); b++)
+        {
+          unsigned long base = SvUV (*av_fetch(factors, b, 0));
+          for (c = 0; c <= av_len (factors); c++)
+            {
+              unsigned long cmp = SvUV (*av_fetch(factors, c, 0));
+              if ((cmp >= base) && (base * cmp == number))
+                {
+                  if (Skip_multiples)
+                    {
+                      unsigned int i;
+                      skip = false;
+                      for (i = 0; i < p; i++)
+                        if (base % prev_base[i] == 0)
+                          skip = true;
                     }
-                    if (!skip) {
-                        match = (AV*)sv_2mortal((SV*)newAV());
-                        av_push(match, newSViv(base[b]));
-                        av_push(match, newSViv(cmp[c]));
-                        EXTEND(SP,2);
-                        PUSHs(sv_2mortal(newRV((SV*)match)));
-                        if (Skip_multiple) {
-                            prev_base[p++] = base[b];
+                  if (!skip)
+                    {
+                      AV *match = newAV ();
+                      av_push (match, newSVuv(base));
+                      av_push (match, newSVuv(cmp));
+
+                      EXTEND (SP, 1);
+                      PUSHs (sv_2mortal(newRV_noinc((SV*)match)));
+
+                      if (Skip_multiples)
+                        {
+                          if (!prev_base)
+                            Newx (prev_base, 1, unsigned long);
+                          else
+                            Renew (prev_base, p + 1, unsigned long);
+                          prev_base[p++] = base;
                         }
                     }
                 }
             }
         }
+
+      Safefree (prev_base);

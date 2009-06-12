@@ -5,33 +5,38 @@ use warnings;
 
 use Math::Factor::XS ':all';
 
-our (%form, $i, $matches, $ul);
-
-#$Math::Factor::XS::Skip_multiple = 1;
-
 my $number = 30107;
 
-my @factors = factors($number);
-my @matches = matches($number, @factors);
+{
+    my @factors = factors($number);
+    my @matches = matches($number, \@factors);
 
-show_factors(\@factors);
-show_matches(\@matches);
+    show_factors(\@factors);
+    show_matches(\@matches);
+}
+
+sub _header
+{
+    my ($title) = @_;
+
+    my $draw_line = sub { return \($_[0] x length $_[1]) };
+
+    return <<EOT;
+${$draw_line->('=', $title)}
+$title
+${$draw_line->('=', $title)}
+
+$number
+${$draw_line->('-', $number)}
+
+EOT
+}
 
 sub show_factors
 {
     my ($factors) = @_;
 
-    print <<'HEADER';
-=======
-factors
-=======
-
-HEADER
-
-    local $ul = '-' x length($number);
-
-    formeval('factors');
-    write;
+    print _header('factors');
 
     local $, = "\t";
     print "@$factors\n\n";
@@ -39,54 +44,12 @@ HEADER
 
 sub show_matches
 {
-    local ($matches) = @_;
+    my ($matches) = @_;
 
-    print <<'HEADER';
-=======
-matches
-=======
+    print _header('matches');
 
-HEADER
-
-    local $ul = '-' x length($number);
-
-    formeval('match_number');
-    write;
-
-    formeval('match_matches');
-    for (local $i = 0; $matches->[$i]; $i++) { write }
+    foreach my $i (0 .. $#$matches) {
+        printf("%-5d * %d\n", $matches->[$i][0], $matches->[$i][1]);
+    }
     print "\n";
-}
-
-sub formeval
-{
-    my ($ident) = @_;
-
-    no warnings 'redefine';
-    eval $form{$ident};
-    die $@ if $@;
-}
-
-BEGIN {
-    $form{factors} = '
-    format =
-@<<<<<<<<<<<<<<<<<<<<<<<<<
-$number
-@<<<<<<<<<<<<<<<<<<<<<<<<<
-$ul
-.';
-
-    $form{match_number} = '
-    format =
-@<<<<<<<<<<<<<<<<<<<<<<<<<
-$number
-@<<<<<<<<<<<<<<<<<<<<<<<<<
-$ul
-.';
-
-    $form{match_matches} = '
-    format =
-@<<<<<<<<<<<* @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-$matches->[$i][0], $matches->[$i][1]
-.';
 }

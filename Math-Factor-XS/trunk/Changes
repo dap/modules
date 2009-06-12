@@ -1,5 +1,20 @@
 Revision history for Perl extension Math::Factor::XS.
 
+0.35_01 Fri Jun 12 16:35:25 CEST 2009
+
+ - Fix Build.PL related test failures. [rt #39211 - Slaven Rezic]
+
+ - Using the global 'Skip_multiple' does no longer have an effect;
+   passing the factors to matches() requires now a list reference.
+
+ - Validation of arguments is handled by Params::Validate.
+
+ - Use printf() instead of formats within the example script.
+   This circumvents a segmentation fault reported in [perl #64562].
+
+ - The options hash for the matches() function is being passed to
+   the according XSUB as reference.
+
 0.35 Sun Feb  3 14:40:33 CET 2008
 
  - Reworded documentation.
