@@ -1,5 +1,14 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.76_04 Sat Jun 13 14:04:21 CEST 2009
+
+ - Remove comment in code about the legacy debug option.
+
+ - Use '\s+' instead of the ambiguous ' ' as token split pattern.
+
+ - Add some whitespace to the regexp which recognizes additional
+   tokens for formatted dates.
+
 0.76_03 Wed Jun 10 11:50:42 CEST 2009
 
  - The current "now" can be overridden through the 'datetime'

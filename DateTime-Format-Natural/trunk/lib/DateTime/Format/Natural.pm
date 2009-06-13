@@ -15,7 +15,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.76_03';
+our $VERSION = '0.76_04';
 
 validation_options(
     on_fail => sub
@@ -138,7 +138,7 @@ sub parse_datetime
     my %count; $count{$_}++ foreach @count;
 
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
-        if ($date_string =~ /^\S+\b\s+\b\S+/) {
+        if ($date_string =~ /^\S+\b \s+ \b\S+/x) {
             ($date_string, @{$self->{tokens}}) = split /\s+/, $date_string;
             $self->{count}{tokens} = 1 + scalar @{$self->{tokens}};
         }
@@ -223,7 +223,7 @@ sub parse_datetime
         }
     }
     else {
-        @{$self->{tokens}} = split ' ', $date_string;
+        @{$self->{tokens}} = split /\s+/, $date_string;
         $self->{data}->__init('tokens')->($self);
         $self->{count}{tokens} = scalar @{$self->{tokens}};
 
@@ -244,7 +244,6 @@ sub _params_init
         foreach my $opt (keys %opts) {
             ${$params->{$opt}} = $opts{$opt};
         }
-        (undef) = $opts{debug}; # legacy
     }
     else {
         validate_pos(@_, { type => SCALAR });
