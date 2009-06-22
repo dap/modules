@@ -5,15 +5,28 @@ use warnings;
 use boolean qw(true false);
 
 use Carp qw(croak);
-use LaTeX::TOM;
+use LaTeX::TOM ();
+use Params::Validate ':all';
 
-our $VERSION = '0.18_01';
+our $VERSION = '0.18_02';
+
+validation_options(
+    on_fail => sub
+{
+    my ($error) = @_;
+    chomp $error;
+    croak $error;
+},
+    stack_skip => 2,
+);
 
 sub new
 {
     my $class = shift;
 
     my $self = bless {}, ref($class) || $class;
+
+    $self->_init_check(@_);
     $self->_init(@_);
 
     return $self;
@@ -60,13 +73,31 @@ sub convert
     return $self->_pod_finalize;
 }
 
+sub _init_check
+{
+    my $self = shift;
+
+    validate_pos(@_, { type => SCALAR });
+
+    my ($file) = @_;
+    my $error = sub
+    {
+        return 'does not exist' unless -e shift;
+        return 'is not a file'  unless -f _;
+        return 'is empty'       unless -s _;
+        return                            undef;
+
+    }->($file);
+
+    defined $error and croak "Cannot open `$file': $error";
+}
+
 sub _init
 {
-    my ($self, $file) = @_;
+    my $self = shift;
+    my ($file) = @_;
 
-    croak "$file: $!" unless -f $file;
-
-    $self->{file}      = $file;
+    $self->{file} = $file;
     $self->{title_inc} = 1;
 
     @{$self->{dispatch_text}} = (
@@ -95,7 +126,7 @@ sub _init_tom
 {
     my $self = shift;
 
-    # silently discard warnings about unparseable latex
+    # silently discard warnings about unparseable LaTeX
     my $parser   = LaTeX::TOM->new(2);
     my $document = $parser->parseFile($self->{file});
     my $nodes    = $document->getAllNodes;
@@ -277,7 +308,8 @@ sub _process_subsection
 
 sub _process_spec_chars
 {
-    my ($self, $text) = @_;
+    my $self = shift;
+    my ($text) = @_;
 
     my %umlauts = (a => 'ä',
                    A => 'Ä',
@@ -299,7 +331,8 @@ sub _process_spec_chars
 
 sub _process_tags
 {
-    my ($self, $tag) = @_;
+    my $self = shift;
+    my ($tag) = @_;
 
     my $text = $self->{current_node}->getNodeText;
 
@@ -315,7 +348,8 @@ sub _process_tags
 
 sub _pod_add
 {
-    my ($self, $content) = @_;
+    my $self = shift;
+    my ($content) = @_;
 
     if (!$self->{append_following}) {
         push @{$self->{pod}}, $content;
@@ -328,14 +362,16 @@ sub _pod_add
 
 sub _pod_append
 {
-    my ($self, $content) = @_;
+    my $self = shift;
+    my ($content) = @_;
 
     $self->{pod}->[-1] .= $content;
 }
 
 sub _pod_scrub_newlines
 {
-    my ($self, $text) = @_;
+    my $self = shift;
+    my ($text) = @_;
 
     $$text =~ s/^\n*//;
     $$text =~ s/\n*$//;
@@ -343,7 +379,8 @@ sub _pod_scrub_newlines
 
 sub _pod_scrub_whitespaces
 {
-    my ($self, $text) = @_;
+    my $self = shift;
+    my ($text) = @_;
 
     $$text =~ s/^\s*//;
     $$text =~ s/\s*$//;
@@ -367,37 +404,42 @@ sub _pod_finalize
 
 sub _register_node
 {
-    my ($self, $item) = @_;
+    my $self = shift;
+    my ($item) = @_;
 
     $self->{node}{$item} = true;
 }
 
 sub _is_set_node
 {
-    my ($self, $item) = @_;
+    my $self = shift;
+    my ($item) = @_;
 
     return $self->{node}{$item} ? true : false;
 }
 
 sub _unregister_node
 {
-    my ($self, $item) = @_;
+    my $self = shift;
+    my ($item) = @_;
 
     delete $self->{node}{$item};
 }
 
 sub _register_previous
 {
-    my ($self, $item) = @_;
+    my $self = shift;
+    my ($item) = @_;
 
     $self->{previous}{$item} = true;
 }
 
 sub _is_set_previous
 {
-    my ($self, $item) = @_;
+    my $self = shift;
+    my ($item) = @_;
 
-    my @items = ref($item) eq 'ARRAY' ? @$item : ($item);
+    my @items = ref $item eq 'ARRAY' ? @$item : ($item);
 
     foreach my $item_single (@items) {
         if ($self->{previous}{$item_single}) {
@@ -410,9 +452,10 @@ sub _is_set_previous
 
 sub _unregister_previous
 {
-    my ($self, $item) = @_;
+    my $self = shift;
+    my ($item) = @_;
 
-    my @items = ref($item) eq 'ARRAY' ? @$item : ($item);
+    my @items = ref $item eq 'ARRAY' ? @$item : ($item);
 
     foreach my $item_single (@items) {
         if ($self->{previous}{$item_single}) {
@@ -429,22 +472,22 @@ LaTeX::Pod - Transform LaTeX source files to POD (Plain old documentation)
 
  use LaTeX::Pod;
 
- my $parser = LaTeX::Pod->new('/path/to/latex-source');
+ $parser = LaTeX::Pod->new('/path/to/source');
  print $parser->convert;
 
 =head1 DESCRIPTION
 
 C<LaTeX::Pod> converts LaTeX sources to Perl's POD (Plain old documentation)
-format. Currently only a subset of the available LaTeX language is suppported -
-see below for detailed information.
+format. Currently only a subset of the available LaTeX language is supported;
+see below for further information.
 
 =head1 CONSTRUCTOR
 
 =head2 new
 
-The constructor requires that the path to the latex source must be declared:
+The constructor requires that the path to the LaTeX source must be defined:
 
- $parser = LaTeX::Pod->new('/path/to/latex-source');
+ $parser = LaTeX::Pod->new('/path/to/source');
 
 Returns the parser object.
 
@@ -452,15 +495,15 @@ Returns the parser object.
 
 =head2 convert
 
-There is only one public method available, C<convert>:
+There is only one public method available, namely C<convert()>:
 
  $parser->convert;
 
-Returns the POD document as string.
+Returns the computed POD document as string.
 
 =head1 SUPPORTED LANGUAGE SUBSET
 
-It's not much, but there's more to come:
+Currently supported:
 
 =over 4
 

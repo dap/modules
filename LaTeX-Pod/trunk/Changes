@@ -1,5 +1,18 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.18_02 Sun Jun 21 20:05:25 CEST 2009
+
+ - Validation of arguments is handled by Params::Validate.
+
+ - Emit better error messages when the input file cannot be opened.
+
+ - When receiving arguments within a method, explicitly fetch
+   the object first and then all the remaining arguments.
+
+ - Improve the options handling of latex2pod.
+
+ - Don't possibly import from LaTeX::TOM.
+
 0.18_01 Sat Oct 25 12:57:54 CEST 2008
 
  - Use the "boolean" pragma for true/false values.

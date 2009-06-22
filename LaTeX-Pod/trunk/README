@@ -5,33 +5,35 @@ NAME
 SYNOPSIS
      use LaTeX::Pod;
 
-     my $parser = LaTeX::Pod->new('/path/to/latex-source');
+     $parser = LaTeX::Pod->new('/path/to/source');
      print $parser->convert;
 
 DESCRIPTION
-    "LaTeX::Pod" converts LaTeX sources to Perl's POD (Plain old
+    `LaTeX::Pod' converts LaTeX sources to Perl's POD (Plain old
     documentation) format. Currently only a subset of the available LaTeX
-    language is suppported - see below for detailed information.
+    language is supported; see below for further information.
 
 CONSTRUCTOR
   new
-    The constructor requires that the path to the latex source must be
-    declared:
 
-     $parser = LaTeX::Pod->new('/path/to/latex-source');
+    The constructor requires that the path to the LaTeX source must be
+    defined:
+
+     $parser = LaTeX::Pod->new('/path/to/source');
 
     Returns the parser object.
 
 METHODS
   convert
-    There is only one public method available, "convert":
+
+    There is only one public method available, namely `convert()':
 
      $parser->convert;
 
-    Returns the POD document as string.
+    Returns the computed POD document as string.
 
 SUPPORTED LANGUAGE SUBSET
-    It's not much, but there's more to come:
+    Currently supported:
 
     * chapters
     * sections/subsections/subsub...
@@ -40,21 +42,20 @@ SUPPORTED LANGUAGE SUBSET
     * plain text
     * bold/italic/code font tags
     * umlauts
-
 IMPLEMENTATION DETAILS
-    The current implementation is a bit *flaky* because "LaTeX::TOM", the
+    The current implementation is a bit *flaky* because `LaTeX::TOM', the
     framework being used for parsing the LaTeX nodes, makes a clear
     distinction between various types of nodes. As example, an \item
     directive has quite often a separate text associated with it as its
     content. Such directives and their expected converted relatives within
     the output stream possibly cannot be easily detected without some kind
-    of sophisticated "look-behind" mechanism, which is how "LaTeX::Pod"
+    of sophisticated "look-behind" mechanism, which is how `LaTeX::Pod'
     internally functions.
 
-    "LaTeX::Pod" was designed with the intention to be *context-sensitive*
+    `LaTeX::Pod' was designed with the intention to be *context-sensitive*
     aware. This is being achieved by setting which node has been seen before
     the current one in order to be able to call the appropriate routine for
-    a LaTeX directive with two or more nodes. Furthermore, "LaTeX::Pod"
+    a LaTeX directive with two or more nodes. Furthermore, `LaTeX::Pod'
     registers which node it has previously encountered and unregisters this
     information when it made use of it.
 
@@ -74,5 +75,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See <http://www.perl.com/perl/misc/Artistic.html>
+    See http://www.perl.com/perl/misc/Artistic.html
 

@@ -6,16 +6,20 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 use LaTeX::Pod;
 
-my $params = parse_switches();
-convert($params);
+{
+    my $args = parse_switches();
+    convert($args);
+}
 
 sub parse_switches
 {
     my %opts;
     GetOptions(\%opts, 'h','V') or usage();
 
-    usage()   if $opts{h} or (!defined($ARGV[0]) && !$opts{V});
+    usage()   if $opts{h};
     version() if $opts{V};
+
+    usage() unless defined $ARGV[0];
 
     return { file => $ARGV[0] };
 }
@@ -24,8 +28,8 @@ sub usage
 {
     print <<USAGE;
 Usage: $0 [switches] file
-  -h           help screen
-  -V           print version
+  -h    this help screen
+  -V    print version
 USAGE
     exit;
 }
@@ -49,8 +53,8 @@ sub convert
 =head1 SYNOPSIS
 
  Usage: latex2pod [switches] file
-   -h           help screen
-   -V           version
+   -h    this help screen
+   -V    print version
 
 =head1 AUTHOR
 

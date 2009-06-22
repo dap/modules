@@ -15,6 +15,7 @@ my $build = Module::Build->new
                  'Carp' => 0,
                  'Getopt::Long' => 0,
                  'LaTeX::TOM' => 0,
+                 'Params::Validate' => 0,
                },
    build_requires => {
                        'File::Spec' => 0,
