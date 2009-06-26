@@ -6,10 +6,16 @@ use boolean qw(true);
 
 use Test::MockTime qw(set_fixed_time);
 use DateTime::Format::Natural;
+use DateTime::Format::Natural::Test;
 use Test::More;
 
-my ($sec, $min, $hour, $day, $month, $year) = (8, 13, 1, 24, 11, 2006);
-set_fixed_time("$day.$month.$year $hour:$min:$sec", '%d.%m.%Y %H:%M:%S');
+my $date = join '.', map $time{$_}, qw(day month year);
+my $time = join ':', map $time{$_}, qw(hour minute second);
+
+set_fixed_time(
+    "$date $time",
+    '%d.%m.%Y %H:%M:%S',
+);
 
 my @simple = (
     { 'friday'       => '24.11.2006 00:00:00' },
@@ -39,25 +45,7 @@ my @combined = (
     { 'wednesday at 4pm' => '29.11.2006 16:00:00' },
 );
 
-{
-    my $tests = 22;
-
-    local $@;
-
-    if (eval "require Date::Calc") {
-        plan tests => $tests * 2;
-        compare(\@simple);
-        compare(\@combined);
-    }
-    else {
-        plan tests => $tests;
-    }
-
-    $DateTime::Format::Natural::Compat::Pure = true;
-
-    compare(\@simple);
-    compare(\@combined);
-}
+_run_tests(22, [ [ \@simple ], [ \@combined ] ], \&compare);
 
 sub compare
 {
@@ -78,9 +66,9 @@ sub compare_strings
     my $res_string = sprintf('%02d.%02d.%4d %02d:%02d:%02d', $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
 
     if ($parser->success) {
-        is($res_string, $result, $string);
+        is($res_string, $result, _message($string));
     }
     else {
-        fail($string);
+        fail(_message($string));
     }
 }

@@ -2,12 +2,10 @@
 
 use strict;
 use warnings;
-use boolean qw(true);
 
 use DateTime::Format::Natural;
+use DateTime::Format::Natural::Test;
 use Test::More;
-
-my ($sec, $min, $hour, $day, $month, $year) = (8, 13, 1, 24, 11, 2006);
 
 my @simple = (
     { 'now'                   => '24.11.2006 01:13:08' },
@@ -174,9 +172,21 @@ my @complex = (
     { '10 hours before midnight'        => '23.11.2006 14:00:00' },
     { '5 hours after noon'              => '24.11.2006 17:00:00' },
     { '5 hours after midnight'          => '24.11.2006 05:00:00' },
+    { 'noon last friday'                => '17.11.2006 12:00:00' },
+    { 'midnight last friday'            => '17.11.2006 00:00:00' },
+    { 'noon this friday'                => '24.11.2006 12:00:00' },
+    { 'midnight this friday'            => '24.11.2006 00:00:00' },
+    { 'noon next friday'                => '01.12.2006 12:00:00' },
+    { 'midnight next friday'            => '01.12.2006 00:00:00' },
     { 'last friday at 20:00'            => '17.11.2006 20:00:00' },
     { 'this friday at 20:00'            => '24.11.2006 20:00:00' },
     { 'next friday at 20:00'            => '01.12.2006 20:00:00' },
+    { '1am last friday'                 => '17.11.2006 01:00:00' },
+    { '1am this friday'                 => '24.11.2006 01:00:00' },
+    { '1am next friday'                 => '01.12.2006 01:00:00' },
+    { '1pm last friday'                 => '17.11.2006 13:00:00' },
+    { '1pm this friday'                 => '24.11.2006 13:00:00' },
+    { '1pm next friday'                 => '01.12.2006 13:00:00' },
     { 'yesterday at 13:00'              => '23.11.2006 13:00:00' },
     { 'today at 13:00'                  => '24.11.2006 13:00:00' },
     { 'tomorrow at 13'                  => '25.11.2006 13:00:00' },
@@ -194,6 +204,7 @@ my @complex = (
     { 'wednesday 1 month ago at 8pm'    => '25.10.2006 20:00:00' },
     { 'final thursday in april'         => '27.04.2006 00:00:00' },
     { 'final sunday in april'           => '30.04.2006 00:00:00' }, # edge case
+    { 'last thursday in april'          => '27.04.2006 00:00:00' },
 );
 
 my @specific = (
@@ -201,6 +212,8 @@ my @specific = (
     { 'january 11'        => '11.01.2006 00:00:00' },
     { '11 january'        => '11.01.2006 00:00:00' },
     { 'dec 25'            => '25.12.2006 00:00:00' },
+    { 'feb 28 3am'        => '28.02.2006 03:00:00' },
+    { 'feb 28 3pm'        => '28.02.2006 15:00:00' },
     { 'may 27th'          => '27.05.2006 00:00:00' },
   # { '2005'              => '01.01.2005 00:00:00' },
     { 'march 1st 2009'    => '01.03.2009 00:00:00' },
@@ -214,27 +227,7 @@ my @specific = (
     { '3:20:00'           => '24.11.2006 03:20:00' },
 );
 
-{
-    my $tests = 195;
-
-    local $@;
-
-    if (eval "require Date::Calc") {
-        plan tests => $tests * 2;
-        compare(\@simple);
-        compare(\@complex);
-        compare(\@specific);
-    }
-    else {
-        plan tests => $tests;
-    }
-
-    $DateTime::Format::Natural::Compat::Pure = true;
-
-    compare(\@simple);
-    compare(\@complex);
-    compare(\@specific);
-}
+_run_tests(210, [ [ \@simple ], [ \@complex ], [ \@specific ] ], \&compare);
 
 sub compare
 {
@@ -250,16 +243,16 @@ sub compare_strings
     my ($string, $result) = @_;
 
     my $parser = DateTime::Format::Natural->new;
-    $parser->_set_datetime($year, $month, $day, $hour, $min, $sec);
+    $parser->_set_datetime(\%time);
 
     my $dt = $parser->parse_datetime($string);
 
     my $res_string = sprintf('%02d.%02d.%4d %02d:%02d:%02d', $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
 
     if ($parser->success) {
-        is($res_string, $result, $string);
+        is($res_string, $result, _message($string));
     }
     else {
-        fail($string);
+        fail(_message($string));
     }
 }

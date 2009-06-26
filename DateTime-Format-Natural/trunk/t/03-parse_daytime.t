@@ -2,12 +2,10 @@
 
 use strict;
 use warnings;
-use boolean qw(true);
 
 use DateTime::Format::Natural;
+use DateTime::Format::Natural::Test;
 use Test::More;
-
-my ($sec, $min, $hour, $day, $month, $year) = (8, 13, 1, 24, 11, 2006);
 
 my @daytime_regular = (
     { 'morning'   => '24.11.2006 08:00:00' },
@@ -21,31 +19,13 @@ my @daytime_user = (
     { 'evening'   => '24.11.2006 19:00:00' },
 );
 
-{
-    my $tests = 6;
+my %opts = (
+    morning   =>  6,
+    afternoon => 13,
+    evening   => 19,
+);
 
-    local $@;
-
-    my %opts = (
-        morning   => 06,
-        afternoon => 13,
-        evening   => 19,
-    );
-
-    if (eval "require Date::Calc") {
-        plan tests => $tests * 2;
-        compare(\@daytime_regular);
-        compare(\@daytime_user, \%opts);
-    }
-    else {
-        plan tests => $tests;
-    }
-
-    $DateTime::Format::Natural::Compat::Pure = true;
-
-    compare(\@daytime_regular);
-    compare(\@daytime_user, \%opts);
-}
+_run_tests(6, [ [ \@daytime_regular ], [ \@daytime_user, \%opts ] ], \&compare);
 
 sub compare
 {
@@ -61,16 +41,16 @@ sub compare_strings
     my ($string, $result, $opts) = @_;
 
     my $parser = DateTime::Format::Natural->new(daytime => $opts || {});
-    $parser->_set_datetime($year, $month, $day, $hour, $min, $sec);
+    $parser->_set_datetime(\%time);
 
     my $dt = $parser->parse_datetime($string);
 
     my $res_string = sprintf('%02d.%02d.%4d %02d:%02d:%02d', $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
 
     if ($parser->success) {
-        is($res_string, $result, $string);
+        is($res_string, $result, _message($string));
     }
     else {
-        fail($string);
+        fail(_message($string));
     }
 }

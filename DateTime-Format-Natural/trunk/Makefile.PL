@@ -14,6 +14,7 @@ WriteMakefile
                            'DateTime' => 0,
                            'Test::MockTime' => 0,
                            'Storable' => 0,
+                           'Exporter' => 0,
                            'Carp' => 0,
                            'boolean' => 0,
                            'Test::More' => 0,

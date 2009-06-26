@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 BEGIN
 {
@@ -13,4 +13,5 @@ BEGIN
     use_ok('DateTime::Format::Natural::Helpers');
     use_ok('DateTime::Format::Natural::Lang::Base');
     use_ok('DateTime::Format::Natural::Lang::EN');
+    use_ok('DateTime::Format::Natural::Test');
 }

@@ -5,9 +5,8 @@ use warnings;
 use boolean qw(true);
 
 use DateTime::Format::Natural;
+use DateTime::Format::Natural::Test;
 use Test::More;
-
-my ($sec, $min, $hour, $day, $month, $year) = (8, 13, 1, 24, 11, 2006);
 
 my @absolute = (
     { 'monday to friday' => [ '20.11.2006 00:00:00', '24.11.2006 00:00:00' ] },
@@ -26,25 +25,7 @@ my @relative = (
     { 'for 4 years'              => [ '24.11.2006 01:13:08', '24.11.2010 01:13:08' ] },
 );
 
-{
-    my $tests = 11;
-
-    local $@;
-
-    if (eval "require Date::Calc") {
-        plan tests => $tests * 2;
-        compare(\@absolute);
-        compare(\@relative);
-    }
-    else {
-        plan tests => $tests;
-    }
-
-    $DateTime::Format::Natural::Compat::Pure = true;
-
-    compare(\@absolute);
-    compare(\@relative);
-}
+_run_tests(11, [ [ \@absolute ], [ \@relative ] ], \&compare);
 
 sub compare
 {
@@ -60,7 +41,7 @@ sub compare_strings
     my ($string, $result) = @_;
 
     my $parser = DateTime::Format::Natural->new;
-    $parser->_set_datetime($year, $month, $day, $hour, $min, $sec);
+    $parser->_set_datetime(\%time);
 
     my @dt = $parser->parse_datetime_duration($string);
 
@@ -71,9 +52,9 @@ sub compare_strings
     }
 
     if ($parser->success && $pass && scalar @dt == 2) {
-        ok($pass, $string);
+        ok($pass, _message($string));
     }
     else {
-        fail($string);
+        fail(_message($string));
     }
 }

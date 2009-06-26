@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Compat);
 
-our $VERSION = '1.24';
+our $VERSION = '1.25';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -44,7 +44,7 @@ sub _daytime_in_the_variant
     $self->_register_trace;
     my $opts = pop;
     my ($hour) = @_;
-    $hour += $opts->{hours};
+    $hour += $opts->{hours} || 0;
     if ($self->_valid_time(hour => $hour)) {
         $self->_set(
             hour   => $hour,
@@ -103,16 +103,17 @@ sub _hourtime_variant
     my $self = shift;
     $self->_register_trace;
     my $opts = pop;
-    my ($hours, $when) = @_;
-    if ($self->_valid_time(hour => $opts->{hour})) {
+    my ($value, $when) = @_;
+    my $hours = $opts->{hours} || 0;
+    if ($self->_valid_time(hour => $hours)) {
         $self->_set(
-            hour   => $opts->{hour},
+            hour   => $hours,
             minute => 0,
         );
         $self->_add_or_subtract({
             when  => $when,
             unit  => 'hour',
-            value => $hours,
+            value => $value,
         });
     }
 }

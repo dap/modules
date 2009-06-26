@@ -15,7 +15,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.77';
+our $VERSION = '0.77_01';
 
 validation_options(
     on_fail => sub
@@ -190,7 +190,6 @@ sub parse_datetime
             return $self->_get_datetime_object;
         }
 
-        if ($year > $century) { $century-- };
         if (length $year == 2) { $year = "$century$year" };
 
         unless ($self->_check_date($year, $month, $day)) {
@@ -550,16 +549,11 @@ sub _get_datetime_object
 sub _set_datetime
 {
     my $self = shift;
-    my ($year, $month, $day, $hour, $min, $sec, $tz) = @_;
+    my ($time, $tz) = @_;
 
     $self->{datetime} = DateTime->new(
         time_zone => $tz || 'floating',
-        year      => $year,
-        month     => $month,
-        day       => $day,
-        hour      => $hour,
-        minute    => $min,
-        second    => $sec
+        %$time,
     );
     $self->{running_tests} = true;
 }

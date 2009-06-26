@@ -1,5 +1,23 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.77_01 Thu Jun 25 16:00:27 CEST 2009
+
+ - Add a handful of new formats. [rt #43468 - Clayton L. Scott]
+
+ - Don't eventually try to guess the century.
+
+ - Introduce and use a class for common test routines.
+
+ - Test compile-time loading of Test.pm.
+
+ - Rename the misnamed 'hour' metadata option to 'hours'.
+
+ - _daytime() does not use the 'hours' metadata option when
+   it is set and hence remove such existing entries.
+
+ - For base methods which use the 'hours' metadata option,
+   assume a zero when no value is provided.
+
 0.77 Sun Jun 14 20:46:53 CEST 2009
 
  - Merged development version to stable.
