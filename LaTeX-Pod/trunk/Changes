@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.19 Thu Jul  9 11:18:23 CEST 2009
+
+ - Merged development version to stable.
+
 0.18_02 Sun Jun 21 20:05:25 CEST 2009
 
  - Validation of arguments is handled by Params::Validate.
