@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.78 Fri Aug  7 11:32:31 CEST 2009
+
+ - Merged development version to stable.
+
 0.77_01 Thu Jun 25 16:00:27 CEST 2009
 
  - Add a handful of new formats. [rt #43468 - Clayton L. Scott]

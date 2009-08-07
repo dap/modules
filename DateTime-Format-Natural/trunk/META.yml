@@ -1,12 +1,15 @@
 ---
 name: DateTime-Format-Natural
-version: 0.77_01
+version: 0.78
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Create machine readable date/time with natural parsing logic
 license: perl
 resources:
   license: http://dev.perl.org/licenses/
+build_requires:
+  Test::MockTime: 0
+  Test::More: 0
 requires:
   Carp: 0
   DateTime: 0
@@ -17,17 +20,16 @@ requires:
   Storable: 0
   Term::ReadLine: 0
   boolean: 0
-build_requires:
-  Test::MockTime: 0
-  Test::More: 0
 recommends:
   Date::Calc: 0
   Test::Pod: 1.14
   Test::Pod::Coverage: 1.04
+configure_requires:
+  Module::Build: 0.34
 provides:
   DateTime::Format::Natural:
     file: lib/DateTime/Format/Natural.pm
-    version: 0.77_01
+    version: 0.78
   DateTime::Format::Natural::Base:
     file: lib/DateTime/Format/Natural/Base.pm
     version: 1.25
@@ -46,7 +48,7 @@ provides:
   DateTime::Format::Natural::Test:
     file: lib/DateTime/Format/Natural/Test.pm
     version: 0.01
-generated_by: Module::Build version 0.3201
+generated_by: Module::Build version 0.34
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
