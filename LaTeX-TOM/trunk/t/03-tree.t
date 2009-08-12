@@ -8,8 +8,6 @@ use FindBin qw($Bin);
 use LaTeX::TOM;
 use Test::More tests => 8;
 
-$^W = 0;
-
 my $file = File::Spec->catfile($Bin, 'data', 'tex.in');
 my $tex = do {
     open(my $fh, '<', $file) or die "Cannot open $file: $!\n";
@@ -27,6 +25,7 @@ is(@{$tree->getAllNodes}, 16, 'Amount of all nodes');
 is($tree->getTopLevelNodes, 9, 'Amount of top level nodes');
 is(@{$tree->getCommandNodesByName('title')}, 1, "Amount of 'title' command nodes");
 is(@{$tree->getEnvironmentsByName('document')}, 1, "Amount of 'document' environment nodes");
-is(@{$tree->getNodesByCondition(
-    '$node->getNodeType eq \'COMMAND\' &&
-     $node->getCommandName eq \'title\'')}, 1, "Amount of 'title' command nodes by condition");
+is(@{$tree->getNodesByCondition(sub {
+    my $node = shift;
+    return ($node->getNodeType eq 'COMMAND' && $node->getCommandName eq 'title');
+})}, 1, "Amount of 'title' command nodes by condition");

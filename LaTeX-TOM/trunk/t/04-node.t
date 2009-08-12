@@ -8,8 +8,6 @@ use FindBin qw($Bin);
 use LaTeX::TOM;
 use Test::More tests => 50;
 
-$^W = 0;
-
 my $parser = LaTeX::TOM->new;
 my $tree = $parser->parseFile(File::Spec->catfile($Bin, 'data', 'tex.in'));
 

@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.9
+# Version 0.9_01
 #
 # ----------------------------------------------------------------------------
 #
@@ -35,7 +35,7 @@ use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
 
 use base qw(LaTeX::TOM::Parser);
 
-our $VERSION = '0.9';
+our $VERSION = '0.9_01';
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -218,15 +218,21 @@ LaTeX::TOM - A module for parsing, analyzing, and manipulating LaTeX documents.
 
  $latex = $document->toLaTeX;
 
- $specialnodes = $document->getNodesByCondition(
-     '$node->getNodeType eq \'TEXT\' &&
-      $node->getNodeText =~ /magic string/'
- );
+ $specialnodes = $document->getNodesByCondition(sub {
+     my $node = shift;
+     return (
+       $node->getNodeType eq 'TEXT'
+         && $node->getNodeText =~ /magic string/
+     );
+ });
 
- $sections = $document->getNodesByCondition(
-     '$node->getNodeType eq \'COMMAND\' &&
-      $node->getCommandName =~ /section$/'
- );
+ $sections = $document->getNodesByCondition(sub {
+     my $node = shift;
+     return (
+       $node->getNodeType eq 'COMMAND'
+         && $node->getCommandName =~ /section$/
+     );
+ });
 
  $indexme = $document->getIndexableText;
 
@@ -497,7 +503,7 @@ matching I<name>.
 
 =back
 
-=head3 getNodesByCondition (expression)
+=head3 getNodesByCondition (code reference)
 
 =over 4
 
@@ -505,9 +511,9 @@ matching I<name>.
 
 This is a catch-all search method which can be used to pull out nodes that
 match pretty much any perl expression, without manually having to traverse the
-tree.  I<expression> is a valid perl expression which makes reference to the
-perl variable B<$node> when testing something about the currently scrutinized
-node of the tree.  See the SYNOPSIS for examples.
+tree.  I<code reference> is a perl code reference which receives as its first
+argument the node of the tree that is currently scrutinized and is expected to
+return a boolean value. See the SYNOPSIS for examples.
 
 =back
 
@@ -764,6 +770,7 @@ Thanks to (in order of appearance) who have contributed valuable suggestions & p
  Otakar Smrz
  Moritz Lenz
  James Bowlin
+ Jesse S. Bangs
 
 =head1 AUTHORS
 

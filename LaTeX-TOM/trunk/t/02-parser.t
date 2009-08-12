@@ -8,8 +8,6 @@ use FindBin qw($Bin);
 use LaTeX::TOM;
 use Test::More tests => 1;
 
-$^W = 0;
-
 my $tex = do { local $/; <DATA> };
 my $texfile = File::Spec->catfile($Bin, 'data', 'tex.in');
 

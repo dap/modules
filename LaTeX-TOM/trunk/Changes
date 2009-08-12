@@ -1,5 +1,12 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.9_01 Wed Aug 12 14:25:08 CEST 2009
+
+ - Use code reference instead of string eval in getNodesByCondition().
+   [rt #48551 - Jesse S. Bangs]
+
+ - Fix some warnings which were suppressed within the tests.
+
 0.9 Tue Apr 29 12:21:00 CEST 2008
 
  - Added support for dealing with starred commands.

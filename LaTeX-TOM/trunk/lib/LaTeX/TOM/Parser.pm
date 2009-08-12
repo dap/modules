@@ -234,7 +234,7 @@ sub _stage2 {
                             {type => 'GROUP',
                              start => $textnode2->{start} - 1,
                              end => $textnode2->{end} + 1,
-                             children => LaTeX::TOM::Tree->new([$textnode2], $parser)
+                             children => LaTeX::TOM::Tree->new([$textnode2], $parser),
                             });
 
                         # splice the new subtree into the old location
@@ -271,10 +271,11 @@ sub _stage2 {
                              start => $textnode2->{start} - 1,
                              end => $textnode3->{end} + 1,
                              children => LaTeX::TOM::Tree->new(
-                                [$textnode2, 
+                                [$textnode2,
                                  @removed,
-                                 $textnode3]),
-                                 $parser});
+                                 $textnode3],
+                                 $parser),
+                            });
 
                         # replace the two original text nodes with the leftover left and
                         # right portions, as well as the group node with everything in
@@ -466,7 +467,8 @@ sub _stage3 {
                          command => $command,
                          start => $node->{start} + $a,
                          end => $node->{start} + $b,
-                         children => LaTeX::TOM::Tree->new([$newchild]), $parser });
+                         children => LaTeX::TOM::Tree->new([$newchild], $parser),
+                        });
 
                     $parser->{USED_COMMANDS}->{$commandnode->{command}} = 1;
 
@@ -563,7 +565,8 @@ sub _stage4 {
                      end => $end,
                      ostart => $start - length('begin') - length($class) - 2,
                      oend => $end + length('end') + length($class) + 2,
-                     children => LaTeX::TOM::Tree->new([@newarray]), $parser });
+                     children => LaTeX::TOM::Tree->new([@newarray], $parser),
+                    });
 
                 if (defined $parser->{config}{MATHENVS}->{$envnode->{class}}) {
                     $envnode->{math} = 1;
@@ -681,7 +684,8 @@ sub _stage5_r {
                                 ostart => $startpos + $leftpos - length($left) + 1,
                                 end => $startpos + $rightpos,
                                 oend => $startpos + $rightpos + length($right) - 1,
-                                children => LaTeX::TOM::Tree->new([$textnode2]), $parser });
+                                children => LaTeX::TOM::Tree->new([$textnode2], $parser),
+                                });
 
                             splice @{$tree->{nodes}}, $i, 1, $textnode1, $mathnode, $textnode3;
 
@@ -719,7 +723,8 @@ sub _stage5_r {
                                 children => LaTeX::TOM::Tree->new(
                                 [$textnode2,
                                  @remnodes,
-                                 $textnode3]), $parser });
+                                 $textnode3], $parser),
+                                });
 
                             # replace (TEXT_A, ... , TEXT_B) with the mathnode created above
                             splice @{$tree->{nodes}}, $leftidx, 2, $textnode1, $mathnode, $textnode4;
@@ -807,9 +812,11 @@ sub _propegateModes {
             # handle math or plain text forcing envs
             #
             if ($node->{type} eq 'ENVIRONMENT' || $node->{type} eq 'COMMAND') {
-                if (defined $parser->{config}{MATHENVS}->{$node->{class}} || 
-                    defined $parser->{config}{MATHENVS}->{"$node->{class}*"}) {
-
+                if (defined $node->{class} && (
+                      defined $parser->{config}{MATHENVS}->{$node->{class}} ||
+                      defined $parser->{config}{MATHENVS}->{"$node->{class}*"})
+                   )
+                {
                     $mathflag = 1;
                     $plaintextflag = 0;
                 }
@@ -1351,7 +1358,7 @@ sub _findbrace {
         $realbrace = 1;
         $index_c = index $text, '}', $pos_c;
 
-        if (substr($text, $index_c - 1, 1) eq ' ') {
+        if (($index_c - 1) >= 0 && substr($text, $index_c - 1, 1) eq ' ') {
             $pos_c = $index_c + 1;
             $index_c = -1;
         }

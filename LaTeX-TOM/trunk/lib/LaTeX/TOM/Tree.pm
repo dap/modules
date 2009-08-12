@@ -10,6 +10,8 @@ package LaTeX::TOM::Tree;
 
 use strict;
 
+use Carp qw(croak);
+
 # "constructor"
 #
 sub new {
@@ -279,6 +281,11 @@ sub getNodesByCondition {
     my $tree = shift;
     my $condition = shift;
 
+    # XXX rt #48551 - string eval no longer supported (12/08/2009)
+    unless (ref $condition eq 'CODE') {
+        croak 'getNodesByCondition(): code reference expected';
+    }
+
     my @nodelist;
 
     foreach my $node (@{$tree->{nodes}}) {
@@ -286,7 +293,7 @@ sub getNodesByCondition {
         # evaluate the perl code condition and if the result evaluates to true,
         # push this node
         #
-        if (eval $condition) {
+        if ($condition->($node)) {
             push @nodelist, $node;
         }
 
@@ -302,14 +309,18 @@ sub getCommandNodesByName {
     my $tree = shift;
     my $name = shift;
 
-    return $tree->getNodesByCondition("\$node->{type} eq 'COMMAND' && \$node->{command} eq '$name'");
+    return $tree->getNodesByCondition(
+        sub { my $node = shift; return ($node->{type} eq 'COMMAND' && $node->{command} eq $name); }
+    );
 }
 
 sub getEnvironmentsByName {
     my $tree = shift;
     my $name = shift;
 
-    return $tree->getNodesByCondition("\$node->{type} eq 'ENVIRONMENT' && \$node->{class} eq '$name'");
+    return $tree->getNodesByCondition(
+        sub { my $node = shift; return ($node->{type} eq 'ENVIRONMENT' && $node->{class} eq $name); }
+    );
 }
 
 sub getFirstNode {
