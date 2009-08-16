@@ -11,7 +11,7 @@ use Test::More tests => 1;
 my $tex = do { local $/; <DATA> };
 my $texfile = File::Spec->catfile($Bin, 'data', 'tex.in');
 
-my $parser = LaTeX::TOM->new;
+my $parser = LaTeX::TOM->new(0,1,0);
 my $tree_string = $parser->parse($tex);
 my $tree_file = $parser->parseFile($texfile);
 
@@ -23,6 +23,7 @@ __DATA__
 \title{Some Test Doc}
 \begin{document}
     \maketitle
-    \chapter*{Preface}
     \mainmatter
+    \chapter*{Preface}
+    \input{t/data/input.tex}
 \end{document}

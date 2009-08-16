@@ -6,7 +6,7 @@ use warnings;
 use File::Spec;
 use FindBin qw($Bin);
 use LaTeX::TOM;
-use Test::More tests => 50;
+use Test::More tests => 56;
 
 my $parser = LaTeX::TOM->new;
 my $tree = $parser->parseFile(File::Spec->catfile($Bin, 'data', 'tex.in'));
@@ -23,10 +23,16 @@ my @expected_all = (
     [ 'TEXT', 'Some Test Doc'           ],
     [ 'TEXT', "\n"                      ],
     [ 'ENVIRONMENT', 'document'         ],
-    [ 'TEXT', "\n    \\maketitle\n    " ],
+    [ 'TEXT', "\n"
+            . "    \\maketitle\n"
+            . "    \\mainmatter\n"
+            . "    "                    ],
     [ 'COMMAND', 'chapter*'             ],
     [ 'TEXT', "Preface"                 ],
-    [ 'TEXT', "\n    \\mainmatter\n"    ],
+    [ 'TEXT', "\n    "                  ],
+    [ 'COMMAND', 'input'                ],
+    [ 'TEXT', 't/data/input.tex'        ],
+    [ 'TEXT', "\n"                      ],
     [ 'TEXT', "\n"                      ],
 );
 
@@ -40,6 +46,10 @@ my @expected_top = (
     [ 'TEXT', "\n"                      ],
     [ 'ENVIRONMENT', 'document'         ],
     [ 'TEXT', "\n"                      ],
+    [ 'TEXT', "\n"
+            . "    \\maketitle\n"
+            . "    \\mainmatter\n"
+            . "    "                    ],
 );
 
 verify_nodes(@{$tree->getAllNodes}, \@expected_all);

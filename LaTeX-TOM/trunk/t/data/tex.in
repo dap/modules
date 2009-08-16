@@ -3,6 +3,7 @@
 \title{Some Test Doc}
 \begin{document}
     \maketitle
-    \chapter*{Preface}
     \mainmatter
+    \chapter*{Preface}
+    \input{t/data/input.tex}
 \end{document}

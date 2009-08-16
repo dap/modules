@@ -1,5 +1,10 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.9_02 Sun Aug 16 12:31:18 CEST 2009
+
+ - Fix \input lines parsing failure with "read inputs flag" set.
+   [rt #48538 - Jesse S. Bangs]
+
 0.9_01 Wed Aug 12 14:25:08 CEST 2009
 
  - Use code reference instead of string eval in getNodesByCondition().

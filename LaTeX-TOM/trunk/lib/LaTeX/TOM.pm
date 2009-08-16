@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.9_01
+# Version 0.9_02
 #
 # ----------------------------------------------------------------------------
 #
@@ -35,7 +35,7 @@ use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
 
 use base qw(LaTeX::TOM::Parser);
 
-our $VERSION = '0.9_01';
+our $VERSION = '0.9_02';
 
 # BEGIN CONFIG SECTION ########################################################
 

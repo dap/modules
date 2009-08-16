@@ -1184,7 +1184,7 @@ sub _addInputs {
                 my ($subtree,) = $parser->_basicparse($contents, $parser->{PARSE_ERRORS_FATAL});
 
                 # replace \input command node with subtree
-                splice @{$tree->{nodes}}, $i, 1, @$subtree;
+                splice @{$tree->{nodes}}, $i, 1, @{$subtree->{nodes}};
 
                 # step back
                 $i--;

@@ -17,11 +17,18 @@ my $tex = do {
 my $parser = LaTeX::TOM->new;
 my $tree = $parser->parseFile($file);
 
-is_deeply($tree->plainText, [ 'Some Test Doc', "\n    \\maketitle\n    ", 
-    "\n    \\mainmatter\n" ], 'Tree as plain text');
+is_deeply($tree->plainText, [
+    'Some Test Doc',
+    "\n"                 .
+    "    \\maketitle\n"  .
+    "    \\mainmatter\n" .
+    "    ",
+    "\n    ",
+    "\n",
+], 'Tree as plain text');
 is($tree->indexableText, 'Some Test Doc ', 'Tree as indexable text');
 is($tree->toLaTeX, do { $_ = $tex; $_ =~ s/\[.*?pt\]//; $_ }, 'Tree to LaTeX');
-is(@{$tree->getAllNodes}, 16, 'Amount of all nodes');
+is(@{$tree->getAllNodes}, 19, 'Amount of all nodes');
 is($tree->getTopLevelNodes, 9, 'Amount of top level nodes');
 is(@{$tree->getCommandNodesByName('title')}, 1, "Amount of 'title' command nodes");
 is(@{$tree->getEnvironmentsByName('document')}, 1, "Amount of 'document' environment nodes");
