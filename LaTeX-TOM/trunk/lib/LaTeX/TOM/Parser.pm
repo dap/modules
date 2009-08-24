@@ -9,9 +9,12 @@
 package LaTeX::TOM::Parser;
 
 use strict;
+use base qw(
+    LaTeX::TOM::Node
+    LaTeX::TOM::Tree
+);
 
-use base qw(LaTeX::TOM::Node);
-use base qw(LaTeX::TOM::Tree);
+our $VERSION = '0.01';
 
 # Constructor
 #
@@ -30,17 +33,21 @@ sub new {
 # Set/reset "globals"
 #
 sub _init {
-    my $parser = $_[0];
+    my $parser = shift;
+    my ($parse_errors_fatal, $readinputs, $applymappings) = @_;
 
-    my $parse_errors_fatal = (defined $_[1] ? $_[1] : $parser->{config}{PARSE_ERRORS_FATAL});
-    my $readinputs = (defined $_[2] ? $_[2] : 0);
-    my $applymappings = (defined $_[3] ? $_[3] : 0);
+    my $retrieve_opt_with_default = sub
+    {
+        my ($opt, $default) = @_;
+        return $opt if defined $opt;
+        return $default;
+    };
 
     # set user options
     #
-    $parser->{readinputs} = $readinputs;
-    $parser->{applymappings} = $applymappings;
-    $parser->{PARSE_ERRORS_FATAL} = $parse_errors_fatal;
+    $parser->{readinputs}         = $retrieve_opt_with_default->($readinputs, 0);
+    $parser->{applymappings}      = $retrieve_opt_with_default->($applymappings, 0);
+    $parser->{PARSE_ERRORS_FATAL} = $retrieve_opt_with_default->($parse_errors_fatal, $parser->{config}{PARSE_ERRORS_FATAL});
 
     # init internal stuff
     #
@@ -358,7 +365,7 @@ sub _stage3 {
             # due to the previous parsing stages. if found, the parent node is
             # promoted to a command.
             #
-            if ($text =~ /^\s*\\(\w+\*?)/ && defined $parent && defined $parser->{config}{INNERCMDS}->{$1}) {
+            if ($text =~ /^\s*\\(\w+\*?)/ && defined $parent && $parser->{config}{INNERCMDS}->{$1}) {
                 my $command = $1;
 
                 # if the parent is already a command node, we have to make a new
@@ -440,7 +447,7 @@ sub _stage3 {
                 my $command = $2;
                 my $param = $3;
 
-                if (defined $parser->{config}{BRACELESS}->{$command}) {
+                if ($parser->{config}{BRACELESS}->{$command}) {
                  # warn "found braceless command $command with param $param";
 
                     # get location to split from node text
@@ -568,7 +575,7 @@ sub _stage4 {
                      children => LaTeX::TOM::Tree->new([@newarray], $parser),
                     });
 
-                if (defined $parser->{config}{MATHENVS}->{$envnode->{class}}) {
+                if ($parser->{config}{MATHENVS}->{$envnode->{class}}) {
                     $envnode->{math} = 1;
                 }
 
@@ -813,19 +820,19 @@ sub _propegateModes {
             #
             if ($node->{type} eq 'ENVIRONMENT' || $node->{type} eq 'COMMAND') {
                 if (defined $node->{class} && (
-                      defined $parser->{config}{MATHENVS}->{$node->{class}} ||
-                      defined $parser->{config}{MATHENVS}->{"$node->{class}*"})
+                    $parser->{config}{MATHENVS}->{$node->{class}} ||
+                    $parser->{config}{MATHENVS}->{"$node->{class}*"})
                    )
                 {
                     $mathflag = 1;
                     $plaintextflag = 0;
                 }
                 elsif (($node->{type} eq 'COMMAND' && 
-                                (defined $parser->{config}{TEXTENVS}->{$node->{command}} ||
-                                 defined $parser->{config}{TEXTENVS}->{"$node->{command}*"})) ||
+                                ($parser->{config}{TEXTENVS}->{$node->{command}} ||
+                                 $parser->{config}{TEXTENVS}->{"$node->{command}*"})) ||
                              ($node->{type} eq 'ENVIRONMENT' && 
-                                (defined $parser->{config}{TEXTENVS}->{$node->{class}} ||
-                                 defined $parser->{config}{TEXTENVS}{"$node->{command}*"}))
+                                ($parser->{config}{TEXTENVS}->{$node->{class}} ||
+                                 $parser->{config}{TEXTENVS}{"$node->{command}*"}))
                             ) {
 
                     $mathflag = 0;
@@ -993,7 +1000,7 @@ sub _applyMapping {
                  my $idx = index $node->{content}, '\\' . $command, 0;
 
                  # split the text node at that command
-                 my ($leftnode, $rightnode) = splitTextNode($node, $idx, $idx + length($command));
+                 my ($leftnode, $rightnode) = $node->split($idx, $idx + length($command));
 
                  # copy the mapping template
                  my $applied = $mapping->{template}->copy();
@@ -1105,7 +1112,7 @@ sub _applyMappings {
              # make the mapping
              my $mapping = {name => $node->{command},
                 nparams => 0,
-                template => copyTree($node->{children}),
+                template => $node->{children}->copy(),
                 type => 'command'};
 
              next if (!$mapping->{name}); # skip fragged commands

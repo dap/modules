@@ -12,6 +12,8 @@ use strict;
 
 use Carp qw(croak);
 
+our $VERSION = '0.01';
+
 # "constructor"
 #
 sub new {

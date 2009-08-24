@@ -1,5 +1,22 @@
 Revision history for Perl extension LaTeX::TOM.
 
+0.9_03 Sun Aug 23 16:59:26 CEST 2009
+
+ - Initialize user options by calling a lexical subroutine.
+
+ - Replace calls to not existant copyTree/splitTextNode subs
+   with calls to the copy/split methods.
+
+ - Populate the config data hashes with true values at runtime.
+
+ - Remove the superfluous use of 'defined' when checking booleans.
+
+ - Declare globals with 'our' instead of 'use vars'.
+
+ - Assign the config data at once within the parser object.
+
+ - Set initial version numbers for the Node, Parser and Tree class.
+
 0.9_02 Sun Aug 16 12:31:18 CEST 2009
 
  - Fix \input lines parsing failure with "read inputs flag" set.

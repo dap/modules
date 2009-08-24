@@ -2,7 +2,7 @@
 #
 # LaTeX::TOM (TeX Object Model)
 #
-# Version 0.9_02
+# Version 0.9_03
 #
 # ----------------------------------------------------------------------------
 #
@@ -30,12 +30,12 @@
 package LaTeX::TOM;
 
 use strict;
-use vars qw{%INNERCMDS %MATHENVS %MATHBRACKETS %MATHBRACKETS
-            %BRACELESS %TEXTENVS $PARSE_ERRORS_FATAL};
-
 use base qw(LaTeX::TOM::Parser);
 
-our $VERSION = '0.9_02';
+our $VERSION = '0.9_03';
+
+our (%INNERCMDS, %MATHENVS, %MATHBRACKETS,
+     %BRACELESS, %TEXTENVS, $PARSE_ERRORS_FATAL);
 
 # BEGIN CONFIG SECTION ########################################################
 
@@ -43,142 +43,142 @@ our $VERSION = '0.9_02';
 # environment of that grouping. For instance {\bf text}.  Without listing the 
 # command names here, the parser will treat such sequences as plain text.
 #
-%INNERCMDS = (
- 'bf' => 1,
- 'md' => 1,
- 'em' => 1,
- 'up' => 1,
- 'sl' => 1,
- 'sc' => 1,
- 'sf' => 1,
- 'rm' => 1,
- 'it' => 1,
- 'tt' => 1,
- 'noindent' => 1,
- 'mathtt' => 1,
- 'mathbf' => 1,
- 'tiny' => 1,
- 'scriptsize' => 1,
- 'footnotesize' => 1,
- 'small' => 1,
- 'normalsize' => 1,
- 'large' => 1,
- 'Large' => 1,
- 'LARGE' => 1,
- 'huge' => 1,
- 'Huge' => 1,
- 'HUGE' => 1,
+%INNERCMDS = map { $_ => 1 } (
+ 'bf',
+ 'md',
+ 'em',
+ 'up',
+ 'sl',
+ 'sc',
+ 'sf',
+ 'rm',
+ 'it',
+ 'tt',
+ 'noindent',
+ 'mathtt',
+ 'mathbf',
+ 'tiny',
+ 'scriptsize',
+ 'footnotesize',
+ 'small',
+ 'normalsize',
+ 'large',
+ 'Large',
+ 'LARGE',
+ 'huge',
+ 'Huge',
+ 'HUGE',
  );
 
 # these commands put their environments into math mode
 #
-%MATHENVS = (
-  'align' => 1,
-  'equation' => 1,
-  'eqnarray' => 1,
-  'displaymath' => 1,
-  'ensuremath' => 1,
-  'math' => 1,
-  '$$' => 1,
-  '$' => 1,
-  '\[' => 1,
-  '\(' => 1,
-  );
+%MATHENVS = map { $_ => 1 } (
+ 'align',
+ 'equation',
+ 'eqnarray',
+ 'displaymath',
+ 'ensuremath',
+ 'math',
+ '$$',
+ '$',
+ '\[',
+ '\(',
+ );
 
 # these commands/environments put their children in text (non-math) mode
 #
-%TEXTENVS = (
- 'tiny' => 1,
- 'scriptsize' => 1,
- 'footnotesize' => 1,
- 'small' => 1,
- 'normalsize' => 1,
- 'large' => 1,
- 'Large' => 1,
- 'LARGE' => 1,
- 'huge' => 1,
- 'Huge' => 1,
- 'HUGE' => 1,
- 'text' => 1,
- 'textbf' => 1,
- 'textmd' => 1,
- 'textsc' => 1,
- 'textsf' => 1,
- 'textrm' => 1,
- 'textsl' => 1,
- 'textup' => 1,
- 'texttt' => 1,
- 'mbox' => 1,
- 'fbox' => 1,
- 'section' => 1,
- 'subsection' => 1,
- 'subsubsection' => 1,
- 'em' => 1,
- 'bf' => 1,
- 'emph' => 1,
- 'it' => 1,
- 'enumerate' => 1,
- 'description' => 1,
- 'itemize' => 1,
- 'trivlist' => 1,
- 'list' => 1,
- 'proof' => 1,
- 'theorem' => 1,
- 'lemma' => 1,
- 'thm' => 1,
- 'prop' => 1,
- 'lem' => 1,
- 'table' => 1,
- 'tabular' => 1,
- 'tabbing' => 1,
- 'caption' => 1,
- 'footnote' => 1,
- 'center' => 1,
- 'flushright' => 1,
- 'document' => 1,
- 'article' => 1,
- 'titlepage' => 1,
- 'title' => 1,
- 'author' => 1,
- 'titlerunninghead' => 1,
- 'authorrunninghead' => 1,
- 'affil' => 1,
- 'email' => 1,
- 'abstract' => 1,
- 'thanks' => 1,
- 'algorithm' => 1,
- 'nonumalgorithm' => 1,
- 'references' => 1,
- 'thebibliography' => 1,
- 'bibitem' => 1,
- 'verbatim' => 1,
- 'verbatimtab' => 1,
- 'quotation' => 1,
- 'quote' => 1,
+%TEXTENVS = map { $_ => 1 } (
+ 'tiny',
+ 'scriptsize',
+ 'footnotesize',
+ 'small',
+ 'normalsize',
+ 'large',
+ 'Large',
+ 'LARGE',
+ 'huge',
+ 'Huge',
+ 'HUGE',
+ 'text',
+ 'textbf',
+ 'textmd',
+ 'textsc',
+ 'textsf',
+ 'textrm',
+ 'textsl',
+ 'textup',
+ 'texttt',
+ 'mbox',
+ 'fbox',
+ 'section',
+ 'subsection',
+ 'subsubsection',
+ 'em',
+ 'bf',
+ 'emph',
+ 'it',
+ 'enumerate',
+ 'description',
+ 'itemize',
+ 'trivlist',
+ 'list',
+ 'proof',
+ 'theorem',
+ 'lemma',
+ 'thm',
+ 'prop',
+ 'lem',
+ 'table',
+ 'tabular',
+ 'tabbing',
+ 'caption',
+ 'footnote',
+ 'center',
+ 'flushright',
+ 'document',
+ 'article',
+ 'titlepage',
+ 'title',
+ 'author',
+ 'titlerunninghead',
+ 'authorrunninghead',
+ 'affil',
+ 'email',
+ 'abstract',
+ 'thanks',
+ 'algorithm',
+ 'nonumalgorithm',
+ 'references',
+ 'thebibliography',
+ 'bibitem',
+ 'verbatim',
+ 'verbatimtab',
+ 'quotation',
+ 'quote',
  );
 
 # these form sets of simple mode delimiters
 #
 %MATHBRACKETS = (
-    '$$' => '$$',
-    '$' => '$',
+ '$$' => '$$',
+ '$' => '$',
 # '\[' => '\]',   # these are problematic and handled separately now
 # '\(' => '\)',
-);
+ );
 
 # these commands require no braces, and their parameters are simply the 
 # "word" following the command declaration
 #
-%BRACELESS = (
- 'oddsidemargin' => 1,
- 'evensidemargin' => 1,
- 'topmargin' => 1,
- 'headheight' => 1,
- 'headsep' => 1,
- 'textwidth' => 1,
- 'textheight' => 1,
- 'input' => 1
-);
+%BRACELESS = map { $_ => 1 } (
+ 'oddsidemargin',
+ 'evensidemargin',
+ 'topmargin',
+ 'headheight',
+ 'headsep',
+ 'textwidth',
+ 'textheight',
+ 'input',
+ );
 
 # default value controlling how fatal parse errors are
 #
@@ -192,12 +192,14 @@ sub new {
     my $self = shift;
     my $obj  = LaTeX::TOM::Parser->new(@_);
 
-    $obj->{config}{BRACELESS}          = \%BRACELESS;
-    $obj->{config}{INNERCMDS}          = \%INNERCMDS;
-    $obj->{config}{MATHENVS}           = \%MATHENVS;
-    $obj->{config}{MATHBRACKETS}       = \%MATHBRACKETS;
-    $obj->{config}{PARSE_ERRORS_FATAL} = $PARSE_ERRORS_FATAL;
-    $obj->{config}{TEXTENVS}           = \%TEXTENVS;
+    $obj->{config} = {
+        BRACELESS          => \%BRACELESS,
+        INNERCMDS          => \%INNERCMDS,
+        MATHENVS           => \%MATHENVS,
+        MATHBRACKETS       => \%MATHBRACKETS,
+        PARSE_ERRORS_FATAL => $PARSE_ERRORS_FATAL,
+        TEXTENVS           => \%TEXTENVS,
+    };
 
     return $obj;
 }

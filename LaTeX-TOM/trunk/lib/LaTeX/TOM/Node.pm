@@ -11,6 +11,8 @@ package LaTeX::TOM::Node;
 
 use strict;
 
+our $VERSION = '0.01';
+
 # Make a new Node: turn input hash into object.
 #
 sub new {
