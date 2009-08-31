@@ -3,10 +3,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1;
+use Test::More tests => 3;
 
-BEGIN {
+BEGIN
+{
     use_ok('LUGS::Events::Parser');
+    use_ok('LUGS::Events::Parser::Event');
+    use_ok('LUGS::Events::Parser::Filter');
 }
-
-diag("Testing LUGS::Events::Parser $LUGS::Events::Parser::VERSION, Perl $], $^X");

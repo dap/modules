@@ -1,5 +1,9 @@
 Revision history for Perl extension LUGS::Events::Parser.
 
+0.04 Thu Aug 27 13:38:21 CEST 2009
+
+ - Add HTML filtering capability and according tests.
+
 0.03 Fri Oct 10 21:09:11 CEST 2008
 
  - Added a method to retrieve the unique event anchor.

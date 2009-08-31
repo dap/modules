@@ -32,3 +32,30 @@ event 20080306
   more <a href="http://lugbe.ch/action/nexttreff.phtml">Mehr Infos</a>
 endevent
 
+event 20090709
+  weekday Do
+  day 9
+  time 19:15
+  title LUGS Treff
+  color treff
+  location ETH Z&uuml;rich, <a href="http://www.rauminfo.ethz.ch/grundrissplan.gif?region=Z&areal=Z&gebaeude=HG&geschoss=G&raumNr=26.5">HG G 26.5</a> (<font color="red"><b>anderer Raum!</b></font>)
+  responsible <a href="mailto:lugsvs@lugs.ch">LUGS Vorstand</a>
+  more Restaurant nach dem Treff: <a href="http://www.doodle.com/mgfpebmxx5ibyt4m">Auswahl / Anmeldung</a>
+  more (bis 09.07.2009 12:00)
+endevent
+
+event 20090725
+  weekday Sa
+  day 25
+  time ab 17:00
+  title LUGS Grillabend
+  color spec
+  location H&uuml;tte/Areal des Sch&auml;ferhundeclubs Winterthur (<a href="http://neil.franklin.ch/Info_Texts/Anreise_SCOG_Clubhaus.html">Anreise</a>)
+  responsible <a href="mailto:neil@franklin.ch">Neil Franklin</a>
+  more Wie schon die letzten Jahre werden wir auch dieses Jahr wieder eine
+  more LUGS-Grillparty durchf&uuml;hren.
+  more <br>Teilnehmer: LUGS Mitglieder (und werdende), Familie (Freund(in),
+  more Kinder, Geschwister, ...), Freunde, ...
+  more <br><a href="https://www.lugs.ch/lugs/interna/maillugs/200907/42.html">Mehr Infos</a>
+  more (nur mit <a href="https://www.lugs.ch/lugs/badpw.phtml">LUGS Login</a>)
+endevent
