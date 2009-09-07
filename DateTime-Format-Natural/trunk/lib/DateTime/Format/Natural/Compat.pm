@@ -8,7 +8,7 @@ use DateTime ();
 
 our ($VERSION, $Pure);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 BEGIN
 {
@@ -126,9 +126,7 @@ sub _check_date
         local $@;
         eval {
             my $dt = $self->{datetime}->clone;
-            $dt->set_year($year);
-            $dt->set_month($month);
-            $dt->set_day($day);
+            $dt->set(year => $year, month => $month, day => $day);
         };
         return !$@;
     }
