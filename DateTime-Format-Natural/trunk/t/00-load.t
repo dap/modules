@@ -3,15 +3,19 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 BEGIN
 {
-    use_ok('DateTime::Format::Natural');
-    use_ok('DateTime::Format::Natural::Base');
-    use_ok('DateTime::Format::Natural::Compat');
-    use_ok('DateTime::Format::Natural::Helpers');
-    use_ok('DateTime::Format::Natural::Lang::Base');
-    use_ok('DateTime::Format::Natural::Lang::EN');
-    use_ok('DateTime::Format::Natural::Test');
+    my @modules = qw(
+        DateTime::Format::Natural
+        DateTime::Format::Natural::Base
+        DateTime::Format::Natural::Compat
+        DateTime::Format::Natural::Duration
+        DateTime::Format::Natural::Helpers
+        DateTime::Format::Natural::Lang::Base
+        DateTime::Format::Natural::Lang::EN
+        DateTime::Format::Natural::Test
+    );
+    use_ok($_) foreach @modules;
 }

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use base qw(
     DateTime::Format::Natural::Base
+    DateTime::Format::Natural::Duration
     DateTime::Format::Natural::Helpers
 );
 use boolean qw(true false);
@@ -15,7 +16,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.78_01';
+our $VERSION = '0.78_02';
 
 validation_options(
     on_fail => sub
@@ -130,6 +131,8 @@ sub parse_datetime
     my $self = shift;
 
     $self->_parse_init(@_);
+
+    $self->{Input_string} = $self->{Date_string};
 
     my $date_string = $self->{Date_string};
     $date_string =~ tr/,//d;
@@ -304,25 +307,26 @@ sub parse_datetime_duration
       : do { $self->{duration} = false;
              ($duration_string) };
 
-    my $dt_now;
-    if (scalar @date_strings == 1
-         && $date_strings[0] =~ /^for\s+/i
-    ) {
-        $dt_now = $self->parse_datetime('now');
-    }
+    $self->_pre_duration(\@date_strings);
 
     my @queue;
     foreach my $date_string (@date_strings) {
         push @queue, $self->parse_datetime($date_string);
+        $self->_save_state(
+            valid_expression => $self->_get_valid_exp,
+            failure          => $self->_get_failure,
+            error            => $self->_get_error,
+        );
     }
 
-    if ($self->success && defined $dt_now) {
-        unshift @queue, $dt_now;
-    }
+    $self->_post_duration(\@queue);
+    $self->_restore_state;
 
-    foreach my $member (qw(duration formatted)) {
+    foreach my $member (qw(duration formatted insert state)) {
         delete $self->{$member};
     }
+
+    $self->{Input_string} = $duration_string;
 
     return @queue;
 }
@@ -340,7 +344,7 @@ sub error
 
     return '' if $self->success;
 
-    my $error  = "'$self->{Date_string}' does not parse ";
+    my $error  = "'$self->{Input_string}' does not parse ";
        $error .= $self->_get_error || '(perhaps you have some garbage?)';
 
     return $error;

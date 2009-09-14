@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.24';
+our $VERSION = '1.25';
 
 our (%init,
      %timespan,
@@ -22,6 +22,7 @@ our (%init,
      @data_months_all,
      %data_conversion,
      %data_helpers,
+     %data_duration,
      %extended_checks,
      %grammar);
 
@@ -81,6 +82,20 @@ our (%init,
         suffix      => qr/s$/,
         normalize   => sub { ${$_[0]} = ucfirst lc ${$_[0]} },
         abbreviated => sub { length ${$_[0]} == 3 },
+    );
+
+    %data_duration = (
+        for => sub {
+            my ($date_strings) = @_;
+            return (scalar @$date_strings == 1
+                && $date_strings->[0] =~ /^for\s+/i);
+        },
+        first_last => sub {
+            my ($date_strings) = @_;
+            return (scalar @$date_strings == 2
+                && $date_strings->[0] =~ /^first$/i
+                && $date_strings->[1] =~ /^last\s+/i);
+        },
     );
 }
 
@@ -3018,6 +3033,67 @@ our (%init,
          {},
        ],
     ],
+    first_last_day_unit => [
+       [ 'SCALAR', 'SCALAR', 'SCALAR', 'REGEXP' ],
+       [
+         { 0 => 'first', 1 => 'day', 2 => 'of', 3 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 3 => [ $flag{month_name}, $flag{month_num} ] },
+             { VALUE => 1 },
+           ],
+         ],
+         [ {} ],
+         [ '_first_last_day_unit' ],
+         { truncate_to => 'day' },
+       ],
+       [
+         { 0 => 'first', 1 => 'day', 2 => 'of', 3 => $RE{year} },
+         [],
+         [],
+         [
+           [
+               3,
+             { VALUE => 1 },
+             { VALUE => 1 },
+           ],
+         ],
+         [ {} ],
+         [ '_first_last_day_unit' ],
+         { truncate_to => 'day' },
+       ],
+       [
+         { 0 => 'last', 1 => 'day', 2 => 'of', 3 => $RE{month} },
+         [],
+         [],
+         [
+           [
+             { 3 => [ $flag{month_name}, $flag{month_num} ] },
+             { VALUE => undef },
+           ],
+         ],
+         [ {} ],
+         [ '_first_last_day_unit' ],
+         { truncate_to => 'day' },
+       ],
+       [
+         { 0 => 'last', 1 => 'day', 2 => 'of', 3 => $RE{year} },
+         [],
+         [],
+         [
+           [
+                3,
+              { VALUE => 12 },
+              { VALUE => undef },
+            ],
+         ],
+         [ {} ],
+         [ '_first_last_day_unit' ],
+         { truncate_to => 'day' },
+       ],
+    ],
 );
 
 1;
@@ -3242,6 +3318,10 @@ that the parser does not distinguish between lower/upper case):
  Monday to Friday
  1 April to 31 August
  2009-03-10 9:00 to 11:00
+ first day of 2009 to last day of 2009
+ first day of may to last day of may
+ first to last day of 2008
+ first to last day of september
  for 4 seconds
  for 4 minutes
  for 4 hours

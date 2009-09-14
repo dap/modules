@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Compat);
 
-our $VERSION = '1.25';
+our $VERSION = '1.26';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -394,6 +394,25 @@ sub _final_weekday_in_month
     );
     while ($day <= $days - 7) {
         $day += 7;
+    }
+    $self->_set(
+        year  => $year,
+        month => $month,
+        day   => $day,
+    );
+}
+
+sub _first_last_day_unit
+{
+    my $self = shift;
+    $self->_register_trace;
+    my $opts = pop;
+    my ($year, $month, $day) = do {
+        @_ >= 3 ? @_ : (undef, @_);
+    };
+    $year ||= $self->{datetime}->year;
+    unless (defined $day) {
+        $day = $self->_Days_in_Month($year, $month);
     }
     $self->_set(
         year  => $year,

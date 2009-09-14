@@ -1,5 +1,20 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.78_02 Mon Sep 14 17:18:40 CEST 2009
+
+ - Add support for ranges representing the first and last day
+   of a month or year. [rt #44067 - Michael Reddick]
+
+ - Move the insertion code in parse_datetime_duration() to the
+   Duration class and the checks to the english metadata class.
+
+ - Quote for parsing failures with duration strings the entire
+   input string instead of a partial date string.
+
+ - Save and restore state for parse_datetime_duration().
+
+ - Test compile-time loading of Duration.pm.
+
 0.78_01 Tue Sep  1 15:51:59 CEST 2009
 
  - Set units at once within _check_date() when Date::Calc is
