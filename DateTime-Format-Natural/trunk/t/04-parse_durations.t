@@ -54,8 +54,7 @@ sub compare_strings
 
     my $pass = true;
     foreach my $i (0..$#dt) {
-        my $res_string = sprintf('%02d.%02d.%4d %02d:%02d:%02d', $dt[$i]->day, $dt[$i]->month, $dt[$i]->year, $dt[$i]->hour, $dt[$i]->min, $dt[$i]->sec);
-        $pass &= $res_string eq $result->[$i];
+        $pass &= _result_string($dt[$i]) eq $result->[$i];
     }
 
     if ($parser->success && $pass && scalar @dt == 2) {

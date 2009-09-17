@@ -122,7 +122,7 @@ EOT
 
         if ($parser->success) {
             foreach my $dt (@dt) {
-                printf("%02d.%02d.%4d %02d:%02d:%02d\n", $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
+                printf("%02d.%02d.%4d %02d:%02d:%02d\n", map $dt->$_, qw(day month year hour min sec));
             }
         }
         else {

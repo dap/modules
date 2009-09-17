@@ -35,10 +35,8 @@ sub compare_strings
 
     my $dt = $parser->parse_datetime($string);
 
-    my $res_string = sprintf('%02d.%02d.%4d %02d:%02d:%02d', $dt->day, $dt->month, $dt->year, $dt->hour, $dt->min, $dt->sec);
-
     if ($parser->success) {
-        is($res_string, $result, _message($string));
+        is(_result_string($dt), $result, _message($string));
     }
     else {
         fail(_message($string));

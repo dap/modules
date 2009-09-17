@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.78_03 Thu Sep 17 12:13:08 CEST 2009
+
+ - Relocate the formatted string printing of result strings
+   used within the tests to the Test class.
+
 0.78_02 Mon Sep 14 17:18:40 CEST 2009
 
  - Add support for ranges representing the first and last day

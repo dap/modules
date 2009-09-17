@@ -9,7 +9,7 @@ use Test::More;
 
 our ($VERSION, @EXPORT, %time);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 %time = (
     year   => 2006,
@@ -19,7 +19,7 @@ $VERSION = '0.01';
     minute => 13,
     second => 8,
 );
-@EXPORT = qw(%time _run_tests _message);
+@EXPORT = qw(%time _run_tests _result_string _message);
 
 sub _run_tests
 {
@@ -42,6 +42,18 @@ sub _run_tests
     foreach my $set (@$sets) {
         $check->(@$set);
     }
+}
+
+sub _result_string
+{
+    my ($dt) = @_;
+
+    my $string = sprintf(
+        '%02d.%02d.%4d %02d:%02d:%02d',
+        map $dt->$_, qw(day month year hour min sec)
+    );
+
+    return $string;
 }
 
 sub _message
