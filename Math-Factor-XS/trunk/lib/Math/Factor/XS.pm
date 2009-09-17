@@ -12,7 +12,7 @@ use Scalar::Util qw(looks_like_number);
 
 our ($VERSION, @EXPORT_OK, %EXPORT_TAGS, @subs);
 
-$VERSION = '0.35_01';
+$VERSION = '0.35_02';
 @subs = qw(factors matches);
 @EXPORT_OK = @subs;
 %EXPORT_TAGS = (all => [ @subs ]);

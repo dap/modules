@@ -15,29 +15,41 @@ xs_factors (number)
     INIT:
       unsigned long i;
     PPCODE:
+      AV *factors = newAV ();
+      unsigned long square_root = sqrt (number);
+
       for (i = 2; i <= number; i++)
         {
-          if (i > (number / 2))
+          if (i > square_root)
             break;
           if (number % i == 0)
             {
               EXTEND (SP, 1);
               PUSHs (sv_2mortal(newSVuv(i)));
+              av_push (factors, newSVuv(number / i));
             }
+        }
+      while (av_len (factors) >= 0)
+        {
+          EXTEND (SP, 1);
+          PUSHs (sv_2mortal(av_pop(factors)));
         }
 
 void
-xs_matches (number, factors, ...)
+xs_matches (number, factors_aref, ...)
       unsigned long number
-      AV *factors
+      SV *factors_aref
     PROTOTYPE: $\@
     INIT:
+      AV *factors;
       unsigned long *prev_base = NULL;
       unsigned int b, c, p = 0;
       unsigned int top = items - 1;
       bool Skip_multiples = false;
       bool skip = false;
     PPCODE:
+      factors = (AV*)SvRV (factors_aref);
+
       if (SvROK (ST(top)) && SvTYPE (SvRV(ST(top))) == SVt_PVHV)
         {
           const char *opt = "skip_multiples";
