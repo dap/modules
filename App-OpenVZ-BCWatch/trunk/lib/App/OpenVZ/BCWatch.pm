@@ -12,12 +12,14 @@ use Mail::Sendmail qw(sendmail);
 use Storable qw(store retrieve);
 use Sys::Hostname qw(hostname);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub new
 {
     my $class = shift;
     my %args = @_;
+
+    my $defined_or = sub { defined $_[0] ? $_[0] : $_[1] };
 
     my $self = bless {
         Config => {
@@ -31,9 +33,9 @@ sub new
                 to      => $args{mail}->{to}      || 'root@localhost',
                 subject => $args{mail}->{subject} || 'vzwatchd: NOTICE',
             },
-            sleep   => $args{sleep}   || 60,
-            verbose => $args{verbose} || false,
-            _tests  => $args{_tests}  || false,
+            sleep   => $defined_or->($args{sleep}, 60),
+            verbose => $defined_or->($args{verbose}, false),
+            _tests  => $defined_or->($args{_tests}, false),
         }
     }, ref($class) || $class;
 

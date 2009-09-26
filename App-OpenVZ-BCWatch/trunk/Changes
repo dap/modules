@@ -1,5 +1,10 @@
 Revision history for Perl extension App::OpenVZ::BCWatch.
 
+0.02 Tue Sep 22 15:06:25 CEST 2009
+
+ - Set for configuration options of type number or boolean
+   the initial values based upon definedness.
+
 0.01 Wed Nov 12 13:33:54 CET 2008
 
  - Initial version.
