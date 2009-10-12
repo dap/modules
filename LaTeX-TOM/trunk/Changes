@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::TOM.
 
+1.00 Wed Oct  7 10:56:12 CEST 2009
+
+ - Merged development version to stable.
+
 0.9_03 Sun Aug 23 16:59:26 CEST 2009
 
  - Initialize user options by calling a lexical subroutine.
