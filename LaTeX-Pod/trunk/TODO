@@ -1,2 +1,1 @@
-- remove $^W hack within basic.t (and fix LaTeX::TOM warnings)
 - write more tests

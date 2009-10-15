@@ -2,14 +2,11 @@
 
 use strict;
 use warnings;
-use boolean qw(false);
 
 use File::Spec;
 use FindBin qw($Bin);
 use LaTeX::Pod;
 use Test::More tests => 1;
-
-$^W = false;
 
 my $parser = LaTeX::Pod->new(File::Spec->catfile($Bin, 'data', 'basic.t.in'));
 $parser->convert;

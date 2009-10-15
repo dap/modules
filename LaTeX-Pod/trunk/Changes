@@ -1,5 +1,9 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.19_01 Thu Oct 15 13:00:59 CEST 2009
+
+ - Don't suppress global warnings while testing.
+
 0.19 Thu Jul  9 11:18:23 CEST 2009
 
  - Merged development version to stable.

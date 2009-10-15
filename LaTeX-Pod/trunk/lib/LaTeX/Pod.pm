@@ -8,7 +8,7 @@ use Carp qw(croak);
 use LaTeX::TOM ();
 use Params::Validate ':all';
 
-our $VERSION = '0.19';
+our $VERSION = '0.19_01';
 
 validation_options(
     on_fail => sub
