@@ -145,6 +145,7 @@ CREDITS
      Michael Reddick
      Christian Brink
      Giovanni Pensa
+     Andrew Sterling Hanenkamp
 
 SEE ALSO
     DateTime, Date::Calc, http://datetime.perl.org

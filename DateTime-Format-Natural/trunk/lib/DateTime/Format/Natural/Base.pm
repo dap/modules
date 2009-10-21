@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Compat);
 
-our $VERSION = '1.26';
+our $VERSION = '1.27';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -286,6 +286,19 @@ sub _at
 {
     my $self = shift;
     $self->_register_trace;
+    $self->_at_time(@_);
+}
+
+sub _time
+{
+    my $self = shift;
+    $self->_register_trace;
+    $self->_at_time(@_);
+}
+
+sub _at_time
+{
+    my $self = shift;
     my $opts = pop;
     my $hours = $opts->{hours} || 0;
     my ($time) = @_;
@@ -306,12 +319,6 @@ sub _at
             );
         }
     }
-}
-
-sub _time
-{
-    my $self = shift;
-    $self->_at(@_);
 }
 
 sub _time_full

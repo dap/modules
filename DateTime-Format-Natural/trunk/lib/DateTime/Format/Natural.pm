@@ -16,7 +16,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.79';
+our $VERSION = '0.79_01';
 
 validation_options(
     on_fail => sub
@@ -378,7 +378,7 @@ sub _process
         foreach my $expression (@grammar) {
             my $valid_expression = true;
             my $definition = $expression->[0];
-            my @positions = keys %$definition;
+            my @positions = sort {$a <=> $b} keys %$definition;
             my %regex_stack;
             foreach my $pos (@positions) {
                 if ($types->[$pos] eq 'SCALAR') {
@@ -731,6 +731,7 @@ valuable suggestions & patches:
  Michael Reddick
  Christian Brink
  Giovanni Pensa
+ Andrew Sterling Hanenkamp
 
 =head1 SEE ALSO
 

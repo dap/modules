@@ -1,5 +1,17 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.79_01 Mon Oct 19 13:30:14 CEST 2009
+
+ - Parse certain common variations of AM/PM or missing " at ".
+   [rt #50547 - Andrew Sterling Hanenkamp]
+
+ - Match case-insensitively for grammar regular expressions.
+
+ - Rename _at() to _at_time() and wrap it twice; dispatch to
+   _at() instead of _time() where suitable (and vice-versa).
+
+ - Sort the indexes metadata field in ascending order.
+
 0.79 Sat Sep 19 12:23:20 CEST 2009
 
  - Merged development version to stable.
