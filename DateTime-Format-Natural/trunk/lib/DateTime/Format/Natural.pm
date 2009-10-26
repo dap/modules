@@ -16,7 +16,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.79_01';
+our $VERSION = '0.79_02';
 
 validation_options(
     on_fail => sub
@@ -618,7 +618,7 @@ not necessarily required.
 
 =item * C<datetime>
 
-Overrides the present now with a DateTime object provided.
+Overrides the present now with a L<DateTime> object provided.
 
 =item * C<lang>
 
@@ -641,8 +641,8 @@ recognized by L<DateTime>. Defaults to 'floating'.
 
 =item * C<daytime>
 
-A hash reference consisting of customized daytime hours, which may be
-selectively changed.
+An anonymous hash reference consisting of customized daytime hours,
+which may be selectively changed.
 
 =back
 
@@ -650,7 +650,7 @@ selectively changed.
 
 =head2 parse_datetime
 
-Creates a C<DateTime> object from a human readable date/time string.
+Returns a L<DateTime> object constructed from a human readable date/time string.
 
  $dt = $parser->parse_datetime($date_string);
  $dt = $parser->parse_datetime(string => $date_string);
@@ -663,13 +663,12 @@ The date string.
 
 =back
 
-Returns a L<DateTime> object.
-
 =head2 parse_datetime_duration
 
-Creates one or more C<DateTime> object(s) from a human readable date/time string
-which may contain timespans/durations. 'Same' interface & options as C<parse_datetime()>,
-but must be explicitly called in list context.
+Returns one or more L<DateTime> object(s) constructed from a human readable
+date/time string which may contain timespans/durations. I<Same> interface
+and options as C<parse_datetime()>, but should be explicitly called in
+list context.
 
  @dt = $parser->parse_datetime_duration($date_string);
  @dt = $parser->parse_datetime_duration(string => $date_string);
@@ -699,7 +698,7 @@ you're intending to hack a bit on the grammar guts.
 =head1 EXAMPLES
 
 See the classes C<DateTime::Format::Natural::Lang::[language_code]> for a
-overview of current valid input.
+overview of currently valid input.
 
 =head1 CREDITS
 
@@ -707,7 +706,7 @@ Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's journal
 entry L<http://use.perl.org/~miyagawa/journal/31378> for more information.
 
 Furthermore, thanks to (in order of appearance) who have contributed
-valuable suggestions & patches:
+valuable suggestions and patches:
 
  Clayton L. Scott
  Dave Rolsky
@@ -746,6 +745,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

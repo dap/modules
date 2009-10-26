@@ -9,7 +9,7 @@ use Test::More;
 
 our ($VERSION, @EXPORT, %time);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 %time = (
     year   => 2006,
@@ -95,6 +95,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

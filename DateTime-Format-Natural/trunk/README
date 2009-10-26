@@ -64,13 +64,14 @@ CONSTRUCTOR
         zone recognized by DateTime. Defaults to 'floating'.
 
     * `daytime'
-        A hash reference consisting of customized daytime hours, which may
-        be selectively changed.
+        An anonymous hash reference consisting of customized daytime hours,
+        which may be selectively changed.
 
 METHODS
   parse_datetime
 
-    Creates a `DateTime' object from a human readable date/time string.
+    Returns a DateTime object constructed from a human readable date/time
+    string.
 
      $dt = $parser->parse_datetime($date_string);
      $dt = $parser->parse_datetime(string => $date_string);
@@ -78,13 +79,12 @@ METHODS
     * `string'
         The date string.
 
-    Returns a DateTime object.
-
   parse_datetime_duration
 
-    Creates one or more `DateTime' object(s) from a human readable date/time
-    string which may contain timespans/durations. 'Same' interface & options
-    as `parse_datetime()', but must be explicitly called in list context.
+    Returns one or more DateTime object(s) constructed from a human readable
+    date/time string which may contain timespans/durations. *Same* interface
+    and options as `parse_datetime()', but should be explicitly called in
+    list context.
 
      @dt = $parser->parse_datetime_duration($date_string);
      @dt = $parser->parse_datetime_duration(string => $date_string);
@@ -113,7 +113,7 @@ GRAMMAR
 
 EXAMPLES
     See the classes `DateTime::Format::Natural::Lang::[language_code]' for a
-    overview of current valid input.
+    overview of currently valid input.
 
 CREDITS
     Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's
@@ -121,7 +121,7 @@ CREDITS
     information.
 
     Furthermore, thanks to (in order of appearance) who have contributed
-    valuable suggestions & patches:
+    valuable suggestions and patches:
 
      Clayton L. Scott
      Dave Rolsky
@@ -157,5 +157,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See http://www.perl.com/perl/misc/Artistic.html
+    See http://dev.perl.org/licenses/
 

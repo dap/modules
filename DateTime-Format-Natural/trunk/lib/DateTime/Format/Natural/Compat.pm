@@ -8,7 +8,7 @@ use DateTime ();
 
 our ($VERSION, $Pure);
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 BEGIN
 {
@@ -185,6 +185,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

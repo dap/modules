@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.79_02 Mon Oct 26 10:11:09 CET 2009
+
+ - Improve wording and formatting of the documentation.
+
+ - Update broken license links.
+
 0.79_01 Mon Oct 19 13:30:14 CEST 2009
 
  - Parse certain common variations of AM/PM or missing " at ".
