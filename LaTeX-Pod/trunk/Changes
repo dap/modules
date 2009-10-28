@@ -1,5 +1,13 @@
 Revision history for Perl extension LaTeX::Pod.
 
+0.20 Tue Oct 27 12:32:28 CET 2009
+
+ - Update broken license links.
+
+ - Fix some indentation nits.
+
+ - Merged development version to stable.
+
 0.19_01 Thu Oct 15 13:00:59 CEST 2009
 
  - Don't suppress global warnings while testing.

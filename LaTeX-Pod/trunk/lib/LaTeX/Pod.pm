@@ -8,7 +8,7 @@ use Carp qw(croak);
 use LaTeX::TOM ();
 use Params::Validate ':all';
 
-our $VERSION = '0.19_01';
+our $VERSION = '0.20';
 
 validation_options(
     on_fail => sub
@@ -52,7 +52,7 @@ sub convert
                 if (eval $dispatch->[0]) {
                     eval $dispatch->[1];
                     $dispatched++;
-               }
+                }
             }
         }
         elsif ($type eq 'ENVIRONMENT') {
@@ -557,6 +557,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut
