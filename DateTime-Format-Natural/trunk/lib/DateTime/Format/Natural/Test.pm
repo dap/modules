@@ -9,17 +9,16 @@ use Test::More;
 
 our ($VERSION, @EXPORT, %time);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
-%time = (
-    year   => 2006,
-    month  => 11,
-    day    => 24,
-    hour   => 1,
-    minute => 13,
-    second => 8,
-);
 @EXPORT = qw(%time _run_tests _result_string _message);
+
+%time = map { split /:/ }
+        split /\n/,
+        do { local $/ = '__END__';
+             local $_ = <DATA>;
+             chomp;
+             $_ };
 
 sub _run_tests
 {
@@ -68,11 +67,19 @@ sub _message
 }
 
 1;
+__DATA__
+year:2006
+month:11
+day:24
+hour:1
+minute:13
+second:8
+
 __END__
 
 =head1 NAME
 
-DateTime::Format::Natural::Test - Common test routines
+DateTime::Format::Natural::Test - Common test routines/data
 
 =head1 SYNOPSIS
 

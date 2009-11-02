@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(DateTime::Format::Natural::Compat);
 
-our $VERSION = '1.28';
+our $VERSION = '1.29';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -364,11 +364,13 @@ sub _day_month_year
     $self->_register_trace;
     my $opts = pop;
     my ($day, $month, $year) = @_;
-    $self->_set(
-        year  => $year,
-        month => $month,
-        day   => $day,
-    );
+    if ($self->_valid_date(year => $year, month => $month, day => $day)) {
+        $self->_set(
+            year  => $year,
+            month => $month,
+            day   => $day,
+        );
+    }
 }
 
 sub _count_weekday_from_now

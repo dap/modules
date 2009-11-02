@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.80_01 Mon Nov  2 10:59:46 CET 2009
+
+ - Invoke _valid_date() in _day_month_year() to assert the
+   validity of the date before setting it.
+
+ - Separate fixed time data for testing purpose from code.
+
 0.80 Fri Oct 30 10:15:53 CET 2009
 
  - Merged development version to stable.
