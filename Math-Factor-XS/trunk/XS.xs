@@ -26,7 +26,8 @@ xs_factors (number)
             {
               EXTEND (SP, 1);
               PUSHs (sv_2mortal(newSVuv(i)));
-              av_push (factors, newSVuv(number / i));
+              if ((number / i) > i)
+                av_push (factors, newSVuv(number / i));
             }
         }
       while (av_len (factors) >= 0)

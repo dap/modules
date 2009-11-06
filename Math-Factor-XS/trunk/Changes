@@ -1,5 +1,16 @@
 Revision history for Perl extension Math::Factor::XS.
 
+0.36_01 Fri Nov  6 10:17:32 CET 2009
+
+ - Save the quotient as factor only when it's greater than the iterator.
+   [rt #50999 - Thor Andreassen]
+
+ - Add a test for even numbers to be factorized.
+
+ - Check the numbers returned deeply against the expected ones.
+
+ - Update broken license links.
+
 0.36 Tue Sep 29 11:36:53 CEST 2009
 
  - Merged development version to stable.
