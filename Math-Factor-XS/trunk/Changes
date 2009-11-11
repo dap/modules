@@ -1,5 +1,9 @@
 Revision history for Perl extension Math::Factor::XS.
 
+0.37 Tue Nov 10 22:37:24 CET 2009
+
+ - Merged development version to stable.
+
 0.36_01 Fri Nov  6 10:17:32 CET 2009
 
  - Save the quotient as factor only when it's greater than the iterator.
