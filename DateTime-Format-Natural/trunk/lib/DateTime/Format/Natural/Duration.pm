@@ -3,7 +3,7 @@ package DateTime::Format::Natural::Duration;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub _pre_duration
 {
@@ -37,7 +37,7 @@ sub _save_state
     my $self = shift;
     my %args = @_;
 
-    return if scalar keys %{$self->{state}};
+    return if %{$self->{state}};
 
     unless ($args{valid_expression}) {
         %{$self->{state}} = %args;
@@ -50,7 +50,7 @@ sub _restore_state
 
     my %state = %{$self->{state}};
 
-    if (scalar keys %state) {
+    if (%state) {
         $state{valid_expression}
           ? $self->_set_valid_exp
           : $self->_unset_valid_exp;

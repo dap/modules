@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.80_02 Wed Nov 18 10:53:05 CET 2009
+
+ - Move utility and wrapper methods to separate classes.
+
+ - Test compile-time loading of Utils.pm and Wrappers.pm.
+
+ - Don't force explicit scalar context where an implicit one exists.
+
 0.80_01 Mon Nov  2 10:59:46 CET 2009
 
  - Invoke _valid_date() in _day_month_year() to assert the

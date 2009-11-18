@@ -56,8 +56,8 @@ CONSTRUCTOR
         Specifies the format of numeric dates, defaults to '`d/m/y''.
 
     * `prefer_future'
-        Turns ambiguous weekdays/months to their futuristic relatives.
-        Accepts a boolean, defaults to false.
+        Turns ambiguous weekdays/months to their future relatives. Accepts a
+        boolean, defaults to false.
 
     * `time_zone'
         The time zone to use when parsing and for output. Accepts any time

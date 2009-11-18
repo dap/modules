@@ -10,7 +10,7 @@ use constant VIRT_FLAG => false;
 
 our ($VERSION, @EXPORT_OK, %flag);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 my @flags = (
     { weekday_name      => REAL_FLAG },
@@ -93,107 +93,6 @@ sub _month_num
     my ($arg) = @_;
 
     $$arg = $self->_Decode_Month($$arg);
-}
-
-sub _add
-{
-    my $self = shift;
-    my ($unit, $value) = @_;
-
-    $unit .= 's' unless $unit =~ /s$/;
-    $self->{datetime}->add($unit => $value);
-
-    chop $unit;
-    $self->{modified}{$unit}++;
-}
-
-sub _subtract
-{
-    my $self = shift;
-    my ($unit, $value) = @_;
-
-    $unit .= 's' unless $unit =~ /s$/;
-    $self->{datetime}->subtract($unit => $value);
-
-    chop $unit;
-    $self->{modified}{$unit}++;
-}
-
-sub _add_or_subtract
-{
-    my $self = shift;
-
-    if (ref $_[0] eq 'HASH') {
-        my %opts = %{$_[0]};
-        if ($opts{when} > 0) {
-            $self->_add($opts{unit} => $opts{value});
-        }
-        elsif ($opts{when} < 0) {
-            $self->_subtract($opts{unit} => $opts{value});
-        }
-    }
-    elsif (scalar @_ == 2) {
-        $self->_add(@_);
-    }
-}
-
-sub _set
-{
-    my $self = shift;
-    my %values = @_;
-
-    $self->{datetime}->set(%values);
-
-    foreach my $unit (keys %values) {
-        $self->{modified}{$unit}++;
-    }
-}
-
-sub _valid_date
-{
-    my $self = shift;
-    my %values = @_;
-
-    my %set = map { $_ => $self->{datetime}->$_ } qw(year month day);
-
-    while (my ($unit, $value) = each %values) {
-        $set{$unit} = $value;
-    }
-
-    if ($self->_check_date($set{year}, $set{month}, $set{day})) {
-        return true;
-    }
-    else {
-        $self->_set_failure;
-        $self->_set_error("(date is not valid)");
-        return false;
-    }
-}
-
-sub _valid_time
-{
-    my $self = shift;
-    my %values = @_;
-
-    my %abbrev = (
-        second => 'sec',
-        minute => 'min',
-        hour   => 'hour',
-    );
-    my %set = map { $_ => $self->{datetime}->$_ } values %abbrev;
-
-    while (my ($unit, $value) = each %values) {
-        $set{$abbrev{$unit}} = $value;
-    }
-
-    if ($self->_check_time($set{hour}, $set{min}, $set{sec})) {
-        return true;
-    }
-    else {
-        $self->_set_failure;
-        $self->_set_error("(time is not valid)");
-        return false;
-    }
 }
 
 1;

@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.27';
+our $VERSION = '1.28';
 
 our (%init,
      %timespan,
@@ -87,12 +87,12 @@ our (%init,
     %data_duration = (
         for => sub {
             my ($date_strings) = @_;
-            return (scalar @$date_strings == 1
+            return (@$date_strings == 1
                 && $date_strings->[0] =~ /^for\s+/i);
         },
         first_last => sub {
             my ($date_strings) = @_;
-            return (scalar @$date_strings == 2
+            return (@$date_strings == 2
                 && $date_strings->[0] =~ /^first$/i
                 && $date_strings->[1] =~ /^last\s+/i);
         },

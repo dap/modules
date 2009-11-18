@@ -70,7 +70,7 @@ Usage: $0 [switches]
   -f, --format           format of numeric dates
   -h, --help             this help screen
   -l, --lang             language code
-  -p, --prefer_future    use futuristic dates (when possible)
+  -p, --prefer_future    use future dates (when possible)
   -s, --supported        list of supported languages
   -t, --time_zone        time zone string
   -T, --trace            print trace after processing
@@ -145,7 +145,7 @@ dateparse - frontend to DateTime::Format::Natural
    -f, --format           format of numeric dates
    -h, --help             this help screen
    -l, --lang             language code
-   -p, --prefer_future    use futuristic dates (when possible)
+   -p, --prefer_future    use future dates (when possible)
    -s, --supported        list of supported languages
    -t, --time_zone        time zone string
    -T, --trace            print trace after processing

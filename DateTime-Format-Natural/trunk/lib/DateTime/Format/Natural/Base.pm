@@ -2,9 +2,13 @@ package DateTime::Format::Natural::Base;
 
 use strict;
 use warnings;
-use base qw(DateTime::Format::Natural::Compat);
+use base qw(
+    DateTime::Format::Natural::Compat
+    DateTime::Format::Natural::Utils
+    DateTime::Format::Natural::Wrappers
+);
 
-our $VERSION = '1.29';
+our $VERSION = '1.30';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';

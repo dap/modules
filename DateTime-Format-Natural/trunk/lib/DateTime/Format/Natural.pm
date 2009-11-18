@@ -16,7 +16,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.80_01';
+our $VERSION = '0.80_02';
 
 validation_options(
     on_fail => sub
@@ -143,7 +143,7 @@ sub parse_datetime
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
         if ($date_string =~ /^\S+\b \s+ \b\S+/x) {
             ($date_string, @{$self->{tokens}}) = split /\s+/, $date_string;
-            $self->{count}{tokens} = 1 + scalar @{$self->{tokens}};
+            $self->{count}{tokens} = 1 + @{$self->{tokens}};
         }
         else {
             $self->{count}{tokens} = 1;
@@ -179,7 +179,7 @@ sub parse_datetime
 
         my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
 
-        my @bits = split $separator, $date_string;
+        my @bits = split /$separator/, $date_string;
 
         my $century = $self->{datetime}
                     ? int($self->{datetime}->year / 100)
@@ -227,7 +227,7 @@ sub parse_datetime
     else {
         @{$self->{tokens}} = split /\s+/, $date_string;
         $self->{data}->__init('tokens')->($self);
-        $self->{count}{tokens} = scalar @{$self->{tokens}};
+        $self->{count}{tokens} = @{$self->{tokens}};
 
         $self->_process;
     }
@@ -308,6 +308,7 @@ sub parse_datetime_duration
              ($duration_string) };
 
     $self->_pre_duration(\@date_strings);
+    $self->{state} = {};
 
     my @queue;
     foreach my $date_string (@date_strings) {
@@ -631,7 +632,7 @@ Specifies the format of numeric dates, defaults to 'C<d/m/y>'.
 
 =item * C<prefer_future>
 
-Turns ambiguous weekdays/months to their futuristic relatives. Accepts a boolean,
+Turns ambiguous weekdays/months to their future relatives. Accepts a boolean,
 defaults to false.
 
 =item * C<time_zone>

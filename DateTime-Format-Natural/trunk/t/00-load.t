@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 10;
 
 BEGIN
 {
@@ -16,6 +16,8 @@ BEGIN
         DateTime::Format::Natural::Lang::Base
         DateTime::Format::Natural::Lang::EN
         DateTime::Format::Natural::Test
+        DateTime::Format::Natural::Utils
+        DateTime::Format::Natural::Wrappers
     );
     use_ok($_) foreach @modules;
 }
