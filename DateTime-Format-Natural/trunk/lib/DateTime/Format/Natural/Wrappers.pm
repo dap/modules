@@ -3,27 +3,30 @@ package DateTime::Format::Natural::Wrappers;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub _add
 {
     my $self = shift;
-    my ($unit, $value) = @_;
-
-    $unit .= 's' unless $unit =~ /s$/;
-    $self->{datetime}->add($unit => $value);
-
-    chop $unit;
-    $self->{modified}{$unit}++;
+    $self->_math(@_);
 }
 
 sub _subtract
 {
     my $self = shift;
+    $self->_math(@_);
+}
+
+sub _math
+{
+    my $self = shift;
     my ($unit, $value) = @_;
 
+    my ($method) = (caller(1))[3] =~ /.*::(.*)$/;
+    $method =~ s/^_//;
+
     $unit .= 's' unless $unit =~ /s$/;
-    $self->{datetime}->subtract($unit => $value);
+    $self->{datetime}->$method($unit => $value);
 
     chop $unit;
     $self->{modified}{$unit}++;
@@ -43,6 +46,8 @@ sub _add_or_subtract
         }
     }
     elsif (@_ == 2) {
+        # Handle additions as expected and also subtractions
+        # as the inverse result of adding a negative number.
         $self->_add(@_);
     }
 }

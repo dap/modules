@@ -8,7 +8,7 @@ use DateTime ();
 
 our ($VERSION, $Pure);
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 BEGIN
 {
@@ -144,9 +144,7 @@ sub _check_time
         local $@;
         eval {
             my $dt = $self->{datetime}->clone;
-            $dt->set_hour($hour);
-            $dt->set_minute($minute);
-            $dt->set_second($second);
+            $dt->set(hour => $hour, minute => $minute, second => $second);
         };
         return !$@;
     }

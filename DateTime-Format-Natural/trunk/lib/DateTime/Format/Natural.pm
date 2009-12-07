@@ -16,7 +16,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.81';
+our $VERSION = '0.81_01';
 
 validation_options(
     on_fail => sub
@@ -140,6 +140,8 @@ sub parse_datetime
     my @count = $date_string =~ m![-./]!g;
     my %count; $count{$_}++ foreach @count;
 
+    $self->{tokens} = [];
+
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
         if ($date_string =~ /^\S+\b \s+ \b\S+/x) {
             ($date_string, @{$self->{tokens}}) = split /\s+/, $date_string;
@@ -210,7 +212,7 @@ sub parse_datetime
 
         $self->_set_valid_exp;
 
-        if (@{$self->{tokens} || []}) {
+        if (@{$self->{tokens}}) {
             $self->{count}{tokens}--;
             $self->_unset_valid_exp;
             $self->_process;

@@ -57,7 +57,7 @@ sub compare_strings
         $pass &= _result_string($dt[$i]) eq $result->[$i];
     }
 
-    if ($parser->success && $pass && scalar @dt == 2) {
+    if ($parser->success && $pass && @dt == 2) {
         ok($pass, _message($string));
     }
     else {
