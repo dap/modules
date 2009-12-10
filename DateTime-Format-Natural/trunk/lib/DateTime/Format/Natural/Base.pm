@@ -8,7 +8,7 @@ use base qw(
     DateTime::Format::Natural::Wrappers
 );
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -75,8 +75,8 @@ sub _daytime_variant
         afternoon => AFTERNOON,
         evening   => EVENING,
     );
-    my $hour = $self->{Opts}{daytime}{$daytime}
-      ? $self->{Opts}{daytime}{$daytime}
+    my $hour = $self->{Daytime}{$daytime}
+      ? $self->{Daytime}{$daytime}
       : $daytimes{$daytime};
     if ($self->_valid_time(hour => $hour)) {
         $self->_set(

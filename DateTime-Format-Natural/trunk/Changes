@@ -1,5 +1,12 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.81_02 Wed Dec  9 20:07:19 CET 2009
+
+ - Reduce the common logic of _valid_date() and _valid_time()
+   by moving most of it to a method.
+
+ - Store the daytime option internally with a less nested name.
+
 0.81_01 Mon Dec  7 11:14:19 CET 2009
 
  - Place the common body of _add() and _subtract() in a single method.

@@ -16,7 +16,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.81_01';
+our $VERSION = '0.81_02';
 
 validation_options(
     on_fail => sub
@@ -59,7 +59,7 @@ sub _init
             $self->{ucfirst $opt} = $opts{$opt};
         }
     }
-    $self->{Opts}{daytime} = $opts{daytime};
+    $self->{Daytime} = $opts{daytime} || {};
 
     my $mod = __PACKAGE__.'::Lang::'.uc($self->{Lang});
     eval "use $mod"; die $@ if $@;

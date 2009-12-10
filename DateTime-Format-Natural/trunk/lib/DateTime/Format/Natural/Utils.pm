@@ -4,51 +4,50 @@ use strict;
 use warnings;
 use boolean qw(true false);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub _valid_date
 {
     my $self = shift;
-    my %values = @_;
-
-    my %set = map { $_ => $self->{datetime}->$_ } qw(year month day);
-
-    while (my ($unit, $value) = each %values) {
-        $set{$unit} = $value;
-    }
-
-    if ($self->_check_date($set{year}, $set{month}, $set{day})) {
-        return true;
-    }
-    else {
-        $self->_set_failure;
-        $self->_set_error("(date is not valid)");
-        return false;
-    }
+    return $self->_valid(@_,
+        { units => [ qw(year month day) ],
+          error => '(date is not valid)',
+          type  => 'date',
+        },
+    );
 }
 
 sub _valid_time
 {
     my $self = shift;
+    return $self->_valid(@_,
+        { units => [ qw(hour minute second) ],
+          error => '(time is not valid)',
+          type  => 'time',
+        },
+    );
+}
+
+sub _valid
+{
+    my $self = shift;
+    my $opts = pop;
     my %values = @_;
 
-    my %abbrev = (
-        second => 'sec',
-        minute => 'min',
-        hour   => 'hour',
-    );
-    my %set = map { $_ => $self->{datetime}->$_ } values %abbrev;
+    my %set = map { $_ => $self->{datetime}->$_ } @{$opts->{units}};
 
     while (my ($unit, $value) = each %values) {
-        $set{$abbrev{$unit}} = $value;
+        $set{$unit} = $value;
     }
 
-    if ($self->_check_time($set{hour}, $set{min}, $set{sec})) {
+    my $checker = '_check' . "_$opts->{type}";
+
+    if ($self->$checker(map $set{$_}, @{$opts->{units}})) {
         return true;
     }
     else {
         $self->_set_failure;
-        $self->_set_error("(time is not valid)");
+        $self->_set_error($opts->{error});
         return false;
     }
 }
