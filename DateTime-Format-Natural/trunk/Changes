@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.81_03 Fri Dec 11 10:32:08 CET 2009
+
+ - Use string interpolation instead of concatenation for symbolic
+   references in __new().
+
 0.81_02 Wed Dec  9 20:07:19 CET 2009
 
  - Reduce the common logic of _valid_date() and _valid_time()

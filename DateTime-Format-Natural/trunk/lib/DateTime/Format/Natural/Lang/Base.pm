@@ -5,7 +5,7 @@ use warnings;
 
 our ($VERSION, $AUTOLOAD);
 
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 sub __new
 {
@@ -14,15 +14,15 @@ sub __new
     no strict 'refs';
 
     my $obj = {};
-    $obj->{weekdays}        = \%{$class.'::'.'data_weekdays'};
-    $obj->{weekdays_abbrev} = \%{$class.'::'.'data_weekdays_abbrev'};
-    $obj->{weekdays_all}    = \@{$class.'::'.'data_weekdays_all'};
-    $obj->{months}          = \%{$class.'::'.'data_months'};
-    $obj->{months_abbrev}   = \%{$class.'::'.'data_months_abbrev'};
-    $obj->{months_all}      = \@{$class.'::'.'data_months_all'};
-    $obj->{conversion}      = \%{$class.'::'.'data_conversion'};
-    $obj->{helpers}         = \%{$class.'::'.'data_helpers'};
-    $obj->{duration}        = \%{$class.'::'.'data_duration'};
+    $obj->{weekdays}        = \%{"${class}::data_weekdays"};
+    $obj->{weekdays_abbrev} = \%{"${class}::data_weekdays_abbrev"};
+    $obj->{weekdays_all}    = \@{"${class}::data_weekdays_all"};
+    $obj->{months}          = \%{"${class}::data_months"};
+    $obj->{months_abbrev}   = \%{"${class}::data_months_abbrev"};
+    $obj->{months_all}      = \@{"${class}::data_months_all"};
+    $obj->{conversion}      = \%{"${class}::data_conversion"};
+    $obj->{helpers}         = \%{"${class}::data_helpers"};
+    $obj->{duration}        = \%{"${class}::data_duration"};
 
     return bless $obj, ref($class) || $class;
 }
