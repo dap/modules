@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.81_04 Wed Dec 16 13:32:35 CET 2009
+
+ - dateparse: use the same class instance for each parse run;
+   match case-insensitively for commands that quit.
+
 0.81_03 Fri Dec 11 10:32:08 CET 2009
 
  - Use string interpolation instead of concatenation for symbolic

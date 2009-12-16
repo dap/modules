@@ -98,12 +98,14 @@ sub process
         $lang = $args{lang} = LANG_DEFAULT;
     }
 
+    my $parser = DateTime::Format::Natural->new(%args);
+
     my $term = Term::ReadLine->new('dateparse');
     my $prompt = 'dateparse> ';
 
     while (defined(my $input = $term->readline($prompt))) {
         $term->addhistory($input) if $input =~ /\S/;
-        last if $input =~ /^(?:q(?:uit)?|exit)$/;
+        last if $input =~ /^(?:q(?:uit)?|exit)$/i;
 
         if ($input =~ /^(?:\?|help)$/i) {
             print <<EOT;
@@ -117,7 +119,6 @@ EOT
             next;
         }
 
-        my $parser = DateTime::Format::Natural->new(%args);
         my @dt = $parser->parse_datetime_duration(string => $input);
 
         if ($parser->success) {
