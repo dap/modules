@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.82 Mon Dec 21 10:15:52 CET 2009
+
+ - Merged development version to stable.
+
 0.81_04 Wed Dec 16 13:32:35 CET 2009
 
  - dateparse: use the same class instance for each parse run;
