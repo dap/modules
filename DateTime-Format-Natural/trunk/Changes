@@ -1,5 +1,24 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.82_01 Thu Dec 31 12:10:30 CET 2009
+
+ - Save the trace of each parse while processing a duration.
+
+ - Call for formatted dates the wrapper _set() instead of set()
+   in order to alter the modified counters.
+
+ - dateparse: when printing traces, print a trace for each object
+   returned.
+
+ - Add tests for the trace method and improve its documentation.
+
+ - Document possible bugs and caveats.
+
+ - Rename some variables with method name strings to be more
+   descriptive and also interpolate their strings initially.
+
+ - Substitute an expression for a block as used by 'map'.
+
 0.82 Mon Dec 21 10:15:52 CET 2009
 
  - Merged development version to stable.

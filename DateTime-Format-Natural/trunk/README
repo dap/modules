@@ -22,6 +22,8 @@ SYNOPSIS
          warn $parser->error;
      }
 
+     @traces = $parser->trace;
+
 DESCRIPTION
     `DateTime::Format::Natural' takes a string with a human readable
     date/time and creates a machine readable one by applying natural parsing
@@ -100,8 +102,9 @@ METHODS
 
   trace
 
-    Returns a trace of methods which were called within the Base class and a
-    summary how often certain units have been modified.
+    Returns one or more strings with traces of methods which were called
+    within the Base class and a summary how often certain units have been
+    modified. More than one string is commonly returned for durations.
 
 GRAMMAR
     The grammar handling has been rewritten to be easily extendable and
@@ -114,6 +117,17 @@ GRAMMAR
 EXAMPLES
     See the classes `DateTime::Format::Natural::Lang::[language_code]' for a
     overview of currently valid input.
+
+BUGS & CAVEATS
+    `parse_datetime()'/`parse_datetime_duration()' always return one or more
+    DateTime objects regardless whether the parse was successful or not. In
+    case no valid expression was found or a failure occurred, an unaltered
+    DateTime object with its initial values (most often the "current" now)
+    is likely to be returned. It is therefore recommended to use `success()'
+    to assert that the parse did succeed (at least, for common uses),
+    otherwise the absence of a parse failure cannot be guaranteed.
+
+    `parse_datetime()' is not capable of handling durations.
 
 CREDITS
     Thanks to Tatsuhiko Miyagawa for the initial inspiration. See Miyagawa's

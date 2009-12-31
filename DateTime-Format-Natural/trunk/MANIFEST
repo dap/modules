@@ -27,5 +27,6 @@ t/07-parse_datetime.t
 t/08-parse_failure.t
 t/09-regression.t
 t/10-state.t
+t/11-trace.t
 t/pod-coverage.t
 t/pod.t

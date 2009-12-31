@@ -16,7 +16,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.82';
+our $VERSION = '0.82_01';
 
 validation_options(
     on_fail => sub
@@ -141,6 +141,7 @@ sub parse_datetime
     my %count; $count{$_}++ foreach @count;
 
     $self->{tokens} = [];
+    $self->{traces} = [];
 
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
         if ($date_string =~ /^\S+\b \s+ \b\S+/x) {
@@ -187,7 +188,7 @@ sub parse_datetime
                     ? int($self->{datetime}->year / 100)
                     : substr((localtime)[5] + 1900, 0, 2);
 
-        my ($day, $month, $year) = map { $bits[$separated_indices->{$_}] } qw(d m y);
+        my ($day, $month, $year) = map $bits[$separated_indices->{$_}], qw(d m y);
 
         if (not defined $day && defined $month && defined $year) {
             $self->_set_failure;
@@ -203,7 +204,7 @@ sub parse_datetime
             return $self->_get_datetime_object;
         }
 
-        $self->{datetime}->set(
+        $self->_set(
             year  => $year,
             month => $month,
             day   => $day,
@@ -232,6 +233,11 @@ sub parse_datetime
         $self->{count}{tokens} = @{$self->{tokens}};
 
         $self->_process;
+    }
+
+    my $trace = $self->_trace_string;
+    if (defined $trace) {
+        @{$self->{traces}} = $trace;
     }
 
     return $self->_get_datetime_object;
@@ -312,7 +318,7 @@ sub parse_datetime_duration
     $self->_pre_duration(\@date_strings);
     $self->{state} = {};
 
-    my @queue;
+    my (@queue, @traces);
     foreach my $date_string (@date_strings) {
         push @queue, $self->parse_datetime($date_string);
         $self->_save_state(
@@ -320,6 +326,9 @@ sub parse_datetime_duration
             failure          => $self->_get_failure,
             error            => $self->_get_error,
         );
+        if (@{$self->{traces}}) {
+            push @traces, $self->{traces}[0];
+        }
     }
 
     $self->_post_duration(\@queue);
@@ -329,6 +338,7 @@ sub parse_datetime_duration
         delete $self->{$member};
     }
 
+    @{$self->{traces}} = @traces;
     $self->{Input_string} = $duration_string;
 
     return @queue;
@@ -357,9 +367,7 @@ sub trace
 {
     my $self = shift;
 
-    return join "\n", @{$self->{trace}},
-      map  { my $unit = $_; "$unit: $self->{modified}{$unit}" }
-      keys %{$self->{modified}};
+    return @{$self->{traces}};
 }
 
 sub _process
@@ -438,8 +446,8 @@ sub _process
                             ? $regex_stack{$index}
                             : ${$self->_token($index)};
                     }
-                    my $meth = 'SUPER::'.$expression->[5]->[$i];
-                    $self->$meth(@values, $expression->[4]->[$i++]);
+                    my $worker = "SUPER::$expression->[5]->[$i]";
+                    $self->$worker(@values, $expression->[4]->[$i++]);
                 }
                 %opts = %{$expression->[6]};
                 last PARSE;
@@ -593,6 +601,8 @@ DateTime::Format::Natural - Create machine readable date/time with natural parsi
      warn $parser->error;
  }
 
+ @traces = $parser->trace;
+
 =head1 DESCRIPTION
 
 C<DateTime::Format::Natural> takes a string with a human readable date/time and creates a
@@ -687,8 +697,9 @@ Returns the error message if the parsing did not succeed.
 
 =head2 trace
 
-Returns a trace of methods which were called within the Base class and
-a summary how often certain units have been modified.
+Returns one or more strings with traces of methods which were called within
+the Base class and a summary how often certain units have been modified.
+More than one string is commonly returned for durations.
 
 =head1 GRAMMAR
 
@@ -702,6 +713,18 @@ you're intending to hack a bit on the grammar guts.
 
 See the classes C<DateTime::Format::Natural::Lang::[language_code]> for a
 overview of currently valid input.
+
+=head1 BUGS & CAVEATS
+
+C<parse_datetime()>/C<parse_datetime_duration()> always return one or more
+DateTime objects regardless whether the parse was successful or not. In
+case no valid expression was found or a failure occurred, an unaltered
+DateTime object with its initial values (most often the "current" now) is
+likely to be returned. It is therefore recommended to use C<success()> to
+assert that the parse did succeed (at least, for common uses), otherwise
+the absence of a parse failure cannot be guaranteed.
+
+C<parse_datetime()> is not capable of handling durations.
 
 =head1 CREDITS
 

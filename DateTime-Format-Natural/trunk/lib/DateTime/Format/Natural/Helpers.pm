@@ -10,7 +10,8 @@ use constant VIRT_FLAG => false;
 
 our ($VERSION, @EXPORT_OK, %flag);
 
-$VERSION = '0.04';
+$VERSION = '0.05';
+@EXPORT_OK = qw(%flag);
 
 my @flags = (
     { weekday_name      => REAL_FLAG },
@@ -29,8 +30,6 @@ my @flags = (
     %flag = map { (keys %$_)[0] => $i++ } @flags;
 }
 
-@EXPORT_OK = qw(%flag);
-
 sub _helper
 {
     my $self = shift;
@@ -39,8 +38,8 @@ sub _helper
     foreach my $flag (@$flags) {
         my $name = (keys %{$flags[$flag]})[0];
         if ($flags[$flag]->{$name}) {
-            my $meth = '_' . $name;
-            $self->$meth(\$string);
+            my $helper = "_$name";
+            $self->$helper(\$string);
         }
         else {
             $string = $self->{data}->{conversion}->{$name}->{lc $string};

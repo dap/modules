@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use boolean qw(true false);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub _valid_date
 {
@@ -50,6 +50,26 @@ sub _valid
         $self->_set_error($opts->{error});
         return false;
     }
+}
+
+sub _trace_string
+{
+    my $self = shift;
+
+    my ($trace, $modified) = map $self->{$_}, qw(trace modified);
+
+    $trace    ||= [];
+    $modified ||= {};
+
+    return undef unless (@$trace || %$modified);
+
+    my $i;
+    my %order = map { $_ => $i++ } qw(second minute hour day week month year);
+
+    return join "\n", @$trace,
+      map { my $unit = $_; "$unit: $modified->{$unit}" }
+      sort { $order{$a} <=> $order{$b} }
+      keys %$modified;
 }
 
 1;
