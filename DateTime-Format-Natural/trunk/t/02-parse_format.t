@@ -13,9 +13,11 @@ my @specific = (
     { '05/27/79'            => [ '27.05.2079 00:00:00', 'mm/dd/yy'   ] },
     { '1979-05-27'          => [ '27.05.1979 00:00:00', 'yyyy-mm-dd' ] },
     { '1979-05-27 21:09:14' => [ '27.05.1979 21:09:14', 'yyyy-mm-dd' ] },
+    { '1/3'                 => [ '03.01.2006 00:00:00', undef        ] },
+    { '1/3 16:00'           => [ '03.01.2006 16:00:00', undef        ] },
 );
 
-_run_tests(5, [ [ \@specific ] ], \&compare);
+_run_tests(7, [ [ \@specific ] ], \&compare);
 
 sub compare
 {
@@ -30,7 +32,9 @@ sub compare_strings
 {
     my ($string, $result, $format) = @_;
 
-    my $parser = DateTime::Format::Natural->new(format => $format);
+    my %args = defined $format ? (format => $format) : ();
+
+    my $parser = DateTime::Format::Natural->new(%args);
     $parser->_set_datetime(\%time);
 
     my $dt = $parser->parse_datetime($string);

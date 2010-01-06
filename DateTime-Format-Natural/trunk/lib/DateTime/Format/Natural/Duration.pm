@@ -3,7 +3,7 @@ package DateTime::Format::Natural::Duration;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub _pre_duration
 {
@@ -15,9 +15,14 @@ sub _pre_duration
     if ($duration->{for}->($date_strings)) {
         $self->{insert} = $self->parse_datetime('now');
     }
-    elsif ($duration->{first_last}->($date_strings)) {
+    elsif ($duration->{first_to_last}->($date_strings)) {
         if (my ($complete) = $date_strings->[1] =~ /^\S+? \s+ (.*)/x) {
             $date_strings->[0] .= " $complete";
+        }
+    }
+    elsif ($duration->{date_time_to_time}->($date_strings)) {
+        if (my ($complete) = $date_strings->[0] =~ /^(\S+?) \s+ .*/x) {
+            $date_strings->[1] = "$complete $date_strings->[1]";
         }
     }
 }

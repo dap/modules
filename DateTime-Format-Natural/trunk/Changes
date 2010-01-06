@@ -1,5 +1,29 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.82_02 Wed Jan  6 10:57:43 CET 2010
+
+ - New supported format: M/D. [rt #53187 - Shawn M. Moore]
+
+ - Handle the new format with prefer-future semantics.
+
+ - Add tests for the new format and also for related durations.
+
+ - Document the new format and variations of it.
+
+ - Restrict counting of format separators to the formatted substring.
+
+ - Move the code processing formatted dates to a separate class.
+
+ - Fix the checking for an invalid format parameter.
+
+ - Complete <date> <time> to <time> type of durations.
+
+ - Split the duration string at word boundary of the separator.
+
+ - Restore the datetime object for each parse when running tests.
+
+ - Test compile-time loading of Formatted.pm.
+
 0.82_01 Thu Dec 31 12:10:30 CET 2009
 
  - Save the trace of each parse while processing a duration.

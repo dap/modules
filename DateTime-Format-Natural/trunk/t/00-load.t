@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 
 BEGIN
 {
@@ -12,6 +12,7 @@ BEGIN
         DateTime::Format::Natural::Base
         DateTime::Format::Natural::Compat
         DateTime::Format::Natural::Duration
+        DateTime::Format::Natural::Formatted
         DateTime::Format::Natural::Helpers
         DateTime::Format::Natural::Lang::Base
         DateTime::Format::Natural::Lang::EN

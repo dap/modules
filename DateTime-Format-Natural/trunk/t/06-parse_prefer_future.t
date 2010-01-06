@@ -49,7 +49,12 @@ my @combined = (
     { 'monday at 03:00 pm' => '27.11.2006 15:00:00' },
 );
 
-_run_tests(26, [ [ \@simple ], [ \@combined ] ], \&compare);
+my @formatted = (
+    { '1/3'   => '03.01.2007 00:00:00' },
+    { '12/24' => '24.12.2006 00:00:00' },
+);
+
+_run_tests(28, [ [ \@simple ], [ \@combined ], [ \@formatted ] ], \&compare);
 
 sub compare
 {

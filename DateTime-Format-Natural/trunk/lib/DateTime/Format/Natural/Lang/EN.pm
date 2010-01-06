@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.28';
+our $VERSION = '1.29';
 
 our (%init,
      %timespan,
@@ -90,11 +90,21 @@ our (%init,
             return (@$date_strings == 1
                 && $date_strings->[0] =~ /^for\s+/i);
         },
-        first_last => sub {
+        first_to_last => sub {
             my ($date_strings) = @_;
             return (@$date_strings == 2
                 && $date_strings->[0] =~ /^first$/i
                 && $date_strings->[1] =~ /^last\s+/i);
+        },
+        date_time_to_time => sub {
+            my ($date_strings) = @_;
+
+            my $date = qr!(?:\d{1,4}) (?:[-./]\d{1,4}){0,2}!x;
+            my $time = qr!(?:\d{1,2}) (?:\:\d{2}){0,2}!x;
+
+            return (@$date_strings == 2
+                && $date_strings->[0] =~ /^$date \s+ $time$/x
+                && $date_strings->[1] =~ /^$time$/);
         },
     );
 }
@@ -3578,7 +3588,12 @@ that the parser does not distinguish between lower/upper case):
 
  Monday to Friday
  1 April to 31 August
+ 1999-12-31 to tomorrow
+ now to 2010-01-01
  2009-03-10 9:00 to 11:00
+ 1/3 to 2/3
+ 2/3 to in 1 week
+ 3/3 21:00 to in 5 days
  first day of 2009 to last day of 2009
  first day of may to last day of may
  first to last day of 2008
@@ -3607,6 +3622,8 @@ that the parser does not distinguish between lower/upper case):
  jan 3 2010
  3 jan 2000
  27/5/1979
+ 1/3
+ 1/3 16:00
  4:00
  17:00
  3:20:00

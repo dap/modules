@@ -5,6 +5,7 @@ use warnings;
 use base qw(
     DateTime::Format::Natural::Base
     DateTime::Format::Natural::Duration
+    DateTime::Format::Natural::Formatted
     DateTime::Format::Natural::Helpers
 );
 use boolean qw(true false);
@@ -16,7 +17,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.82_01';
+our $VERSION = '0.82_02';
 
 validation_options(
     on_fail => sub
@@ -137,94 +138,27 @@ sub parse_datetime
     my $date_string = $self->{Date_string};
     $date_string =~ tr/,//d;
 
-    my @count = $date_string =~ m![-./]!g;
-    my %count; $count{$_}++ foreach @count;
+    my ($formatted) = $date_string =~ m!^((?:\d+?[-./])+ (?:\d+?)) \b!x;
+
+    my %count;
+    if (defined $formatted) {
+        my @count = $formatted =~ m![-./]!g;
+        $count{$_}++ foreach @count;
+    }
 
     $self->{tokens} = [];
     $self->{traces} = [];
 
     if (scalar keys %count == 1 && $count{(keys %count)[0]} == 2) {
-        if ($date_string =~ /^\S+\b \s+ \b\S+/x) {
-            ($date_string, @{$self->{tokens}}) = split /\s+/, $date_string;
-            $self->{count}{tokens} = 1 + @{$self->{tokens}};
-        }
-        else {
-            $self->{count}{tokens} = 1;
-        }
+        my $dt = $self->_parse_formatted_ymd($date_string, \%count);
+        return $dt if blessed($dt);
+    }
+    elsif (scalar keys %count == 1 && $count{(keys %count)[0]} == 1 && (keys %count)[0] eq '/') {
+        my $dt = $self->_parse_formatted_md($date_string);
+        return $dt if blessed($dt);
 
-        my $separator = quotemeta((keys %count)[0]);
-        my @chunks = split /$separator/, $date_string;
-
-        my $i = 0;
-        my %length = map { length $_ => $i++ } @chunks;
-
-        my $format = $self->{Format};
-
-        if (exists $length{4}) {
-            $format = join $separator,
-              ($length{4} == 0
-                ? qw(yyyy mm dd)
-                : ($format =~ /^m/
-                    ? qw(mm dd yyyy)
-                    : qw(dd mm yyyy)
-                  )
-              );
-        }
-        else {
-            $separator = do { local $_ = $format;
-                              tr/a-zA-Z//d;
-                              tr/a-zA-Z//cs;
-                              quotemeta; };
-        }
-
-        my @separated_order = split /$separator/, $format;
-        my $separated_index = 0;
-
-        my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
-
-        my @bits = split /$separator/, $date_string;
-
-        my $century = $self->{datetime}
-                    ? int($self->{datetime}->year / 100)
-                    : substr((localtime)[5] + 1900, 0, 2);
-
-        my ($day, $month, $year) = map $bits[$separated_indices->{$_}], qw(d m y);
-
-        if (not defined $day && defined $month && defined $year) {
-            $self->_set_failure;
-            $self->_set_error("('format' parameter invalid)");
-            return $self->_get_datetime_object;
-        }
-
-        if (length $year == 2) { $year = "$century$year" };
-
-        unless ($self->_check_date($year, $month, $day)) {
-            $self->_set_failure;
-            $self->_set_error("(invalid date)");
-            return $self->_get_datetime_object;
-        }
-
-        $self->_set(
-            year  => $year,
-            month => $month,
-            day   => $day,
-        );
-        $self->{datetime}->truncate(to => 'day');
-
-        $self->_set_valid_exp;
-
-        if (@{$self->{tokens}}) {
-            $self->{count}{tokens}--;
-            $self->_unset_valid_exp;
-            $self->_process;
-        }
-
-        if ($self->{duration}) {
-            %{$self->{formatted}} = (
-                year  => $year,
-                month => $month,
-                day   => $day,
-            );
+        if ($self->{Prefer_future}) {
+            $self->_advance_future(qw(md));
         }
     }
     else {
@@ -282,15 +216,11 @@ sub _parse_init
         }
     };
 
-    unless ($self->{running_tests}) {
-        if (exists $self->{formatted}) {
-            $set_datetime->('new', {
-                map { $_ => $self->{formatted}{$_} } qw(year month day)
-            });
-        }
-        else {
-            $set_datetime->('now', {});
-        }
+    if ($self->{running_tests}) {
+        $self->{datetime} = $self->{datetime_test}->clone;
+    }
+    else {
+        $set_datetime->('now', {});
     }
 
     $self->_init_vars;
@@ -309,7 +239,7 @@ sub parse_datetime_duration
     $self->_params_init(@_, { string => \$duration_string });
     my $timespan_sep = $self->{data}->__timespan('literal');
 
-    my @date_strings = $duration_string =~ /$timespan_sep/i
+    my @date_strings = $duration_string =~ /\b $timespan_sep \b/ix
       ? do { $self->{duration} = true;
              split /\s+ $timespan_sep \s+/ix, $duration_string }
       : do { $self->{duration} = false;
@@ -470,44 +400,52 @@ sub _post_process
     if ($self->{Prefer_future} &&
         (exists $opts{prefer_future} && $opts{prefer_future})
     ) {
-        my %modified = map { $_ => true } keys %{$self->{modified}};
-        my $token_contains = sub
-        {
-            my ($identifier) = @_;
-            return any {
-              my $data = $_;
-              any {
-                my $token = $_;
-                $token =~ /$data/i;
-              } @{$self->{tokens}}
-            } @{$self->{data}->{$identifier}};
-        };
+        $self->_advance_future;
+    }
+}
 
-        if ((all { /^(?:second|minute|hour)$/ } keys %modified)
-            && (exists $self->{modified}{hour} && $self->{modified}{hour} == 1)
-            && (exists $self->{modified}{minute} && $self->{modified}{minute} == 1)
-            && $self->{datetime}->hour < DateTime->now(time_zone => $self->{Time_zone})->hour
-        ) {
-            $self->{postprocess}{day} = 1;
-        }
-        elsif ($token_contains->('weekdays_all')
-            && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
-            && ($self->_Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day)
-             < DateTime->now(time_zone => $self->{Time_zone})->wday)
-        ) {
-            $self->{postprocess}{day} = 7;
-        }
-        elsif ($token_contains->('months_all')
-            && (all { /^(?:day|month)$/ } keys %modified)
-            && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
-            && (exists $self->{modified}{day}
-                  ? $self->{modified}{day} == 1
-                    ? true : false
-                  : true)
-            && ($self->{datetime}->day_of_year < DateTime->now->day_of_year)
-        ) {
-            $self->{postprocess}{year} = 1;
-        }
+sub _advance_future
+{
+    my $self = shift;
+    my %advance = map { $_ => true } @_;
+
+    my %modified = map { $_ => true } keys %{$self->{modified}};
+    my $token_contains = sub
+    {
+        my ($identifier) = @_;
+        return any {
+          my $data = $_;
+          any {
+            my $token = $_;
+            $token =~ /$data/i;
+          } @{$self->{tokens}}
+        } @{$self->{data}->{$identifier}};
+    };
+
+    if ((all { /^(?:second|minute|hour)$/ } keys %modified)
+        && (exists $self->{modified}{hour} && $self->{modified}{hour} == 1)
+        && (exists $self->{modified}{minute} && $self->{modified}{minute} == 1)
+        && $self->{datetime}->hour < DateTime->now(time_zone => $self->{Time_zone})->hour
+    ) {
+        $self->{postprocess}{day} = 1;
+    }
+    elsif ($token_contains->('weekdays_all')
+        && (exists $self->{modified}{day} && $self->{modified}{day} == 1)
+        && ($self->_Day_of_Week($self->{datetime}->year, $self->{datetime}->month, $self->{datetime}->day)
+         < DateTime->now(time_zone => $self->{Time_zone})->wday)
+    ) {
+        $self->{postprocess}{day} = 7;
+    }
+    elsif (($token_contains->('months_all') || $advance{md})
+        && (all { /^(?:day|month)$/ } keys %modified)
+        && (exists $self->{modified}{month} && $self->{modified}{month} == 1)
+        && (exists $self->{modified}{day}
+              ? $self->{modified}{day} == 1
+                ? true : false
+              : true)
+        && ($self->{datetime}->day_of_year < DateTime->now->day_of_year)
+    ) {
+        $self->{postprocess}{year} = 1;
     }
 }
 
@@ -566,7 +504,7 @@ sub _set_datetime
     my $self = shift;
     my ($time, $tz) = @_;
 
-    $self->{datetime} = DateTime->new(
+    $self->{datetime_test} = DateTime->new(
         time_zone => $tz || 'floating',
         %$time,
     );
