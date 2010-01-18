@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.83_01 Mon Jan 18 10:28:42 CET 2010
+
+ - Pass the time zone object instead of name to the final DateTime
+   constructor. [rt #53268 - Eric Wilhelm]
+
 0.83 Wed Jan 13 15:51:11 CET 2010
 
  - Merged development version to stable.

@@ -17,7 +17,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.83';
+our $VERSION = '0.83_01';
 
 validation_options(
     on_fail => sub
@@ -482,7 +482,7 @@ sub _get_datetime_object
     my $self = shift;
 
     my $dt = DateTime->new(
-        time_zone => $self->{datetime}->time_zone->name,
+        time_zone => $self->{datetime}->time_zone,
         year      => $self->{datetime}->year,
         month     => $self->{datetime}->month,
         day       => $self->{datetime}->day_of_month,
@@ -695,6 +695,7 @@ valuable suggestions and patches:
  Christian Brink
  Giovanni Pensa
  Andrew Sterling Hanenkamp
+ Eric Wilhelm
 
 =head1 SEE ALSO
 
