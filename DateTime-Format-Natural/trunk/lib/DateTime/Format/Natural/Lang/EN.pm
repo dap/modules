@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.29';
+our $VERSION = '1.30';
 
 our (%init,
      %timespan,
@@ -1507,6 +1507,40 @@ our (%init,
            truncate_to   => 'minute',
          },
        ],
+       [
+         { 0 => $RE{time_am}, 1 => $RE{weekday} },
+         [],
+         [],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {}, {} ],
+         [ '_at', '_weekday' ],
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
+       ],
+       [
+         { 0 => $RE{time_pm}, 1 => $RE{weekday} },
+         [],
+         [],
+         [
+           [ 0 ],
+           [
+             { 1 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ { hours => 12 }, {} ],
+         [ '_at', '_weekday' ],
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
+       ],
     ],
     time => [
        [ 'REGEXP' ],
@@ -2989,6 +3023,43 @@ our (%init,
          },
        ],
     ],
+    time_on_weekday => [
+       [ 'REGEXP', 'SCALAR', 'REGEXP' ],
+       [
+         { 0 => $RE{time_am}, 1 => 'on', 2 => $RE{weekday} },
+         [],
+         [],
+         [
+           [ 0 ],
+           [
+             { 2 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ {}, {} ],
+         [ '_at', '_weekday' ],
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
+       ],
+       [
+         { 0 => $RE{time_pm}, 1 => 'on', 2 => $RE{weekday} },
+         [],
+         [],
+         [
+           [ 0 ],
+           [
+             { 2 => [ $flag{weekday_name}, $flag{weekday_num} ] },
+           ],
+         ],
+         [ { hours => 12 }, {} ],
+         [ '_at', '_weekday' ],
+         {
+           prefer_future => true,
+           truncate_to   => 'minute',
+         },
+       ],
+    ],
     weekday_at_am_pm => [
        [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
        [
@@ -3489,6 +3560,10 @@ that the parser does not distinguish between lower/upper case):
  4pm
  4:20pm
  mon 2:35
+ 1am sun
+ 1pm sun
+ 1am on sun
+ 1pm on sun
 
 =head2 Complex
 

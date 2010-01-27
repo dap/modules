@@ -1,5 +1,10 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.83_02 Wed Jan 27 10:42:41 CET 2010
+
+ - New supported formats: <time> <weekday> and <time> on <weekday>.
+   [rt #53979 - Kevin Field]
+
 0.83_01 Mon Jan 18 10:28:42 CET 2010
 
  - Pass the time zone object instead of name to the final DateTime
