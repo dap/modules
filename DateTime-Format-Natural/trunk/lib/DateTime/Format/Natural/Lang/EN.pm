@@ -9,10 +9,11 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 our (%init,
      %timespan,
+     %units,
      %RE,
      %data_weekdays,
      %data_weekdays_abbrev,
@@ -23,11 +24,13 @@ our (%init,
      %data_conversion,
      %data_helpers,
      %data_duration,
+     %data_aliases,
      %extended_checks,
      %grammar);
 
-%init = (tokens => sub {});
+%init     = (tokens  => sub {});
 %timespan = (literal => 'to');
+%units    = (ordered => [ qw(second minute hour day week month year) ]);
 
 %RE = (number    => qr/^(\d+)$/,
        year      => qr/^(\d{4})$/,
@@ -79,7 +82,7 @@ our (%init,
     );
 
     %data_helpers = (
-        suffix      => qr/s$/,
+        suffix      => qr/s$/i,
         normalize   => sub { ${$_[0]} = ucfirst lc ${$_[0]} },
         abbreviated => sub { length ${$_[0]} == 3 },
     );
@@ -105,6 +108,21 @@ our (%init,
             return (@$date_strings == 2
                 && $date_strings->[0] =~ /^$date \s+ $time$/x
                 && $date_strings->[1] =~ /^$time$/);
+        },
+    );
+
+    %data_aliases = (
+        all => {
+            tues  => 'tue',
+            thurs => 'thu',
+        },
+        tokens => {
+            mins  => 'minutes',
+            '@'   => 'at',
+        },
+        short => {
+            min => 'minute',
+            d   => 'day',
         },
     );
 }
@@ -1978,7 +1996,7 @@ our (%init,
     weekday_ago_at_time => [
        [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR', 'SCALAR', 'REGEXP' ],
        [
-         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/^(months?)$/, 3 => 'ago', 4 => 'at', 5 => $RE{time_am} },
+         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/^(months?)$/i, 3 => 'ago', 4 => 'at', 5 => $RE{time_am} },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
          [
@@ -1993,7 +2011,7 @@ our (%init,
          { truncate_to => 'minute' },
        ],
        [
-         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/^(months?)$/, 3 => 'ago', 4 => 'at', 5 => $RE{time_pm} },
+         { 0 => $RE{weekday}, 1 => $RE{number}, 2 => qr/^(months?)$/i, 3 => 'ago', 4 => 'at', 5 => $RE{time_pm} },
          [ [ 1, 2 ] ],
          [ $extended_checks{suffix} ],
          [
@@ -3681,7 +3699,7 @@ that the parser does not distinguish between lower/upper case):
  for 4 months
  for 4 years
 
-=head2 Specific Dates
+=head2 Specific
 
  march
  January 11
@@ -3702,6 +3720,17 @@ that the parser does not distinguish between lower/upper case):
  4:00
  17:00
  3:20:00
+ -5min
+ +2d
+
+=head2 Aliases
+
+ 5 mins ago
+ yesterday @ noon
+ tues this week
+ final thurs in sep
+ tues
+ thurs
 
 =head1 SEE ALSO
 

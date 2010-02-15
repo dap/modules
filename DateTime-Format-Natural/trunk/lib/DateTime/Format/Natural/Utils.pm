@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use boolean qw(true false);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub _valid_date
 {
@@ -64,7 +64,7 @@ sub _trace_string
     return undef unless (@$trace || %$modified);
 
     my $i;
-    my %order = map { $_ => $i++ } qw(second minute hour day week month year);
+    my %order = map { $_ => $i++ } @{$self->{data}->__units('ordered')};
 
     return join "\n", @$trace,
       map { my $unit = $_; "$unit: $modified->{$unit}" }

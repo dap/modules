@@ -81,9 +81,12 @@ _run_tests(66, [ [ \@simple ] ], \&compare);
 sub compare
 {
     my $aref = shift;
+
     foreach my $href (@$aref) {
         my $key = (keys %$href)[0];
-        compare_strings($key, $href->{$key});
+        foreach my $string ($case_strings->($key)) {
+            compare_strings($string, $href->{$key});
+        }
     }
 }
 

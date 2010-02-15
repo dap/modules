@@ -3,6 +3,7 @@ package DateTime::Format::Natural;
 use strict;
 use warnings;
 use base qw(
+    DateTime::Format::Natural::Aliases
     DateTime::Format::Natural::Base
     DateTime::Format::Natural::Duration
     DateTime::Format::Natural::Formatted
@@ -12,12 +13,12 @@ use boolean qw(true false);
 
 use Carp qw(croak);
 use DateTime ();
-use List::MoreUtils qw(all any);
+use List::MoreUtils qw(all any none);
 use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.83_02';
+our $VERSION = '0.83_03';
 
 validation_options(
     on_fail => sub
@@ -136,6 +137,8 @@ sub parse_datetime
     $self->{Input_string} = $self->{Date_string};
 
     my $date_string = $self->{Date_string};
+
+    $self->_rewrite_aliases(\$date_string);
     $date_string =~ tr/,//d;
 
     my ($formatted) = $date_string =~ m!^((?:\d+?[-./])+ (?:\d+?)) \b!x;
@@ -160,6 +163,24 @@ sub parse_datetime
         if ($self->{Prefer_future}) {
             $self->_advance_future(qw(md));
         }
+    }
+    elsif ($date_string =~ /^([+-]) (\d+?) ([a-zA-Z]+)$/x) {
+        my ($prefix, $value, $unit) = ($1, $2, lc $3);
+
+        my %methods = (
+            '+' => '_add',
+            '-' => '_subtract',
+        );
+        my $method = $methods{$prefix};
+
+        if (none { $unit =~ /${_}s?/ } @{$self->{data}->__units('ordered')}) {
+            $self->_set_failure;
+            $self->_set_error("(invalid unit)");
+            return $self->_get_datetime_object;
+        }
+        $self->$method($unit => $value);
+
+        $self->_set_valid_exp;
     }
     else {
         @{$self->{tokens}} = split /\s+/, $date_string;

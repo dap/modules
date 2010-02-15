@@ -245,16 +245,21 @@ my @specific = (
     { '4:00'              => '24.11.2006 04:00:00' },
     { '17:00'             => '24.11.2006 17:00:00' },
     { '3:20:00'           => '24.11.2006 03:20:00' },
+    { '-5min'             => '24.11.2006 01:08:08' },
+    { '+2d'               => '26.11.2006 01:13:08' },
 );
 
-_run_tests(230, [ [ \@simple ], [ \@complex ], [ \@specific ] ], \&compare);
+_run_tests(232, [ [ \@simple ], [ \@complex ], [ \@specific ] ], \&compare);
 
 sub compare
 {
     my $aref = shift;
+
     foreach my $href (@$aref) {
         my $key = (keys %$href)[0];
-        compare_strings($key, $href->{$key});
+        foreach my $string ($case_strings->($key)) {
+            compare_strings($string, $href->{$key});
+        }
     }
 }
 

@@ -1,5 +1,18 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.83_03  2010-02-14  <schubiger@cpan.org>
+
+ - Introduce short name aliases. [rt #53976 - Kevin Field]
+
+ - Support shortened relative dates with a +/- prefix.
+   [rt #53976 - Kevin Field]
+
+ - Add according tests for aliases and prefixed dates.
+
+ - Test for case-insensitive processing of input strings.
+
+ - Test compile-time loading of Aliases.pm.
+
 0.83_02 Wed Jan 27 10:42:41 CET 2010
 
  - New supported formats: <time> <weekday> and <time> on <weekday>.

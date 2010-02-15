@@ -7,11 +7,11 @@ use boolean qw(true);
 
 use Test::More;
 
-our ($VERSION, @EXPORT, %time);
+our ($VERSION, @EXPORT, %time, $case_strings);
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 
-@EXPORT = qw(%time _run_tests _result_string _message);
+@EXPORT = qw(%time $case_strings _run_tests _result_string _message);
 
 %time = map { split /:/ }
         split /\n/,
@@ -20,9 +20,13 @@ $VERSION = '0.04';
              chomp;
              $_ };
 
+$case_strings = sub { ($_[0], lc $_[0], uc $_[0]) };
+
 sub _run_tests
 {
     my ($tests, $sets, $check) = @_;
+
+    $tests *= 3; # case tests
 
     local $@;
 

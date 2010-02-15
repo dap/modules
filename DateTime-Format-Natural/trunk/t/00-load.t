@@ -3,12 +3,13 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More tests => 12;
 
 BEGIN
 {
     my @modules = qw(
         DateTime::Format::Natural
+        DateTime::Format::Natural::Aliases
         DateTime::Format::Natural::Base
         DateTime::Format::Natural::Compat
         DateTime::Format::Natural::Duration

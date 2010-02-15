@@ -30,9 +30,12 @@ _run_tests(6, [ [ \@daytime_regular ], [ \@daytime_user, \%opts ] ], \&compare);
 sub compare
 {
     my ($aref, $opts) = @_;
+
     foreach my $href (@$aref) {
         my $key = (keys %$href)[0];
-        compare_strings($key, $href->{$key}, $opts);
+        foreach my $string ($case_strings->($key)) {
+            compare_strings($string, $href->{$key}, $opts);
+        }
     }
 }
 
