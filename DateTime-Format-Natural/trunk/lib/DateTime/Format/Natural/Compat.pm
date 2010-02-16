@@ -8,7 +8,7 @@ use DateTime ();
 
 our ($VERSION, $Pure);
 
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 BEGIN
 {
@@ -99,22 +99,22 @@ sub _Decode_Month
 
 sub _Nth_Weekday_of_Month_Year
 {
-   my $self = shift;
+    my $self = shift;
 
-   if ($Pure) {
-       my ($year, $month, $weekday, $count) = @_;
-       my $dt = $self->{datetime}->clone;
-       $dt->set_year($year);
-       $dt->set_month($month);
-       $dt->set_day(1);
-       $dt->set_day($dt->day + 1)
-         while ($weekday ne $dt->dow);
-       $dt->set_day($dt->day + 7 * ($count - 1));
-       return ($dt->year, $dt->month, $dt->day);
-   }
-   else {
-       return Nth_Weekday_of_Month_Year(@_);
-   }
+    if ($Pure) {
+        my ($year, $month, $weekday, $count) = @_;
+        my $dt = $self->{datetime}->clone;
+        $dt->set_year($year);
+        $dt->set_month($month);
+        $dt->set_day(1);
+        $dt->set_day($dt->day + 1)
+          while ($weekday ne $dt->dow);
+        $dt->set_day($dt->day + 7 * ($count - 1));
+        return ($dt->year, $dt->month, $dt->day);
+    }
+    else {
+        return Nth_Weekday_of_Month_Year(@_);
+    }
 }
 
 sub _check_date

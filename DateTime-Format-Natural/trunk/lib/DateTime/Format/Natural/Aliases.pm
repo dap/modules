@@ -3,7 +3,7 @@ package DateTime::Format::Natural::Aliases;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub _rewrite_aliases
 {
@@ -19,7 +19,7 @@ sub _rewrite_aliases
                     $$date_string =~ s/\b $alias \b/$aliases->{$type}{$alias}/ix;
                 }
                 else {
-                    $$date_string =~ s/(\s*?) $alias (\s*?)/$1 $aliases->{$type}{$alias} $2/ix;
+                    $$date_string =~ s/(?:^|(?<=\s)) $alias (?:(?=\s)|$)/$aliases->{$type}{$alias}/ix;
                 }
             }
         }
