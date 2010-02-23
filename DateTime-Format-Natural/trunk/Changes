@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.84  2010-02-22  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.83_04  2010-02-16  <schubiger@cpan.org>
 
  - Enhance the regular expression matching a non-word alias.
