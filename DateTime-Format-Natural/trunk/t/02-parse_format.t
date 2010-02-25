@@ -25,8 +25,12 @@ sub compare
 
     foreach my $href (@$aref) {
         my $key = (keys %$href)[0];
-        foreach my $string ($case_strings->($key)) {
-            compare_strings($string, $href->{$key}->[0], $href->{$key}->[1]);
+        my @formats = do {
+            local $_ = $href->{$key}->[1];
+            defined ($_) ? $case_strings->($_) : (undef) x 3;
+        };
+        foreach my $format (@formats) {
+            compare_strings($key, $href->{$key}->[0], $format);
         }
     }
 }

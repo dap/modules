@@ -1,5 +1,13 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.84_01  2010-02-24  <schubiger@cpan.org>
+
+ - Use the format parameter case-insensitively and test it.
+
+ - Don't bless into a reference within the metadata base constructor.
+
+ - Add some missing commas to the grammar description.
+
 0.84  2010-02-22  <schubiger@cpan.org>
 
  - Merged development version to stable.

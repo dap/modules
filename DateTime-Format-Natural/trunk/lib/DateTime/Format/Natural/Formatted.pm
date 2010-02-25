@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use boolean qw(true);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub _parse_formatted_ymd
 {
@@ -19,7 +19,7 @@ sub _parse_formatted_ymd
     my $i = 0;
     my %length = map { length $_ => $i++ } @chunks;
 
-    my $format = $self->{Format};
+    my $format = lc $self->{Format};
 
     if (exists $length{4}) {
         $format = join $separator,

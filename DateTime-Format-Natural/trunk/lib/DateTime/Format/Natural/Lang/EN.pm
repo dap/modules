@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 our (%init,
      %timespan,
@@ -159,11 +159,11 @@ our (%init,
 #    [
 #      { <token index> => <token value>, ... }, ------------> declares the index <-> value map
 #      [ [ <index(es) of token(s) to be passed> ], ... ], --> declares which tokens will be passed to the extended check(s)
-#      [ <subroutine(s) for extended check(s)>, ... ] ------> declares the extended check(s)
+#      [ <subroutine(s) for extended check(s)>, ... ], -----> declares the extended check(s)
 #      [ [ <index(es) of token(s) to be passed> ], ... ], --> declares which tokens will be passed to the worker method(s)
-#      [ { <additional options to be passed> }, ... ] ------> declares additional options
+#      [ { <additional options to be passed> }, ... ], -----> declares additional options
 #      [ <name of method to dispatch to>, ... ], -----------> declares the worker method(s)
-#      { <shared option>, ... } ----------------------------> declares shared options (post-processed)
+#      { <shared option>, ... }, ---------------------------> declares shared options (post-processed)
 #    ],
 
 %grammar = (

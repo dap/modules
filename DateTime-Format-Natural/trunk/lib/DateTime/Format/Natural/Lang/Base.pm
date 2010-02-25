@@ -5,7 +5,7 @@ use warnings;
 
 our ($VERSION, $AUTOLOAD);
 
-$VERSION = '1.04';
+$VERSION = '1.05';
 
 sub __new
 {
@@ -25,7 +25,7 @@ sub __new
     $obj->{duration}        = \%{"${class}::data_duration"};
     $obj->{aliases}         = \%{"${class}::data_aliases"};
 
-    return bless $obj, ref($class) || $class;
+    return bless $obj, $class;
 }
 
 AUTOLOAD
