@@ -1,5 +1,9 @@
 Revision history for Perl extension Math::Factor::XS.
 
+0.37_01  2010-03-01  <schubiger@cpan.org>
+
+ - Fix memory leak in xs_factors(). [reported by William P.N. Smith]
+
 0.37 Tue Nov 10 22:37:24 CET 2009
 
  - Merged development version to stable.

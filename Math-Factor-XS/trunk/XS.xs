@@ -36,6 +36,8 @@ xs_factors (number)
           PUSHs (sv_2mortal(av_pop(factors)));
         }
 
+      SvREFCNT_dec (factors);
+
 void
 xs_matches (number, factors_aref, ...)
       unsigned long number
