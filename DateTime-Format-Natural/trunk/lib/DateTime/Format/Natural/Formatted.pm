@@ -2,9 +2,9 @@ package DateTime::Format::Natural::Formatted;
 
 use strict;
 use warnings;
-use boolean qw(true);
+use boolean qw(true false);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub _parse_formatted_ymd
 {
@@ -13,16 +13,19 @@ sub _parse_formatted_ymd
 
     my $date = $self->_split_formatted($date_string);
 
-    my $separator = quotemeta((keys %$count)[0]);
-    my @chunks = split /$separator/, $date;
+    my $date_sep = quotemeta((keys %$count)[0]);
+    my @chunks = split /$date_sep/, $date;
 
     my $i = 0;
     my %length = map { length $_ => $i++ } @chunks;
 
     my $format = lc $self->{Format};
+    my $format_sep;
+
+    my $lax = false;
 
     if (exists $length{4}) {
-        $format = join $separator,
+        $format = join $date_sep,
           ($length{4} == 0
             ? qw(yyyy mm dd)
             : ($format =~ /^m/
@@ -30,15 +33,27 @@ sub _parse_formatted_ymd
                 : qw(dd mm yyyy)
               )
           );
+        $lax = true;
+    }
+    elsif ($date_sep =~ /^(\\[-.])$/ and $format !~ /$1/) {
+        $format = join $date_sep, qw(dd mm yy);
+        $lax = true;
     }
     else {
-        $separator = do { local $_ = $format;
-                          tr/a-zA-Z//d;
-                          tr/a-zA-Z//cs;
-                          quotemeta; };
+        $format_sep = do { local $_ = $format;
+                           tr/a-zA-Z//d;
+                           tr/a-zA-Z//cs;
+                           quotemeta; };
+    }
+    $format_sep ||= $date_sep;
+
+    if (not $lax and ($format_sep ne $date_sep)) {
+        $self->_set_failure;
+        $self->_set_error("(mismatch between format and date separator)");
+        return $self->_get_datetime_object;
     }
 
-    my @separated_order = split /$separator/, $format;
+    my @separated_order = split /$format_sep/, $format;
 
     my ($d, $m, $y) = do {
         my %f = map { substr($_, 0, 1) => true } @separated_order;
@@ -53,7 +68,7 @@ sub _parse_formatted_ymd
     my $separated_index = 0;
     my $separated_indices = { map { substr($_, 0, 1) => $separated_index++ } @separated_order };
 
-    my @bits = split /$separator/, $date;
+    my @bits = split /$date_sep/, $date;
 
     my $century = $self->{datetime}
                 ? int($self->{datetime}->year / 100)

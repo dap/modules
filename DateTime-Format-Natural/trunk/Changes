@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.84_02  2010-03-09  <schubiger@cpan.org>
+
+ - Guess the format of dates with a dot or hyphen as separator.
+
+ - Check for separator mismatch when not in lax mode.
+
 0.84_01  2010-02-24  <schubiger@cpan.org>
 
  - Use the format parameter case-insensitively and test it.
