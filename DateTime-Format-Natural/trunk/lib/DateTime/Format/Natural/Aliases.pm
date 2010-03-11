@@ -3,7 +3,7 @@ package DateTime::Format::Natural::Aliases;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub _rewrite_aliases
 {
@@ -13,7 +13,7 @@ sub _rewrite_aliases
     my $aliases = $self->{data}->{aliases};
 
     if ($$date_string =~ /\s+/) {
-        foreach my $type (qw(all tokens)) {
+        foreach my $type (qw(words tokens)) {
             foreach my $alias (keys %{$aliases->{$type}}) {
                 if ($alias =~ /^\w+$/) {
                     $$date_string =~ s/\b $alias \b/$aliases->{$type}{$alias}/ix;
@@ -25,10 +25,11 @@ sub _rewrite_aliases
         }
     }
     else {
-        foreach my $type (qw(all short)) {
-            foreach my $alias (keys %{$aliases->{$type}}) {
-                $$date_string =~ s/$alias $/$aliases->{$type}{$alias}/ix;
-            }
+        foreach my $alias (keys %{$aliases->{words}}) {
+            $$date_string =~ s/^ $alias $/$aliases->{words}{$alias}/ix;
+        }
+        foreach my $alias (keys %{$aliases->{short}}) {
+            $$date_string =~ s/(?<=\d) $alias $/$aliases->{short}{$alias}/ix;
         }
     }
 }

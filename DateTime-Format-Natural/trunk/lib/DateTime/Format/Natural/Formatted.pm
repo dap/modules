@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use boolean qw(true false);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub _parse_formatted_ymd
 {
@@ -35,7 +35,7 @@ sub _parse_formatted_ymd
           );
         $lax = true;
     }
-    elsif ($date_sep =~ /^(\\[-.])$/ and $format !~ /$1/) {
+    elsif ($date_sep =~ /^\\[-.]$/ and $format !~ /$date_sep/) {
         $format = join $date_sep, qw(dd mm yy);
         $lax = true;
     }

@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 our (%init,
      %timespan,
@@ -112,13 +112,13 @@ our (%init,
     );
 
     %data_aliases = (
-        all => {
+        words => {
             tues  => 'tue',
             thurs => 'thu',
         },
         tokens => {
-            mins  => 'minutes',
-            '@'   => 'at',
+            mins => 'minutes',
+            '@'  => 'at',
         },
         short => {
             min => 'minute',
