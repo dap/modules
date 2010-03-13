@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.85  2010-03-13  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.84_03  2010-03-11  <schubiger@cpan.org>
 
  - Resolve short aliases only if preceded by a digit.
