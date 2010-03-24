@@ -1,5 +1,16 @@
 Revision history for Perl extension Math::Factor::XS.
 
+0.37_02  2010-03-24  <schubiger@cpan.org>
+
+ - Allow validation of factors to succeed when none are supplied.
+   [rt #53739 - Tom Scheper]
+
+ - Return an empty list from xs_matches() if there are no factors.
+
+ - Add a test for no factors provided to matches().
+
+ - Don't force explicit scalar context where an implicit one exists.
+
 0.37_01  2010-03-01  <schubiger@cpan.org>
 
  - Fix memory leak in xs_factors(). [reported by William P.N. Smith]

@@ -53,6 +53,9 @@ xs_matches (number, factors_aref, ...)
     PPCODE:
       factors = (AV*)SvRV (factors_aref);
 
+      if (av_len (factors) == -1)
+        XSRETURN_EMPTY;
+
       if (SvROK (ST(top)) && SvTYPE (SvRV(ST(top))) == SVt_PVHV)
         {
           const char *opt = "skip_multiples";

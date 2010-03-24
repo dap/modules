@@ -12,7 +12,7 @@ use Scalar::Util qw(looks_like_number);
 
 our ($VERSION, @EXPORT_OK, %EXPORT_TAGS, @subs);
 
-$VERSION = '0.37_01';
+$VERSION = '0.37_02';
 @subs = qw(factors matches);
 @EXPORT_OK = @subs;
 %EXPORT_TAGS = (all => [ @subs ]);
@@ -25,7 +25,7 @@ validation_options(
     croak $error;
 });
 
-my $is_positive_num = sub
+my $positive_nums = sub
 {
     all { looks_like_number($_) && ($_ >= 0) }
       ref $_[0] ? @{$_[0]} : ($_[0]);
@@ -37,7 +37,7 @@ sub factors
         { type => SCALAR,
           callbacks => {
             'is a positive number' =>
-            $is_positive_num,
+            $positive_nums,
           },
         },
     );
@@ -50,13 +50,16 @@ sub matches
         { type => SCALAR,
           callbacks => {
             'is a positive number' =>
-            $is_positive_num,
+            $positive_nums,
           },
         },
         { type => ARRAYREF,
           callbacks => {
-            'factors are positive numbers' =>
-            $is_positive_num,
+            'factors are positive numbers' => sub
+            {
+                my $factors = shift;
+                !@$factors or $positive_nums->($factors);
+            },
           },
         },
         { type => HASHREF,
