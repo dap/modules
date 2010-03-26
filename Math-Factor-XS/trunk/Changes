@@ -1,5 +1,9 @@
 Revision history for Perl extension Math::Factor::XS.
 
+0.38  2010-03-26  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.37_02  2010-03-24  <schubiger@cpan.org>
 
  - Allow validation of factors to succeed when none are supplied.
