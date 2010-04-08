@@ -1,5 +1,14 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.85_01  2010-04-08  <schubiger@cpan.org>
+
+ - New supported format: <time full> AM/PM. [Wes Morgan]
+
+ - Make _time_full() capable of working with an hours option.
+
+ - Initialize the hours option in _at_time() after having processed
+   the arguments.
+
 0.85  2010-03-13  <schubiger@cpan.org>
 
  - Merged development version to stable.

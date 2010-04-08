@@ -34,6 +34,8 @@ my @simple = (
     { '8 pm'         => '24.11.2006 20:00:00' },
     { '4pm'          => '24.11.2006 16:00:00' },
     { '4:20pm'       => '24.11.2006 16:20:00' },
+    { '00:56:06 am'  => '25.11.2006 00:56:06' },
+    { '00:56:06 pm'  => '24.11.2006 12:56:06' },
 );
 
 my @combined = (
@@ -58,7 +60,7 @@ my @formatted = (
     { '12/24' => '24.12.2006 00:00:00' },
 );
 
-_run_tests(32, [ [ \@simple ], [ \@combined ], [ \@formatted ] ], \&compare);
+_run_tests(34, [ [ \@simple ], [ \@combined ], [ \@formatted ] ], \&compare);
 
 sub compare
 {

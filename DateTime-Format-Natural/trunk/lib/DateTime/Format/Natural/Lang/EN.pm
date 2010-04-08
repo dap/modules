@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 our (%init,
      %timespan,
@@ -1460,6 +1460,24 @@ our (%init,
            prefer_future => true,
            truncate_to   => 'minute',
          },
+       ],
+       [
+         { 0 => $RE{time_full}, 1 => 'am' },
+         [],
+         [],
+         [ [ 0 ] ],
+         [ {} ],
+         [ '_time_full' ],
+         { prefer_future => true },
+       ],
+       [
+         { 0 => $RE{time_full}, 1 => 'pm' },
+         [],
+         [],
+         [ [ 0 ] ],
+         [ { hours => 12 } ],
+         [ '_time_full' ],
+         { prefer_future => true },
        ],
     ],
     at_combined => [
@@ -3577,6 +3595,8 @@ that the parser does not distinguish between lower/upper case):
  8 pm
  4pm
  4:20pm
+ 06:56:06 am
+ 06:56:06 pm
  mon 2:35
  1am sun
  1pm sun

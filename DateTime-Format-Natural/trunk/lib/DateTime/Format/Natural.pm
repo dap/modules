@@ -18,7 +18,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.85';
+our $VERSION = '0.85_01';
 
 validation_options(
     on_fail => sub
@@ -718,6 +718,7 @@ valuable suggestions and patches:
  Andrew Sterling Hanenkamp
  Eric Wilhelm
  Kevin Field
+ Wes Morgan
 
 =head1 SEE ALSO
 
