@@ -5,7 +5,7 @@ use warnings;
 
 our ($VERSION, $AUTOLOAD);
 
-$VERSION = '1.05';
+$VERSION = '1.06';
 
 sub __new
 {
@@ -32,19 +32,17 @@ AUTOLOAD
 {
     my ($self, $exp) = @_;
 
-    my ($caller) = $AUTOLOAD =~ /(.*)::.*/;
-    my $sub = $AUTOLOAD;
-    $sub =~ s/^.*:://;
+    my ($caller, $sub) = $AUTOLOAD =~ /^(.*)::(.*)$/;
 
     if (substr($sub, 0, 2) eq '__') {
-       $sub =~ s/^__//;
-       no strict 'refs';
-       if (defined $exp && length $exp) {
-           return ${$caller.'::'.$sub}{$exp};
-       }
-       else {
-           return \%{$caller.'::'.$sub};
-       }
+        $sub =~ s/^__//;
+        no strict 'refs';
+        if (defined $exp && length $exp) {
+            return ${$caller.'::'.$sub}{$exp};
+        }
+        else {
+            return \%{$caller.'::'.$sub};
+        }
     }
 }
 

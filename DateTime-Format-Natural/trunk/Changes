@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.85_02  2010-04-11  <schubiger@cpan.org>
+
+ - Extract both caller and sub in ::Lang::Base's AUTOLOAD() at once.
+
+ - Correct the indentation of the same subroutine.
+
 0.85_01  2010-04-08  <schubiger@cpan.org>
 
  - New supported format: <time full> AM/PM. [Wes Morgan]
