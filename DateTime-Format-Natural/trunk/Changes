@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.86  2010-04-20  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.85_02  2010-04-11  <schubiger@cpan.org>
 
  - Extract both caller and sub in ::Lang::Base's AUTOLOAD() at once.
