@@ -6,37 +6,49 @@ use base qw(Exporter);
 
 our ($VERSION, @EXPORT_OK);
 
-$VERSION = '0.18';
+$VERSION = '0.18_01';
 @EXPORT_OK = qw(rhombus);
 
 sub rhombus
 {
     my %opts = @_;
-    my ($rhombus, $lines, $letter, $case, $fillup);
 
-    $lines  = $opts{lines}  ||      25;
-    $letter = $opts{letter} ||     'a';
-    $case   = $opts{case}   || 'upper';
-    $fillup = $opts{fillup} ||     '+';
+    my $get_opt = sub
+    {
+        my ($opt, $regex) = @_;
+        return (exists $opts{$opt}
+            && defined $opts{$opt}
+                   and $opts{$opt} =~ $regex) ? $opts{$opt} : undef;
+    };
 
-    $letter = $case eq 'upper' ? uc $letter : lc $letter;
+    my $lines  = $get_opt->('lines',  qr/^\d+$/)           ||      25;
+    my $letter = $get_opt->('letter', qr/^[a-zA-Z]$/)      ||     'a';
+    my $case   = $get_opt->('case',   qr/^(?:low|upp)er$/) || 'upper';
+    my $fillup = $get_opt->('fillup', qr/^\S$/)            ||     '+';
+
+    my %alter = (
+        lower => sub { lc $_[0] },
+        upper => sub { uc $_[0] },
+    );
+    $letter = $alter{$case}->($letter);
+
     $lines++ if $lines % 2 == 0;
 
-    my ($line, $repeat) = (1,1);
+    my ($line, $repeat, $rhombus);
 
-    for (; $line <= $lines; $line++) {
-        my $space = ($lines - $repeat) / 2;
-        my $fillup_space = $fillup x $space;
+    for ($line = $repeat = 1; $line <= $lines; $line++) {
+        my $spaces = ($lines - $repeat) / 2;
 
-        $rhombus .= $fillup_space;
+        $rhombus .= $fillup x $spaces;
         $rhombus .= $letter x $repeat;
-        $rhombus .= "$fillup_space\n";
+        $rhombus .= $fillup x $spaces;
+        $rhombus .= "\n";
 
         $repeat = $line < ($lines / 2) ? $repeat + 2 : $repeat - 2;
         $letter = chr(ord($letter) + 1);
 
-        if ($letter !~ /[a-z]/i) {
-            $letter = $case eq 'upper' ? 'A' : 'a';
+        if ($letter !~ /[a-zA-Z]/) {
+            $letter = $alter{$case}->('a');
         }
     }
 
@@ -48,41 +60,48 @@ __END__
 
 =head1 NAME
 
-Acme::Text::Rhombus - Draw an alphanumerical rhombus
+Acme::Text::Rhombus - Draw a rhombus with letters
 
 =head1 SYNOPSIS
 
  use Acme::Text::Rhombus qw(rhombus);
 
  print rhombus(
-     lines   =>       31,
+     lines   =>       15,
      letter  =>      'c',
      case    =>  'upper',
      fillup  =>      '+',
  );
 
  __OUTPUT__
-
- ++++++C++++++
- +++++DDD+++++
- ++++EEEEE++++
- +++FFFFFFF+++
- ++GGGGGGGGG++
- +HHHHHHHHHHH+
- IIIIIIIIIIIII
- +JJJJJJJJJJJ+
- ++KKKKKKKKK++
- +++LLLLLLL+++
- ++++MMMMM++++
- +++++NNN+++++
- ++++++O++++++
+ +++++++C+++++++
+ ++++++DDD++++++
+ +++++EEEEE+++++
+ ++++FFFFFFF++++
+ +++GGGGGGGGG+++
+ ++HHHHHHHHHHH++
+ +IIIIIIIIIIIII+
+ JJJJJJJJJJJJJJJ
+ +KKKKKKKKKKKKK+
+ ++LLLLLLLLLLL++
+ +++MMMMMMMMM+++
+ ++++NNNNNNN++++
+ +++++OOOOO+++++
+ ++++++PPP++++++
+ +++++++Q+++++++
 
 =head1 FUNCTIONS
 
 =head2 rhombus
 
-Draws an alphanumerical rhombus and returns it as string. 
-Omitting options will return a rhombus of 25 lines.
+Draws a rhombus with letters and returns it as a string.
+
+If no option value is supplied or if it is invalid, then a default
+will be silently assumed (omitting all options will return a rhombus
+of 25 lines).
+
+Given that the specified number of lines is even, it will be
+incremented to satisfy the requirement of being an odd number.
 
 Options:
 
@@ -90,21 +109,27 @@ Options:
 
 =item * C<lines>
 
-Amount of lines to be printed.
+Number of lines to be printed. Defaults to 25.
 
 =item * C<letter>
 
-Alphanumerical letter to start with.
+Letter to start with. Defaults to C<a>.
 
 =item * C<case>
 
-Lower/upper case of the letters within the rhombus.
+Lower/upper case of the letters within the rhombus. Defaults to C<upper>.
 
 =item * C<fillup>
 
-The fillup character.
+The fillup character. Defaults to C<+>.
 
 =back
+
+=head1 EXPORT
+
+=head2 Functions
+
+C<rhombus()> is exportable.
 
 =head1 AUTHOR
 
@@ -115,6 +140,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut
