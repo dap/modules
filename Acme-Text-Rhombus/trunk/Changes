@@ -1,5 +1,9 @@
 Revision history for Perl extension Acme::Text::Rhombus.
 
+0.19  2010-05-02  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.18_01  2010-04-29  <schubiger@cpan.org>
 
  - Validate options and resort to defaults when needed.

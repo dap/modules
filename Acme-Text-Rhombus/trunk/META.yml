@@ -1,6 +1,6 @@
 ---
 name: Acme-Text-Rhombus
-version: 0.18_01
+version: 0.19
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Draw a rhombus with letters
@@ -19,7 +19,7 @@ configure_requires:
 provides:
   Acme::Text::Rhombus:
     file: lib/Acme/Text/Rhombus.pm
-    version: 0.18_01
+    version: 0.19
 generated_by: Module::Build version 0.34
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
