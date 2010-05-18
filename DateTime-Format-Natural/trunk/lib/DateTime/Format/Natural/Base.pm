@@ -8,7 +8,7 @@ use base qw(
     DateTime::Format::Natural::Wrappers
 );
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -286,6 +286,7 @@ sub _daytime_hours_variant
     }
 }
 
+# wrapper for <time> AM/PM
 sub _at
 {
     my $self = shift;
@@ -293,6 +294,7 @@ sub _at
     $self->_at_time(@_);
 }
 
+# wrapper for <time>
 sub _time
 {
     my $self = shift;
@@ -305,20 +307,19 @@ sub _at_time
     my $self = shift;
     my $opts = pop;
     my ($time) = @_;
-    my $hours = $opts->{hours} || 0;
     if ($time =~ /:/) {
         my ($hour, $minute) = split /:/, $time;
-        if ($self->_valid_time(hour => $hours + $hour, minute => $minute)) {
+        if ($self->_valid_time(hour => $hour, minute => $minute)) {
             $self->_set(
-                hour   => $hours + $hour,
+                hour   => $hour,
                 minute => $minute,
             );
         }
     }
     else {
-        if ($self->_valid_time(hour => $hours + $time)) {
+        if ($self->_valid_time(hour => $time)) {
             $self->_set(
-                hour   => $hours + $time,
+                hour   => $time,
                 minute => 0,
             );
         }
@@ -331,11 +332,10 @@ sub _time_full
     $self->_register_trace;
     my $opts = pop;
     my ($time) = @_;
-    my $hours = $opts->{hours} || 0;
     my ($hour, $minute, $second) = split /:/, $time;
-    if ($self->_valid_time(hour => $hours + $hour, minute => $minute, second => $second)) {
+    if ($self->_valid_time(hour => $hour, minute => $minute, second => $second)) {
         $self->_set(
-            hour   => $hours + $hour,
+            hour   => $hour,
             minute => $minute,
             second => $second,
         );

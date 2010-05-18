@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use DateTime::Format::Natural;
-use Test::More tests => 106;
+use Test::More tests => 158;
 
 my @with_suffix = (
     '1 seconds ago',
@@ -118,8 +118,64 @@ my @without_suffix = (
     'for 2 year',
 );
 
+my @meridiem = (
+    '13am yesterday',
+    '13am today',
+    '13am tomorrow',
+    '14pm yesterday',
+    '14pm today',
+    '14pm tomorrow',
+    '15am next monday',
+    '15am this monday',
+    '15am last monday',
+    '16pm next friday',
+    '16pm this friday',
+    '16pm last friday',
+    'may 02 17am',
+    'may 02 17pm',
+    '18 am',
+    '18 pm',
+    '19:00:00 am',
+    '19:00:00 pm',
+    '20am',
+    '20pm',
+    'sunday 21am',
+    'sunday 21pm',
+    '22am saturday',
+    '22pm saturday',
+    'tuesday 1 month ago at 23am',
+    'tuesday 1 month ago at 23pm',
+    'yesterday 13am',
+    'today 13am',
+    'tomorrow 13am',
+    'yesterday 14pm',
+    'today 14pm',
+    'tomorrow 14pm',
+    'yesterday at 15am',
+    'today at 15am',
+    'tomorrow at 15am',
+    'yesterday at 16 am',
+    'today at 16 am',
+    'tomorrow at 16 am',
+    'yesterday at 17 pm',
+    'today at 17 pm',
+    'tomorrow at 17 pm',
+    'wednesday at 18am',
+    'wednesday at 18pm',
+    '19am on thursday',
+    '19pm on thursday',
+    'sunday at 20 am',
+    'sunday at 20 pm',
+    'saturday 21 am',
+    'saturday 21 pm',
+    'yesterday at 22pm',
+    'today at 22pm',
+    'tomorrow at 22pm',
+);
+
 check(\@with_suffix);
 check(\@without_suffix);
+check(\@meridiem);
 
 sub check
 {

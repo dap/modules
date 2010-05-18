@@ -1,5 +1,27 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.86_01  2010-05-18  <schubiger@cpan.org>
+
+ - Introduce and use two flag handlers for AM/PM time values.
+   [rt #56955 - Andrew Sterling Hanenkamp]
+
+ - Assert that these values pass the extended meridiem check.
+
+ - Split implicit matching of time only from grammar entries
+   with an optional AM suffix.
+
+ - Add tests for 12 AM/PM and the splitted grammar entries
+   (including prefer_future ones).
+
+ - Test that invalid meridiem time values fail.
+
+ - Remove addition of 12 hours for PM time values in _at_time()
+   and _time_full().
+
+ - Dispatch to _at() for AM/PM time, to _time() for time only.
+
+ - Comment the purpose of the wrappers _at() and _time().
+
 0.86  2010-04-20  <schubiger@cpan.org>
 
  - Merged development version to stable.

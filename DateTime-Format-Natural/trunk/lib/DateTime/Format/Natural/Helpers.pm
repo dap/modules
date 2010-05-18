@@ -10,7 +10,7 @@ use constant VIRT_FLAG => false;
 
 our ($VERSION, @EXPORT_OK, %flag);
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 @EXPORT_OK = qw(%flag);
 
 my @flags = (
@@ -18,6 +18,8 @@ my @flags = (
     { weekday_num       => REAL_FLAG },
     { month_name        => REAL_FLAG },
     { month_num         => REAL_FLAG },
+    { time_am           => REAL_FLAG },
+    { time_pm           => REAL_FLAG },
     { last_this_next    => VIRT_FLAG },
     { yes_today_tom     => VIRT_FLAG },
     { noon_midnight     => VIRT_FLAG },
@@ -92,6 +94,37 @@ sub _month_num
     my ($arg) = @_;
 
     $$arg = $self->_Decode_Month($$arg);
+}
+
+sub _time_am
+{
+    my $self = shift;
+    my ($arg) = @_;
+
+    $self->_time_meridiem($arg, 'am');
+}
+
+sub _time_pm
+{
+    my $self = shift;
+    my ($arg) = @_;
+
+    $self->_time_meridiem($arg, 'pm');
+}
+
+sub _time_meridiem
+{
+    my $self = shift;
+    my ($time, $period) = @_;
+
+    my ($hour) = split /:/, $$time;
+
+    my %hours = (
+        am => $hour - (($hour == 12) ? 12 :  0),
+        pm => $hour + (($hour == 12) ?  0 : 12),
+    );
+
+    $$time =~ s/^ \d+? (?:(?=\:)|$)/$hours{$period}/x;
 }
 
 1;
