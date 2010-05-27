@@ -1,5 +1,18 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.86_02  2010-05-27  <schubiger@cpan.org>
+
+ - Emit an error for 0 AM/PM suggesting to use 12 as zero.
+
+ - Add tests for this extended check failure.
+
+ - Adjust related prefer_future tests to make them pass.
+
+ - When verifying that extended checks fail, call _get_error()
+   to see whether it returns an error as expected.
+
+ - Reset in _unset_error() with undef instead of empty string.
+
 0.86_01  2010-05-18  <schubiger@cpan.org>
 
  - Introduce and use two flag handlers for AM/PM time values.

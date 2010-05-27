@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.35';
+our $VERSION = '1.36';
 
 our (%init,
      %timespan,
@@ -134,7 +134,11 @@ our (%init,
 
         my ($hour) = split /:/, $captured->{$pos->[0]};
 
-        if ($hour > 12) {
+        if ($hour == 0) {
+            $$error = 'hour zero must be literal 12';
+            return false;
+        }
+        elsif ($hour > 12) {
             $$error = 'hour exceeds 12-hour clock';
             return false;
         }

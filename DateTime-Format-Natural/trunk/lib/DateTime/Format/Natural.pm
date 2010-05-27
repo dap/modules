@@ -18,7 +18,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.86_01';
+our $VERSION = '0.86_02';
 
 validation_options(
     on_fail => sub
@@ -488,7 +488,7 @@ sub _unset_trace     { @{$_[0]->{trace}} = ()                 }
 
 sub _get_error       { $_[0]->{error}         }
 sub _set_error       { $_[0]->{error} = $_[1] }
-sub _unset_error     { $_[0]->{error} = ''    }
+sub _unset_error     { $_[0]->{error} = undef }
 
 sub _get_failure     { $_[0]->{failure}         }
 sub _set_failure     { $_[0]->{failure} = true  }

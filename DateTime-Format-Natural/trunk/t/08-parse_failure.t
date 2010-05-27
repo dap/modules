@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use DateTime::Format::Natural;
-use Test::More tests => 158;
+use Test::More tests => 210;
 
 my @with_suffix = (
     '1 seconds ago',
@@ -118,7 +118,7 @@ my @without_suffix = (
     'for 2 year',
 );
 
-my @meridiem = (
+my @meridiem_exceeds = (
     '13am yesterday',
     '13am today',
     '13am tomorrow',
@@ -173,9 +173,65 @@ my @meridiem = (
     'tomorrow at 22pm',
 );
 
+my @meridiem_zero = (
+    '0am yesterday',
+    '0am today',
+    '0am tomorrow',
+    '0pm yesterday',
+    '0pm today',
+    '0pm tomorrow',
+    '0am next monday',
+    '0am this monday',
+    '0am last monday',
+    '0pm next friday',
+    '0pm this friday',
+    '0pm last friday',
+    'may 02 0am',
+    'may 02 0pm',
+    '0 am',
+    '0 pm',
+    '00:00:00 am',
+    '00:00:00 pm',
+    '0am',
+    '0pm',
+    'sunday 0am',
+    'sunday 0pm',
+    '0am saturday',
+    '0pm saturday',
+    'tuesday 1 month ago at 0am',
+    'tuesday 1 month ago at 0pm',
+    'yesterday 0am',
+    'today 0am',
+    'tomorrow 0am',
+    'yesterday 0pm',
+    'today 0pm',
+    'tomorrow 0pm',
+    'yesterday at 0am',
+    'today at 0am',
+    'tomorrow at 0am',
+    'yesterday at 0 am',
+    'today at 0 am',
+    'tomorrow at 0 am',
+    'yesterday at 0 pm',
+    'today at 0 pm',
+    'tomorrow at 0 pm',
+    'wednesday at 0am',
+    'wednesday at 0pm',
+    '0am on thursday',
+    '0pm on thursday',
+    'sunday at 0 am',
+    'sunday at 0 pm',
+    'saturday 0 am',
+    'saturday 0 pm',
+    'yesterday at 0pm',
+    'today at 0pm',
+    'tomorrow at 0pm',
+);
+
 check(\@with_suffix);
 check(\@without_suffix);
-check(\@meridiem);
+check(\@meridiem_exceeds);
+check(\@meridiem_zero);
 
 sub check
 {
@@ -192,7 +248,9 @@ sub check_fail
     my $parser = DateTime::Format::Natural->new;
     $parser->parse_datetime($string);
 
-    if (!$parser->success) {
+    # Examine _get_error() to detect whether an extended check
+    # failed rather than a generic parse failure occurred.
+    if (!$parser->success && defined $parser->_get_error) {
         pass($string);
     }
     else {
