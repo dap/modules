@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.87  2010-05-29  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.86_02  2010-05-27  <schubiger@cpan.org>
 
  - Emit an error for 0 AM/PM suggesting to use 12 as zero.
