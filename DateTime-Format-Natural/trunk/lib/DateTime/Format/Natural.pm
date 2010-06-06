@@ -18,7 +18,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.87';
+our $VERSION = '0.87_01';
 
 validation_options(
     on_fail => sub
@@ -64,7 +64,7 @@ sub _init
     $self->{Daytime} = $opts{daytime} || {};
 
     my $mod = __PACKAGE__.'::Lang::'.uc($self->{Lang});
-    eval "use $mod"; die $@ if $@;
+    eval "require $mod"; die $@ if $@;
 
     $self->{data} = $mod->__new();
     $self->{grammar_class} = $mod;
@@ -78,7 +78,7 @@ sub _init_check
         lang => {
             type => SCALAR,
             optional => true,
-            regex => qr!^(?:en)$!,
+            regex => qr!^(?:en)$!i,
         },
         format => {
             type => SCALAR,
@@ -123,9 +123,7 @@ sub _init_vars
 {
     my $self = shift;
 
-    foreach my $member (qw(modified postprocess)) {
-        delete $self->{$member};
-    }
+    delete @$self{qw(modified postprocess)};
 }
 
 sub parse_datetime
@@ -134,9 +132,9 @@ sub parse_datetime
 
     $self->_parse_init(@_);
 
-    $self->{Input_string} = $self->{Date_string};
+    $self->{input_string} = $self->{date_string};
 
-    my $date_string = $self->{Date_string};
+    my $date_string = $self->{date_string};
 
     $self->_rewrite_aliases(\$date_string);
     $date_string =~ tr/,//d;
@@ -220,7 +218,7 @@ sub _parse_init
 {
     my $self = shift;
 
-    $self->_params_init(@_, { string => \$self->{Date_string} });
+    $self->_params_init(@_, { string => \$self->{date_string} });
 
     my $set_datetime = sub
     {
@@ -285,12 +283,10 @@ sub parse_datetime_duration
     $self->_post_duration(\@queue);
     $self->_restore_state;
 
-    foreach my $member (qw(duration formatted insert state)) {
-        delete $self->{$member};
-    }
+    delete @$self{qw(duration insert state)};
 
     @{$self->{traces}} = @traces;
-    $self->{Input_string} = $duration_string;
+    $self->{input_string} = $duration_string;
 
     return @queue;
 }
@@ -308,7 +304,7 @@ sub error
 
     return '' if $self->success;
 
-    my $error  = "'$self->{Input_string}' does not parse ";
+    my $error  = "'$self->{input_string}' does not parse ";
        $error .= $self->_get_error || '(perhaps you have some garbage?)';
 
     return $error;

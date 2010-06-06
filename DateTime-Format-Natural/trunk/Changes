@@ -1,5 +1,17 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.87_01  2010-06-06  <schubiger@cpan.org>
+
+ - Match case-insensitively in the language option check.
+
+ - Require (and not use) the grammar class in runtime eval.
+
+ - Purge the remains of the formatted instance data member.
+
+ - Delete some instance data through hash slices.
+
+ - Convert a few non-option identifiers to lowercase.
+
 0.87  2010-05-29  <schubiger@cpan.org>
 
  - Merged development version to stable.
