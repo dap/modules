@@ -67,14 +67,14 @@ sub usage
 {
     print <<USAGE;
 Usage: $0 [switches]
-  -f, --format           format of numeric dates
-  -h, --help             this help screen
-  -l, --lang             language code
-  -p, --prefer_future    use future dates (when possible)
-  -s, --supported        list of supported languages
-  -t, --time_zone        time zone string
-  -T, --trace            print trace after processing
-  -V, --version          print version
+   -f, --format=<format>       format of numeric dates
+   -h, --help                  this help screen
+   -l, --lang=<code>           language code
+   -p, --prefer_future         use future dates (when possible)
+   -s, --supported             list of supported languages
+   -t, --time_zone=<string>    time zone string
+   -T, --trace                 print trace after processing
+   -V, --version               print version
 USAGE
     exit;
 }
@@ -93,7 +93,7 @@ sub supported
 
 sub process
 {
-    unless ($valid_languages{$lang}) {
+    unless ($valid_languages{lc $lang}) {
         warn "Language [$lang] isn't supported, switching to default [", LANG_DEFAULT, "]\n";
         $lang = $args{lang} = LANG_DEFAULT;
     }
@@ -143,14 +143,14 @@ dateparse - frontend to DateTime::Format::Natural
 =head1 SYNOPSIS
 
  Usage: dateparse [switches]
-   -f, --format           format of numeric dates
-   -h, --help             this help screen
-   -l, --lang             language code
-   -p, --prefer_future    use future dates (when possible)
-   -s, --supported        list of supported languages
-   -t, --time_zone        time zone string
-   -T, --trace            print trace after processing
-   -V, --version          print version
+   -f, --format=<format>       format of numeric dates
+   -h, --help                  this help screen
+   -l, --lang=<code>           language code
+   -p, --prefer_future         use future dates (when possible)
+   -s, --supported             list of supported languages
+   -t, --time_zone=<string>    time zone string
+   -T, --trace                 print trace after processing
+   -V, --version               print version
 
 =head1 AUTHOR
 

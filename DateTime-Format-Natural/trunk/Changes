@@ -1,5 +1,19 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.87_02  2010-06-09  <schubiger@cpan.org>
+
+ - Strengthen the check for invalid units of prefixed dates.
+
+ - Add a test file for parse asserts.
+
+ - Rename Base.pm to Calc.pm and adjust trace tests.
+
+ - Reword the according abstract and description.
+
+ - Document where arguments to dateparse's switches are required.
+
+ - Allow dateparse to handle the language code in uppercase.
+
 0.87_01  2010-06-06  <schubiger@cpan.org>
 
  - Match case-insensitively in the language option check.

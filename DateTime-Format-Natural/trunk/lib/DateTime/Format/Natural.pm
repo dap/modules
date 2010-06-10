@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base qw(
     DateTime::Format::Natural::Aliases
-    DateTime::Format::Natural::Base
+    DateTime::Format::Natural::Calc
     DateTime::Format::Natural::Duration
     DateTime::Format::Natural::Formatted
     DateTime::Format::Natural::Helpers
@@ -18,7 +18,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.87_01';
+our $VERSION = '0.87_02';
 
 validation_options(
     on_fail => sub
@@ -171,7 +171,7 @@ sub parse_datetime
         );
         my $method = $methods{$prefix};
 
-        if (none { $unit =~ /${_}s?/ } @{$self->{data}->__units('ordered')}) {
+        if (none { $unit =~ /^${_}s?$/ } @{$self->{data}->__units('ordered')}) {
             $self->_set_failure;
             $self->_set_error("(invalid unit)");
             return $self->_get_datetime_object;

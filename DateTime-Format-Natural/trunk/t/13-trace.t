@@ -15,22 +15,22 @@ my $stringify = sub { local $" = "\n"; "@_\n" };
     $string = 'now';
     $parser->parse_datetime($string);
     is($stringify->(($parser->trace)[0]), <<'EOT', $string);
-DateTime::Format::Natural::Base::_no_op
+DateTime::Format::Natural::Calc::_no_op
 EOT
     $string = 'yesterday 3 years ago';
     $parser->parse_datetime($string);
     is($stringify->(($parser->trace)[0]), <<'EOT', $string);
-DateTime::Format::Natural::Base::_unit_variant
-DateTime::Format::Natural::Base::_ago_variant
+DateTime::Format::Natural::Calc::_unit_variant
+DateTime::Format::Natural::Calc::_ago_variant
 day: 1
 year: 1
 EOT
     $string = 'monday to friday';
     $parser->parse_datetime_duration($string);
     is($stringify->($parser->trace), <<'EOT', $string);
-DateTime::Format::Natural::Base::_weekday
+DateTime::Format::Natural::Calc::_weekday
 day: 1
-DateTime::Format::Natural::Base::_weekday
+DateTime::Format::Natural::Calc::_weekday
 day: 1
 EOT
 }

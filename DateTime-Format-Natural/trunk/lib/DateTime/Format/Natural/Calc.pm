@@ -1,4 +1,4 @@
-package DateTime::Format::Natural::Base;
+package DateTime::Format::Natural::Calc;
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use base qw(
     DateTime::Format::Natural::Wrappers
 );
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -440,7 +440,7 @@ __END__
 
 =head1 NAME
 
-DateTime::Format::Natural::Base - Base class for DateTime::Format::Natural
+DateTime::Format::Natural::Calc - Basic calculations
 
 =head1 SYNOPSIS
 
@@ -448,8 +448,7 @@ DateTime::Format::Natural::Base - Base class for DateTime::Format::Natural
 
 =head1 DESCRIPTION
 
-The C<DateTime::Format::Natural::Base> class defines the core functionality of
-C<DateTime::Format::Natural>.
+The C<DateTime::Format::Natural::Calc> class defines the worker methods.
 
 =head1 SEE ALSO
 
