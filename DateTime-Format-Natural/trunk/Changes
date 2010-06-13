@@ -1,5 +1,11 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.87_03  2010-06-12  <schubiger@cpan.org>
+
+ - Fix broken use_ok() test for the Calc module.
+
+ - Insert some missing examples in the grammar documentation.
+
 0.87_02  2010-06-09  <schubiger@cpan.org>
 
  - Strengthen the check for invalid units of prefixed dates.

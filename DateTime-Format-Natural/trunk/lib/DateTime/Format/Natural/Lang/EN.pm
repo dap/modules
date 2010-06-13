@@ -9,7 +9,7 @@ use constant false => 0;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.36';
+our $VERSION = '1.37';
 
 our (%init,
      %timespan,
@@ -3906,6 +3906,9 @@ that the parser does not distinguish between lower/upper case):
  tomorrow morning
  tomorrow afternoon
  tomorrow evening
+ 6:00 yesterday
+ 6:00 today
+ 6:00 tomorrow
  5am yesterday
  5am today
  5am tomorrow
@@ -3961,6 +3964,9 @@ that the parser does not distinguish between lower/upper case):
  yesterday at 4:00
  today at 4:00
  tomorrow at 4:00
+ yesterday at 6:45am
+ today at 6:45am
+ tomorrow at 6:45am
  yesterday at 6:45pm
  today at 6:45pm
  tomorrow at 6:45pm
@@ -3970,6 +3976,9 @@ that the parser does not distinguish between lower/upper case):
  yesterday at 2:32 PM
  today at 2:32 PM
  tomorrow at 2:32 PM
+ yesterday 02:32
+ today 02:32
+ tomorrow 02:32
  yesterday 2:32am
  today 2:32am
  tomorrow 2:32am
@@ -3977,8 +3986,10 @@ that the parser does not distinguish between lower/upper case):
  today 2:32pm
  tomorrow 2:32pm
  wednesday at 14:30
+ wednesday at 02:30am
  wednesday at 02:30pm
  wednesday 14:30
+ wednesday 02:30am
  wednesday 02:30pm
  friday 03:00 am
  friday 03:00 pm
@@ -3999,10 +4010,14 @@ that the parser does not distinguish between lower/upper case):
  06:56:06 am
  06:56:06 pm
  mon 2:35
+ 1:00 sun
  1am sun
  1pm sun
+ 1:00 on sun
  1am on sun
  1pm on sun
+ 12:14 PM
+ 12:14 AM
 
 =head2 Complex
 
@@ -4074,6 +4089,9 @@ that the parser does not distinguish between lower/upper case):
  last friday at 20:00
  this friday at 20:00
  next friday at 20:00
+ 1:00 last friday
+ 1:00 this friday
+ 1:00 next friday
  1am last friday
  1am this friday
  1am next friday
@@ -4086,6 +4104,8 @@ that the parser does not distinguish between lower/upper case):
  2nd friday in august
  3rd wednesday in november
  tomorrow 1 year ago
+ saturday 3 months ago at 17:00
+ saturday 3 months ago at 5:00am
  saturday 3 months ago at 5:00pm
  11 january 2 years ago
  4th day last week
@@ -4100,7 +4120,7 @@ that the parser does not distinguish between lower/upper case):
 
 =head2 Timespans
 
- Monday to Friday
+ monday to friday
  1 April to 31 August
  1999-12-31 to tomorrow
  now to 2010-01-01
@@ -4123,9 +4143,10 @@ that the parser does not distinguish between lower/upper case):
 =head2 Specific
 
  march
- January 11
- 11 January
+ january 11
+ 11 january
  dec 25
+ feb 28 3:00
  feb 28 3am
  feb 28 3pm
  may 27th

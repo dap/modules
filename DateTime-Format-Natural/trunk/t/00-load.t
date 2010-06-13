@@ -10,7 +10,7 @@ BEGIN
     my @modules = qw(
         DateTime::Format::Natural
         DateTime::Format::Natural::Aliases
-        DateTime::Format::Natural::Base
+        DateTime::Format::Natural::Calc
         DateTime::Format::Natural::Compat
         DateTime::Format::Natural::Duration
         DateTime::Format::Natural::Formatted
