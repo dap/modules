@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.88  2010-06-16  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.87_03  2010-06-12  <schubiger@cpan.org>
 
  - Fix broken use_ok() test for the Calc module.
