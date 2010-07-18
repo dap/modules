@@ -1,5 +1,20 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.88_01  2010-07-18  <schubiger@cpan.org>
+
+ - Check if suffixes used for ordinal numbers are suitable.
+
+ - Test that invalid ordinal numbers fail and valid ones succeed.
+
+ - Add a test file for the tests expected to succeed.
+
+ - Verify for parse failures their errors emitted.
+
+ - While processing grammar expressions, save all captured values
+   in order to pass the extra ones to the extended checks.
+
+ - Improve whitespace of regular expressions handling durations.
+
 0.88  2010-06-16  <schubiger@cpan.org>
 
  - Merged development version to stable.

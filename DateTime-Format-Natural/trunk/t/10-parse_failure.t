@@ -2,11 +2,21 @@
 
 use strict;
 use warnings;
+use boolean qw(false);
 
 use DateTime::Format::Natural;
-use Test::More tests => 210;
+use Test::More tests => 240;
 
-my @with_suffix = (
+my %errors = (
+    with_suffix      => qr/suffix 's' without plural/,
+    without_suffix   => qr/plural without suffix 's'/,
+    meridiem_exceeds => qr/hour exceeds 12-hour clock/,
+    meridiem_zero    => qr/hour zero must be literal 12/,
+    ordinal_number   => qr/letter suffix should be '(?:st|nd|rd|th)'/,
+);
+
+my @with_suffix = ($errors{with_suffix},
+[
     '1 seconds ago',
     '1 minutes ago',
     '1 hours ago',
@@ -60,9 +70,10 @@ my @with_suffix = (
     'for 1 weeks',
     'for 1 months',
     'for 1 years',
-);
+]);
 
-my @without_suffix = (
+my @without_suffix = ($errors{without_suffix},
+[
     '2 second ago',
     '2 minute ago',
     '2 hour ago',
@@ -116,9 +127,10 @@ my @without_suffix = (
     'for 2 week',
     'for 2 month',
     'for 2 year',
-);
+]);
 
-my @meridiem_exceeds = (
+my @meridiem_exceeds = ($errors{meridiem_exceeds},
+[
     '13am yesterday',
     '13am today',
     '13am tomorrow',
@@ -171,9 +183,10 @@ my @meridiem_exceeds = (
     'yesterday at 22pm',
     'today at 22pm',
     'tomorrow at 22pm',
-);
+]);
 
-my @meridiem_zero = (
+my @meridiem_zero = ($errors{meridiem_zero},
+[
     '0am yesterday',
     '0am today',
     '0am tomorrow',
@@ -226,31 +239,74 @@ my @meridiem_zero = (
     'yesterday at 0pm',
     'today at 0pm',
     'tomorrow at 0pm',
-);
+]);
+
+my @ordinal_number = ($errors{ordinal_number},
+[
+    '4st february',
+    'november 3nd',
+    'feb 28rd 3:00',
+    'feb 28rd 3am',
+    'feb 28rd 3pm',
+    '11st january 2 years ago',
+    '11st january next year',
+    '11st january this year',
+    '11st january last year',
+    'march 1rd 2009',
+    '2th monday',
+    '100st day',
+    '1nd day next year',
+    '1nd day this year',
+    '1nd day last year',
+    '6rd day next week',
+    '6rd day this week',
+    '6rd day last week',
+    '12st day next month',
+    '12st day this month',
+    '12st day last month',
+    '8nd month next year',
+    '8nd month this year',
+    '8nd month last year',
+    '1nd tuesday next november',
+    '1nd tuesday this november',
+    '1nd tuesday last november',
+    '3th jan 2000',
+    'jan 3th 2000',
+    '2st friday in august',
+]);
 
 check(\@with_suffix);
 check(\@without_suffix);
 check(\@meridiem_exceeds);
 check(\@meridiem_zero);
+check(\@ordinal_number);
 
 sub check
 {
     my $aref = shift;
-    foreach my $string (@$aref) {
-        check_fail($string);
+    my ($error, $checks) = @$aref;
+    foreach my $string (@$checks) {
+        check_fail($error, $string);
     }
 }
 
 sub check_fail
 {
-    my ($string) = @_;
+    my ($error, $string) = @_;
 
     my $parser = DateTime::Format::Natural->new;
     $parser->parse_datetime($string);
 
+    my $check_error = sub
+    {
+        my ($parser_error) = @_;
+        return false unless defined $parser_error;
+        return                      $parser_error =~ /^\($error\)$/;
+    };
+
     # Examine _get_error() to detect whether an extended check
     # failed rather than a generic parse failure occurred.
-    if (!$parser->success && defined $parser->_get_error) {
+    if (!$parser->success && $check_error->($parser->_get_error)) {
         pass($string);
     }
     else {

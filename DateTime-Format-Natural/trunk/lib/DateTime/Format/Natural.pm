@@ -18,7 +18,7 @@ use Params::Validate ':all';
 use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 
-our $VERSION = '0.88';
+our $VERSION = '0.88_01';
 
 validation_options(
     on_fail => sub
@@ -337,7 +337,7 @@ sub _process
             my $valid_expression = true;
             my $definition = $expression->[0];
             my @positions = sort {$a <=> $b} keys %$definition;
-            my %regex_stack;
+            my (%first_stack, %rest_stack);
             foreach my $pos (@positions) {
                 if ($types->[$pos] eq 'SCALAR') {
                     if (defined $definition->{$pos}) {
@@ -351,9 +351,9 @@ sub _process
                     }
                 }
                 elsif ($types->[$pos] eq 'REGEXP') {
-                    local $1;
-                    if (${$self->_token($pos)} =~ $definition->{$pos}) {
-                        $regex_stack{$pos} = $1 if defined $1;
+                    if (my @captured = ${$self->_token($pos)} =~ $definition->{$pos}) {
+                        $first_stack{$pos} = shift @captured;
+                        $rest_stack{$pos} = [ @captured ];
                         next;
                     }
                     else {
@@ -371,7 +371,7 @@ sub _process
                 foreach my $check (@{$expression->[2]}) {
                     my @pos = @{$expression->[1][$i++]};
                     my $error;
-                    $valid_expression &= $check->(\%regex_stack, \@pos, \$error);
+                    $valid_expression &= $check->(\%first_stack, \%rest_stack, \@pos, \$error);
                     unless ($valid_expression) {
                         $self->_set_error("($error)");
                         last;
@@ -388,9 +388,9 @@ sub _process
                         $values[$c++] = ref $pos
                           ? $index eq 'VALUE'
                             ? $pos->{$index}
-                            : $self->SUPER::_helper($pos->{$index}, $regex_stack{$index})
-                          : exists $regex_stack{$index}
-                            ? $regex_stack{$index}
+                            : $self->SUPER::_helper($pos->{$index}, $first_stack{$index})
+                          : exists $first_stack{$index}
+                            ? $first_stack{$index}
                             : ${$self->_token($index)};
                     }
                     my $worker = "SUPER::$expression->[5]->[$i]";

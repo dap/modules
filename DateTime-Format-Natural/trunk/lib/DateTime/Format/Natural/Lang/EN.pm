@@ -6,14 +6,16 @@ use base qw(DateTime::Format::Natural::Lang::Base);
 #use boolean qw(true false);
 use constant true  => 1;
 use constant false => 0;
+use constant skip  => true;
 
 use DateTime::Format::Natural::Helpers qw(%flag);
 
-our $VERSION = '1.37';
+our $VERSION = '1.38';
 
 our (%init,
      %timespan,
      %units,
+     %suffixes,
      %RE,
      %data_weekdays,
      %data_weekdays_abbrev,
@@ -31,6 +33,7 @@ our (%init,
 %init     = (tokens  => sub {});
 %timespan = (literal => 'to');
 %units    = (ordered => [ qw(second minute hour day week month year) ]);
+%suffixes = (ordinal => join '|', qw(st nd rd th d));
 
 %RE = (number    => qr/^(\d+)$/,
        year      => qr/^(\d{4})$/,
@@ -38,8 +41,8 @@ our (%init,
        time_am   => qr/^((?:\d{1,2})(?:\:\d{2})?)am$/i,
        time_pm   => qr/^((?:\d{1,2})(?:\:\d{2})?)pm$/i,
        time_full => qr/^(\d{1,2}\:\d{2}\:\d{2})$/,
-       day       => qr/^(\d+)(?:st|nd|rd|th)?$/i,
-       monthday  => qr/^(\d{1,2})(?:st|nd|rd|th)?$/i);
+       day       => qr/^(\d+)($suffixes{ordinal})?$/i,
+       monthday  => qr/^(\d{1,2})($suffixes{ordinal})?$/i);
 {
     my $i = 1;
 
@@ -91,13 +94,13 @@ our (%init,
         for => sub {
             my ($date_strings) = @_;
             return (@$date_strings == 1
-                && $date_strings->[0] =~ /^for\s+/i);
+                && $date_strings->[0] =~ /^for \s+/ix);
         },
         first_to_last => sub {
             my ($date_strings) = @_;
             return (@$date_strings == 2
                 && $date_strings->[0] =~ /^first$/i
-                && $date_strings->[1] =~ /^last\s+/i);
+                && $date_strings->[1] =~ /^last \s+/ix);
         },
         date_time_to_time => sub {
             my ($date_strings) = @_;
@@ -130,9 +133,9 @@ our (%init,
 %extended_checks = (
     meridiem => sub
     {
-        my ($captured, $pos, $error) = @_;
+        my ($first_stack, $rest_stack, $pos, $error) = @_;
 
-        my ($hour) = split /:/, $captured->{$pos->[0]};
+        my ($hour) = split /:/, $first_stack->{$pos->[0]};
 
         if ($hour == 0) {
             $$error = 'hour zero must be literal 12';
@@ -144,15 +147,59 @@ our (%init,
         }
         return true;
     },
+    ordinal => sub
+    {
+        my ($first_stack, $rest_stack, $pos, $error) = @_;
+
+        my $suffix = do {
+            local $_ = $rest_stack->{$pos->[0]}->[0];
+            defined $_ ? lc $_ : undef;
+        };
+        return skip unless defined $suffix;
+
+        my $numeral = $first_stack->{$pos->[0]};
+
+        my %ordinals = (
+            1 => { regex => qr/^st$/,  suffix => 'st' },
+            2 => { regex => qr/^n?d$/, suffix => 'nd' },
+            3 => { regex => qr/^r?d$/, suffix => 'rd' },
+        );
+
+        my $fail_message = sub { "letter suffix should be '$_[0]'" };
+
+        local $1;
+        if ($numeral == 0) {
+            unless ($suffix eq 'th') {
+                $$error = $fail_message->('th');
+                return false;
+            }
+            return true;
+        }
+        elsif ($numeral =~ /([1-3])$/ && $numeral !~ /1\d$/) {
+            unless ($suffix =~ $ordinals{$1}->{regex}) {
+                $$error = $fail_message->($ordinals{$1}->{suffix});
+                return false;
+            }
+            return true;
+        }
+        elsif ($numeral > 3) {
+            unless ($suffix eq 'th') {
+                $$error = $fail_message->('th');
+                return false;
+            }
+            return true;
+        }
+        return skip; # never reached
+    },
     suffix => sub
     {
-        my ($captured, $pos, $error) = @_;
+        my ($first_stack, $rest_stack, $pos, $error) = @_;
 
         my @checks = (
-            { cond  => sub { $captured->{$pos->[0]} == 1 && $captured->{$pos->[1]} =~ $data_helpers{suffix} },
+            { cond  => sub { $first_stack->{$pos->[0]} == 1 && $first_stack->{$pos->[1]} =~ $data_helpers{suffix} },
               error => "suffix 's' without plural",
             },
-            { cond  => sub { $captured->{$pos->[0]} >  1 && $captured->{$pos->[1]} !~ $data_helpers{suffix} },
+            { cond  => sub { $first_stack->{$pos->[0]} >  1 && $first_stack->{$pos->[1]} !~ $data_helpers{suffix} },
               error => "plural without suffix 's'",
             },
         );
@@ -1015,8 +1062,8 @@ our (%init,
        [ 'REGEXP', 'REGEXP' ],
        [
          { 0 => $RE{monthday}, 1 => $RE{month} },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
                0,
@@ -1032,8 +1079,8 @@ our (%init,
        ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday} },
-         [],
-         [],
+         [ [ 1 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
                1,
@@ -1052,8 +1099,8 @@ our (%init,
        [ 'REGEXP', 'REGEXP', 'REGEXP' ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{time} },
-         [],
-         [],
+         [ [ 1 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
                1,
@@ -1067,8 +1114,8 @@ our (%init,
        ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{time_am} },
-         [ [ 2 ] ],
-         [ $extended_checks{meridiem} ],
+         [ [ 1 ], [ 2 ] ],
+         [ $extended_checks{ordinal}, $extended_checks{meridiem} ],
          [
            [
                1,
@@ -1084,8 +1131,8 @@ our (%init,
        ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{time_pm} },
-         [ [ 2 ] ],
-         [ $extended_checks{meridiem} ],
+         [ [ 1 ], [ 2 ] ],
+         [ $extended_checks{ordinal}, $extended_checks{meridiem} ],
          [
            [
                1,
@@ -1104,8 +1151,8 @@ our (%init,
       [ 'REGEXP', 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
       [
         { 0 => $RE{monthday}, 1 => $RE{month}, 2 => $RE{number}, 3 => qr/^(years?)$/i, 4 => 'ago' },
-        [ [ 2, 3 ] ],
-        [ $extended_checks{suffix} ],
+        [ [ 0 ], [ 2, 3 ] ],
+        [ $extended_checks{ordinal}, $extended_checks{suffix} ],
         [
           [
               0,
@@ -1122,8 +1169,8 @@ our (%init,
       [ 'REGEXP', 'REGEXP', 'REGEXP', 'SCALAR' ],
       [
         { 0 => $RE{monthday}, 1 => $RE{month}, 2 => qr/^(next)$/i, 3 => 'year' },
-        [],
-        [],
+        [ [ 0 ] ],
+        [ $extended_checks{ordinal} ],
         [
           [
               0,
@@ -1139,8 +1186,8 @@ our (%init,
       ],
       [
         { 0 => $RE{monthday}, 1 => $RE{month}, 2 => qr/^(this)$/i, 3 => 'year' },
-        [],
-        [],
+        [ [ 0 ] ],
+        [ $extended_checks{ordinal} ],
         [
           [
               0,
@@ -1156,8 +1203,8 @@ our (%init,
       ],
       [
         { 0 => $RE{monthday}, 1 => $RE{month}, 2 => qr/^(last)$/i, 3 => 'year' },
-        [],
-        [],
+        [ [ 0 ] ],
+        [ $extended_checks{ordinal} ],
         [
           [
               0,
@@ -1176,8 +1223,8 @@ our (%init,
        [ 'REGEXP', 'REGEXP', 'REGEXP' ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{year} },
-         [],
-         [],
+         [ [ 1 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
                1,
@@ -1850,8 +1897,8 @@ our (%init,
        [ 'REGEXP', 'REGEXP' ],
        [
          { 0 => $RE{day}, 1 => $RE{weekday} },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
                0,
@@ -1867,8 +1914,8 @@ our (%init,
        [ 'REGEXP', 'SCALAR' ],
        [
          { 0 => $RE{day}, 1 => 'day' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              0,
@@ -1884,8 +1931,8 @@ our (%init,
         [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
         [
           { 0 => $RE{day}, 1 => 'day', 2 => qr/^(next)$/i, 3 => 'year' },
-          [],
-          [],
+          [ [ 0 ] ],
+          [ $extended_checks{ordinal} ],
           [
             [
                 0,
@@ -1898,8 +1945,8 @@ our (%init,
         ],
         [
           { 0 => $RE{day}, 1 => 'day', 2 => qr/^(this)$/i, 3 => 'year' },
-          [],
-          [],
+          [ [ 0 ] ],
+          [ $extended_checks{ordinal} ],
           [
             [
                 0,
@@ -1912,8 +1959,8 @@ our (%init,
         ],
         [
           { 0 => $RE{day}, 1 => 'day', 2 => qr/^(last)$/i, 3 => 'year' },
-          [],
-          [],
+          [ [ 0 ] ],
+          [ $extended_checks{ordinal} ],
           [
             [
                 0,
@@ -2574,8 +2621,8 @@ our (%init,
        [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
        [
          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(next)$/i, 3 => 'week' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2588,8 +2635,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(this)$/i, 3 => 'week' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2602,8 +2649,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(last)$/i, 3 => 'week' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2619,8 +2666,8 @@ our (%init,
        [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
        [
          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(next)$/i, 3 => 'month' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2633,8 +2680,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(this)$/i, 3 => 'month' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2647,8 +2694,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => 'day', 2 => qr/^(last)$/i, 3 => 'month' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2754,8 +2801,8 @@ our (%init,
        [ 'REGEXP', 'SCALAR', 'REGEXP', 'SCALAR' ],
        [
          { 0 => $RE{day}, 1 => 'month', 2 => qr/^(next)$/i, 3 => 'year' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2768,8 +2815,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => 'month', 2 => qr/^(this)$/i, 3 => 'year' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2782,8 +2829,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => 'month', 2 => qr/^(last)$/i, 3 => 'year' },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2865,8 +2912,8 @@ our (%init,
        [ 'REGEXP', 'REGEXP', 'REGEXP', 'REGEXP' ],
        [
          { 0 => $RE{day}, 1 => $RE{weekday}, 2 => qr/^(next)$/i, 3 => $RE{month} },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2881,8 +2928,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => $RE{weekday}, 2 => qr/^(this)$/i, 3 => $RE{month} },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -2897,8 +2944,8 @@ our (%init,
        ],
        [
          { 0 => $RE{day}, 1 => $RE{weekday}, 2 => qr/^(last)$/i, 3 => $RE{month} },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { 2 => [ $flag{last_this_next} ] },
@@ -3620,8 +3667,8 @@ our (%init,
        [ 'REGEXP', 'REGEXP', 'REGEXP' ],
        [
          { 0 => $RE{monthday}, 1 => $RE{month}, 2 => $RE{year} },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
                0,
@@ -3635,8 +3682,8 @@ our (%init,
        ],
        [
          { 0 => $RE{month}, 1 => $RE{monthday}, 2 => $RE{year} },
-         [],
-         [],
+         [ [ 1 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
                1,
@@ -3653,8 +3700,8 @@ our (%init,
        [ 'REGEXP', 'REGEXP', 'SCALAR', 'REGEXP' ],
        [
          { 0 => $RE{day}, 1 => $RE{weekday}, 2 => 'in', 3 => $RE{month} },
-         [],
-         [],
+         [ [ 0 ] ],
+         [ $extended_checks{ordinal} ],
          [
            [
              { VALUE => 0 },
