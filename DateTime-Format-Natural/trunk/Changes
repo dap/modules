@@ -1,5 +1,14 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.88_02  2010-07-29  <schubiger@cpan.org>
+
+ - Replace calling of _valid_date() in _count_weekday_variant_month()
+   with _check_date(), because errors are handled separate.
+
+ - Use more descriptive variable names in _parse_formatted_ymd().
+
+ - Minor indentation and code tweaks.
+
 0.88_01  2010-07-18  <schubiger@cpan.org>
 
  - Check if suffixes used for ordinal numbers are suitable.

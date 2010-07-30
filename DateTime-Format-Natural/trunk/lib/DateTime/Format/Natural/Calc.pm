@@ -8,7 +8,7 @@ use base qw(
     DateTime::Format::Natural::Wrappers
 );
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 use constant MORNING   => '08';
 use constant AFTERNOON => '14';
@@ -255,9 +255,10 @@ sub _count_weekday_variant_month
               $count,
           );
     };
-    if (!$@ and defined $year && defined $month && defined $day
-        and $self->_valid_date(year => $year, month => $month, day => $day))
-    {
+    if (!$@
+        and defined $year && defined $month && defined $day
+        and $self->_check_date($year, $month, $day)
+    ) {
         $self->_set(
             year  => $year,
             month => $month,
