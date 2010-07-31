@@ -15,6 +15,8 @@ DESCRIPTION
     The recommended usage of this application module is to use the provided
     vzwatchd daemon.
 
+    Version 2.5 of the user_beancounters file is supported.
+
 CONSTRUCTOR
   new
 
@@ -83,6 +85,7 @@ CONFIGURATION FILE
 
 CURRENT LIMITATIONS
     * Cannot parse anything else than the user_beancounters file.
+    * Only version 2.5 of the user_beancounters file is known to work.
     * Fixed mail report template.
     * No more than one mail recipient.
 SEE ALSO

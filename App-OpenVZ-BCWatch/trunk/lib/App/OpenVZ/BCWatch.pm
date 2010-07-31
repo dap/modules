@@ -12,7 +12,7 @@ use Mail::Sendmail qw(sendmail);
 use Storable qw(store retrieve);
 use Sys::Hostname qw(hostname);
 
-our $VERSION = '0.02';
+our $VERSION = '0.02_01';
 
 sub new
 {
@@ -48,9 +48,7 @@ sub process
 {
     my $self = shift;
 
-    foreach my $member (qw(data stored changed)) {
-        delete $self->{$member};
-    }
+    delete @$self{qw(data stored changed)};
 
     $self->_get_data_running;
     $self->_get_data_file;
@@ -177,7 +175,6 @@ sub _compare_data
 sub _create_report
 {
     my $self = shift;
-
     my ($uid, $res, $index) = @_;
 
     if ($self->{Config}->{_tests}) {
@@ -204,7 +201,6 @@ sub _put_data_file
 sub _prepare_report
 {
     my $self = shift;
-
     my ($uid, $res, $index) = @_;
 
     my @fixed_fields = ($uid, $res) x 2;
@@ -245,33 +241,32 @@ sub _prepare_report
     }
 
     my $tmpl = \@values;
-    my $template = $self->{template};
+    my $report = $self->{template};
 
-    while ($template =~ /(\$\S+)/) {
-        unless ($template =~ /(\Q$1\E)$/m) {
+    while ($report =~ /(\$\S+)/) {
+        unless ($report =~ /(\Q$1\E)$/m) {
             my $len = length($1) - length do { eval $1 };
             my $space = ' ' x $len;
-            $template =~ s/(\Q$1\E)/$1$space/;
+            $report =~ s/(\Q$1\E)/$1$space/;
         }
-        $template =~ s/(\$\S+)/$1/ee;
+        $report =~ s/(\$\S+)/$1/ee;
     }
 
-    while ($template =~ /\((\d+)\)/) {
+    while ($report =~ /\((\d+)\)/) {
         if ($self->{changed}->{$1}) {
-            $template =~ s/\($1\)/  \*/;
+            $report =~ s/\($1\)/  \*/;
         }
         else {
-            $template =~ s/\($1\)/   /;
+            $report =~ s/\($1\)/   /;
         }
     }
 
-    return $template;
+    return $report;
 }
 
 sub _send_mail
 {
     my $self = shift;
-
     my ($report) = @_;
 
     my %mail = (
@@ -324,6 +319,8 @@ mail notifications whenever important values change (as defined by the user).
 
 The recommended usage of this application module is to use the provided
 L<vzwatchd> daemon.
+
+Version 2.5 of the F<user_beancounters> file is supported.
 
 =head1 CONSTRUCTOR
 
@@ -414,6 +411,8 @@ Location of the data file. Defaults to F<$HOME/vzwatchd.dat>.
 =over 4
 
 =item * Cannot parse anything else than the F<user_beancounters> file.
+
+=item * Only version 2.5 of the F<user_beancounters> file is known to work.
 
 =item * Fixed mail report template.
 

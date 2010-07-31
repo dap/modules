@@ -1,5 +1,19 @@
 Revision history for Perl extension App::OpenVZ::BCWatch.
 
+0.02_01  2010-07-30  <schubiger@cpan.org>
+
+ - Mention the supported user_beancounters version.
+
+ - List the user_beancounters version dependency as limitation.
+
+ - Delete some instance data through a hash slice.
+
+ - Rename the report variable in _prepare_report().
+
+ - Comment the use of $VERSION in vzwatchd.
+
+ - Minor whitespace tweaks.
+
 0.02 Tue Sep 22 15:06:25 CEST 2009
 
  - Set for configuration options of type number or boolean
