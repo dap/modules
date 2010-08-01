@@ -1,5 +1,20 @@
 Revision history for Perl extension LUGS::Events::Parser.
 
+0.04_01  2010-07-31  <schubiger@cpan.org>
+
+ - Decode entities with HTML::Entities instead of with HTML::Parser;
+   this fixes broken rewriting when entities are present.
+
+ - Add tests for the entities rewrite fix.
+
+ - Reword some bits of the documentation.
+
+ - Don't force explicit scalar context where an implicit one exists.
+
+ - Omit blessing into a reference within the ::Event constructor.
+
+ - Update broken license link.
+
 0.04 Thu Aug 27 13:38:21 CEST 2009
 
  - Add HTML filtering capability and according tests.

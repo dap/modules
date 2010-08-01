@@ -109,6 +109,22 @@ my @expected = (
         'h/lugs/badpw.phtml)',
       '20090725_0_spec',
     ],
+    [
+      '20100212',
+      '2010',
+      '02',
+      '12',
+      '12',
+      'Fr',
+      '19:15',
+      'LUGS Treff - Voodoo, Schwarze Magie und Internet per UMTS',
+      'treff',
+      'Solino - http://www.solino.ch/, Am Schanzengraben 15, 8002 Züric' .
+        'h (Karte - http://map.search.ch/zuerich/am-schanzengraben-15)',
+      'Martin Ebnöther - ventilator@semmel.ch',
+      undef,
+      '20100212_0_treff',
+    ],
 );
 
 my @events;

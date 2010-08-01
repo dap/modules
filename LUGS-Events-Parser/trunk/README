@@ -167,8 +167,8 @@ TAG HANDLERS
     `$HREF' will contain the value of the `href' attribute. Placeholders
     provided for standalone tags will not be substituted.
 
-    The `fields' entry contains the fieldnames to which rewriting applies.
-    Specifying a literal `*' will match all fieldnames.
+    The `fields' entry contains the field names to which rewriting applies.
+    Specifying a literal `*' will match all field names.
 
 SEE ALSO
     http://www.lugs.ch/lugs/
@@ -180,5 +180,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See http://www.perl.com/perl/misc/Artistic.html
+    See http://dev.perl.org/licenses/
 

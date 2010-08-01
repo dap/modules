@@ -59,3 +59,13 @@ event 20090725
   more <br><a href="https://www.lugs.ch/lugs/interna/maillugs/200907/42.html">Mehr Infos</a>
   more (nur mit <a href="https://www.lugs.ch/lugs/badpw.phtml">LUGS Login</a>)
 endevent
+
+event 20100212
+  weekday Fr
+  day 12
+  time 19:15
+  title LUGS Treff - Voodoo, Schwarze Magie und Internet per UMTS
+  color treff
+  location <a href="http://www.solino.ch/">Solino</a>, Am Schanzengraben 15, 8002 Z&uuml;rich (<a href="http://map.search.ch/zuerich/am-schanzengraben-15">Karte</a>)
+  responsible <a href="mailto:ventilator@semmel.ch">Martin Ebn&ouml;ther</a>
+endevent

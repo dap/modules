@@ -10,7 +10,7 @@ use Data::Schema qw(ds_validate);
 use LUGS::Events::Parser::Event ();
 use Params::Validate ':all';
 
-our $VERSION = '0.04';
+our $VERSION = '0.04_01';
 
 validation_options(
     on_fail => sub
@@ -126,7 +126,7 @@ sub _parse_content
                 if ($self->{Filter_html}) {
                     my @html;
                     $self->_parse_html($text, \@html);
-                    if (scalar @html) {
+                    if (@html) {
                         push @{$fields{_html}->{$name}}, @html;
                     }
                 }
@@ -342,8 +342,8 @@ enclosed text. If attributes are available, for example C<href>, then C<$HREF>
 will contain the value of the C<href> attribute. Placeholders provided for
 standalone tags will not be substituted.
 
-The C<fields> entry contains the fieldnames to which rewriting applies.
-Specifying a literal C<*> will match all fieldnames.
+The C<fields> entry contains the field names to which rewriting applies.
+Specifying a literal C<*> will match all field names.
 
 =head1 SEE ALSO
 
@@ -358,6 +358,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

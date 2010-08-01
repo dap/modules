@@ -7,7 +7,7 @@ use boolean qw(true);
 use HTML::Entities qw(decode_entities);
 use HTML::Parser ();
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 my (@tags, @stack);
 
@@ -18,7 +18,7 @@ sub _init_parser
     my $parser = HTML::Parser->new(
         api_version => 3,
         start_h     => [ \&_start_tag, 'tagname,attr,attrseq' ],
-        text_h      => [ \&_text_tag,  'dtext'                ],
+        text_h      => [ \&_text_tag,  'text'                 ],
         end_h       => [ \&_end_tag,   'tagname'              ],
     );
 
@@ -34,7 +34,7 @@ sub _parse_html
 
     undef @stack;
 
-    return unless scalar @tags;
+    return unless @tags;
 
     @$html = @tags;
     undef @tags;
@@ -56,18 +56,18 @@ sub _start_tag
 
 sub _text_tag
 {
-    my ($dtext) = @_;
+    my ($text) = @_;
 
-    return unless scalar @stack;
+    return unless @stack;
 
-    $stack[-1]->{text} = $dtext;
+    $stack[-1]->{text} = $text;
 }
 
 sub _end_tag
 {
     my ($tagname) = @_;
 
-    return unless scalar @stack;
+    return unless @stack;
 
     if ($stack[-1]->{name} eq $tagname) {
         push @tags, {
@@ -90,7 +90,7 @@ sub _rewrite_tags
         foreach my $html (@{$fields->{_html}->{$field}}) {
             foreach my $tag (keys %$html) {
                 my @tagnames;
-                if (scalar keys %{$html->{$tag}->{attr}}) {
+                if (%{$html->{$tag}->{attr}}) {
                     foreach my $attr (keys %{$html->{$tag}->{attr}}) {
                         if (exists $self->{Tag_handlers}->{"$tag $attr"}) {
                             push @tagnames, "$tag $attr";
@@ -190,7 +190,7 @@ sub _subst_pattern
     my $self = shift;
     my ($html, $tag) = @_;
 
-    if (scalar @{$html->{$tag}->{attrseq}}) {
+    if (@{$html->{$tag}->{attrseq}}) {
         my $attr = join ' ',
           map "${_}=\"$html->{$tag}->{attr}->{$_}\"",
           @{$html->{$tag}->{attrseq}};

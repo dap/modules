@@ -86,6 +86,23 @@ my @expected = (
         'ch/lugs/badpw.phtml">LUGS Login</a>)',
       '20090725_0_spec',
     ],
+    [
+      '20100212',
+      '2010',
+      '02',
+      '12',
+      '12',
+      'Fr',
+      '19:15',
+      'LUGS Treff - Voodoo, Schwarze Magie und Internet per UMTS',
+      'treff',
+      '<a href="http://www.solino.ch/">Solino</a>, Am Schanzengraben 15, 80' .
+        '02 Z&uuml;rich (<a href="http://map.search.ch/zuerich/am-schanzeng' .
+        'raben-15">Karte</a>)',
+      '<a href="mailto:ventilator@semmel.ch">Martin Ebn&ouml;ther</a>',
+      undef,
+      '20100212_0_treff',
+    ],
 );
 
 my @events;
