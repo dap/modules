@@ -1,5 +1,9 @@
 Revision history for Perl extension DateTime::Format::Natural.
 
+0.89  2010-08-05  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.88_02  2010-07-29  <schubiger@cpan.org>
 
  - Replace calling of _valid_date() in _count_weekday_variant_month()
