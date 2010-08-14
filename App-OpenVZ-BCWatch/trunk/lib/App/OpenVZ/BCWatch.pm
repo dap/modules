@@ -12,7 +12,7 @@ use Mail::Sendmail qw(sendmail);
 use Storable qw(store retrieve);
 use Sys::Hostname qw(hostname);
 
-our $VERSION = '0.02_01';
+our $VERSION = '0.02_02';
 
 sub new
 {
@@ -433,6 +433,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

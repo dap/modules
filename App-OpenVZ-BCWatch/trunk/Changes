@@ -1,5 +1,9 @@
 Revision history for Perl extension App::OpenVZ::BCWatch.
 
+0.02_02  2010-08-14  <schubiger@cpan.org>
+
+ - Update broken license link.
+
 0.02_01  2010-07-30  <schubiger@cpan.org>
 
  - Mention the supported user_beancounters version.
