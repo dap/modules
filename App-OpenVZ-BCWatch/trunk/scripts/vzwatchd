@@ -9,7 +9,7 @@ use App::OpenVZ::BCWatch;
 use Config::File qw(read_config_file);
 use Daemon::Generic;
 
-our $VERSION = '0.02'; # used by Daemon::Generic
+our $VERSION = '0.03'; # used by Daemon::Generic
 
 $| = true;
 
@@ -65,6 +65,13 @@ sub gd_run_body
 
     $watch->process;
     $self->gd_sleep($watch->{Config}->{sleep});
+}
+
+sub gd_quit_event
+{
+    my $self = shift;
+
+    unlink $watch->{Config}->{data_file};
 }
 
 newdaemon(

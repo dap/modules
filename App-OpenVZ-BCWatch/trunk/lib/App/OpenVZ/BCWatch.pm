@@ -12,7 +12,7 @@ use Mail::Sendmail qw(sendmail);
 use Storable qw(store retrieve);
 use Sys::Hostname qw(hostname);
 
-our $VERSION = '0.02_02';
+our $VERSION = '0.02_03';
 
 sub new
 {
@@ -60,10 +60,8 @@ sub _init
 {
     my $self = shift;
 
-    if (!-e $self->{Config}->{data_file}) {
-        eval { store({}, $self->{Config}->{data_file}) }
-          or croak "Cannot store to $self->{Config}->{data_file}: $!";
-    }
+    eval { store({}, $self->{Config}->{data_file}) }
+      or croak "Cannot store to $self->{Config}->{data_file}: $!";
 
     my $pkg_tmpl = join '::', (__PACKAGE__, '_template');
     no strict 'refs';
@@ -111,29 +109,33 @@ sub _get_data_running
     }
 
     my $re = qr{
-                      \s*
-         (?:\d+?\:)?  \s+
-         (?:\w+)      \s+
-         (?:(?:\d+)   \s*){5}
+                      \s*?
+         (?:\d+?\:)?  \s+?
+         (?:\w+?)     \s+?
+         (?:(?:\d+?)  \s*?){5}
     }x;
 
-    my ($uid, $res);
+    my $uid;
+
+    my @names = grep {
+      !$self->{excluded}->{$_}
+        ? $_ : ()
+    } @{$self->{Config}->{_field_names}};
 
     local $1;
     while ($output =~ /^($re)$/gm) {
         my $line = $1;
-        if ($line =~ s/^\s*(\d+?)\://) {
+        if ($line =~ /^ \s+? (\d+?)\:/gx) {
             $uid = $1;
         }
-        if ($line =~ s/^\s*(\w+)\s*//) {
+        my $res;
+        if ($line =~ /\G \s+? (\w+)/gx) {
             $res = $1;
         }
-        my @fields = split /\s+/, $line;
-        my @names = grep {
-          !$self->{excluded}->{$_}
-            ? $_ : ()
-        } @{$self->{Config}->{_field_names}};
-
+        my @fields;
+        if ($line =~ /\G \s+ (.*) $/x) {
+            @fields = split /\s+/, $1;
+        }
         push @{$self->{data}{$uid}{$res}},
           { map { $names[$_] => $fields[$_] } (0 .. $#fields) };
     }
@@ -155,8 +157,9 @@ sub _compare_data
     {
         my ($uid, $res, $i) = @_;
 
-        my $data   = sub { $self->{data}{$uid}{$res}->[$i]->{$_[0]}   || 0 };
-        my $stored = sub { $self->{stored}{$uid}{$res}->[$i]->{$_[0]} || 0 };
+        my ($data, $stored) = map {
+          my $type = $_; sub { $self->{$type}{$uid}{$res}->[$i]->{$_[0]} || 0 }
+        } qw(data stored);
 
         return scalar grep { $data->($_) > $stored->($_) } @{$self->{Config}->{monitor_fields}};
     };
@@ -242,6 +245,8 @@ sub _prepare_report
 
     my $tmpl = \@values;
     my $report = $self->{template};
+
+    local $1;
 
     while ($report =~ /(\$\S+)/) {
         unless ($report =~ /(\Q$1\E)$/m) {
@@ -419,6 +424,11 @@ Location of the data file. Defaults to F<$HOME/vzwatchd.dat>.
 =item * No more than one mail recipient.
 
 =back
+
+=head1 BUGS & CAVEATS
+
+Note that the sender and recipient mail address options with defaults
+might require adjustment in order for notifications to be delivered.
 
 =head1 SEE ALSO
 

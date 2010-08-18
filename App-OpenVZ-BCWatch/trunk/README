@@ -88,6 +88,10 @@ CURRENT LIMITATIONS
     * Only version 2.5 of the user_beancounters file is known to work.
     * Fixed mail report template.
     * No more than one mail recipient.
+BUGS & CAVEATS
+    Note that the sender and recipient mail address options with defaults
+    might require adjustment in order for notifications to be delivered.
+
 SEE ALSO
     OpenVZ::BC, http://openvz.org
 

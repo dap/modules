@@ -1,5 +1,23 @@
 Revision history for Perl extension App::OpenVZ::BCWatch.
 
+0.02_03  2010-08-17  <schubiger@cpan.org>
+
+ - Use non-destructive matching in _get_data_running().
+
+ - Don't match eventually greedy in _get_data_running().
+
+ - Extract field names prior entering the loop in _get_data_running().
+
+ - Avoid code duplication for the comparison subs in _compare_data().
+
+ - Localize $1 in _prepare_report().
+
+ - Always store an empty hash at initialization for the data file.
+
+ - Unlink the data file when vzwatchd stops.
+
+ - Emphasize that default mail address options might need adjustment.
+
 0.02_02  2010-08-14  <schubiger@cpan.org>
 
  - Update broken license link.
