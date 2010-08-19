@@ -12,7 +12,7 @@ use Mail::Sendmail qw(sendmail);
 use Storable qw(store retrieve);
 use Sys::Hostname qw(hostname);
 
-our $VERSION = '0.02_03';
+our $VERSION = '0.02_04';
 
 sub new
 {
@@ -48,7 +48,7 @@ sub process
 {
     my $self = shift;
 
-    delete @$self{qw(data stored changed)};
+    delete @$self{qw(data stored)};
 
     $self->_get_data_running;
     $self->_get_data_file;
@@ -237,9 +237,10 @@ sub _prepare_report
         push @values, [ @v ];
     }
 
+    my %changed;
     foreach my $field (keys %{$mapping[0]->[1]}) {
         if ($mapping[0]->[1]->{$field} != $mapping[1]->[1]->{$field}) {
-            $self->{changed}->{$self->{index}->{$field}} = true;
+            $changed{$self->{index}->{$field}} = true;
         }
     }
 
@@ -248,22 +249,17 @@ sub _prepare_report
 
     local $1;
 
-    while ($report =~ /(\$\S+)/) {
-        unless ($report =~ /(\Q$1\E)$/m) {
-            my $len = length($1) - length do { eval $1 };
-            my $space = ' ' x $len;
-            $report =~ s/(\Q$1\E)/$1$space/;
+    while (my ($var) = $report =~ /(\$\S+)/) {
+        unless ($report =~ /\Q$var\E$/m) {
+            my $len = length($var) - length do { eval $var };
+            $report =~ s/(?<=\Q$var\E)/' ' x $len/e;
         }
-        $report =~ s/(\$\S+)/$1/ee;
+        $report =~ s/(\Q$var\E)/$1/ee;
     }
 
-    while ($report =~ /\((\d+)\)/) {
-        if ($self->{changed}->{$1}) {
-            $report =~ s/\($1\)/  \*/;
-        }
-        else {
-            $report =~ s/\($1\)/   /;
-        }
+    while (my ($pos) = $report =~ /\((\d+)\)/) {
+        my $marked = $changed{$pos} ? '*' : ' ';
+        $report =~ s/\($pos\)/  $marked/;
     }
 
     return $report;

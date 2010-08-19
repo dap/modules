@@ -9,7 +9,7 @@ use App::OpenVZ::BCWatch;
 use Config::File qw(read_config_file);
 use Daemon::Generic;
 
-our $VERSION = '0.03'; # used by Daemon::Generic
+our $VERSION = '0.04'; # used by Daemon::Generic
 
 $| = true;
 
@@ -96,6 +96,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

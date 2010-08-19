@@ -1,5 +1,15 @@
 Revision history for Perl extension App::OpenVZ::BCWatch.
 
+0.02_04  2010-08-19  <schubiger@cpan.org>
+
+ - Update vzwatchd's broken license link.
+
+ - Optimize the code populating the report template.
+
+ - Fill in spaces for the report through a zero-width assertion.
+
+ - Store the indexes of changed fields with lexical scope.
+
 0.02_03  2010-08-17  <schubiger@cpan.org>
 
  - Use non-destructive matching in _get_data_running().
