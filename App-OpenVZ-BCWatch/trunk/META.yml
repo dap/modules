@@ -1,6 +1,6 @@
 ---
 name: App-OpenVZ-BCWatch
-version: 0.02_04
+version: 0.03
 author:
   - 'Steven Schubiger <schubiger@cpan.org>'
 abstract: Monitor the OpenVZ user_beancounters file
@@ -30,7 +30,7 @@ configure_requires:
 provides:
   App::OpenVZ::BCWatch:
     file: lib/App/OpenVZ/BCWatch.pm
-    version: 0.02_04
+    version: 0.03
 generated_by: Module::Build version 0.34
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html

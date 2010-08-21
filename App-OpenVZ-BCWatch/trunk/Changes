@@ -1,5 +1,9 @@
 Revision history for Perl extension App::OpenVZ::BCWatch.
 
+0.03  2010-08-21  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.02_04  2010-08-19  <schubiger@cpan.org>
 
  - Update vzwatchd's broken license link.
