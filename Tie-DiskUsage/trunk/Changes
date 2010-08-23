@@ -1,5 +1,39 @@
 Revision history for Perl extension Tie::DiskUsage.
 
+0.20_01  2010-08-22  <schubiger@cpan.org>
+
+ - Validate arguments passed to tie().
+
+ - Refactor _locate_du() and _parse_usage().
+
+ - Don't implicitly pass @_ to _tie() and _parse_usage().
+
+ - Require Cwd in order to get the current working directory.
+
+ - Reword the message being printed when du can't be located.
+
+ - Rephrase the description part of the documentation.
+
+ - Mention bugs and caveats.
+
+ - Spell disk usage without a hyphen.
+
+ - Update broken license link.
+
+ - Add a test file for validations.
+
+ - Move BAIL_OUT() to 00-load.t and correct the message emitted.
+
+ - Remove the testing diagnostic.
+
+ - Restore $Tie::DiskUsage::DU_BIN's default in tie.t.
+
+ - Enclose tests in blocks within tie.t.
+
+ - Use ok() instead of is() when testing to locate du.
+
+ - Adjust some file permissions.
+
 0.20 Sat Jan 19 15:49:19 CET 2008
 
  - Require File::Spec at compile-time within the tie test

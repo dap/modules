@@ -12,3 +12,4 @@ t/data/tie.t.in
 t/pod-coverage.t
 t/pod.t
 t/tie.t
+t/validate.t

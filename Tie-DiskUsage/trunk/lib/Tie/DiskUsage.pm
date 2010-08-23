@@ -9,50 +9,81 @@ use Tie::Hash ();
 
 our ($VERSION, @ISA, $DU_BIN);
 
+$VERSION = '0.20_01';
 @ISA = qw(Tie::StdHash);
-$VERSION = '0.20';
 
 $DU_BIN = '/usr/bin/du';
 
 sub TIEHASH
 {
     my $class = shift;
-    return bless &_tie, $class;
+    return bless _tie(@_), $class;
 }
-
 sub UNTIE {}
 
 sub _tie
 {
-    _locate_du();
-    return &_parse_usage;
+    my $du = _locate_du();
+    my $path = shift @_;
+    my @opts = @_;
+
+    _validate($path, \@opts);
+
+    return _parse_usage($du, $path, @opts);
+}
+
+sub _validate
+{
+    my ($path, $opts) = @_;
+
+    @$opts = map { (defined && length) ? $_ : () } @$opts;
+
+    my %errors = (
+        not_exists => 'an existing path',
+        not_option => 'options to be short or long',
+    );
+    my $error = sub { "tie() requires $_[0]" };
+
+    my $valid_opt = qr{
+        ^(?:
+              -\w           (?:(?:   \ +?)\S+)? # short
+           | --\w{2}[-\w]*? (?:(?:\=|\ +?)\S+)? # long
+         )$
+    }ix;
+
+    croak $error->($errors{not_exists})
+      if defined $path && !-e $path;
+
+    croak $error->($errors{not_option})
+      if @$opts && grep !/$valid_opt/, @$opts;
 }
 
 sub _locate_du
 {
-    if (not -e $DU_BIN && -x _) {
-        eval {
-            require File::Basename;
-            require File::Which
-        };
-        die $@ if $@;
-        my $du_which = File::Which::which('du');
-        defined $du_which
-          ? $DU_BIN = $du_which
-          : croak "Can't locate ", File::Basename::basename($DU_BIN), ": $!";
+    if (!-e $DU_BIN) {
+        my $du_which = do { require File::Which; File::Which::which('du') };
+        croak "Cannot locate du: $!" unless defined $du_which;
+
+        return $du_which;
+    }
+    else {
+        croak "Cannot run `$DU_BIN': Not executable" unless -x $DU_BIN;
+
+        return $DU_BIN;
     }
 }
 
 sub _parse_usage
 {
-    my $path = shift || '.';
-    my $pipe = Symbol::gensym();
+    my ($du, $path, @opts) = @_;
+    $path ||= do { require Cwd; Cwd::getcwd() };
 
-    open($pipe, "$DU_BIN @_ $path |") or exit(1);
+    my $pipe = Symbol::gensym();
+    open($pipe, "$du @opts $path |") or exit(1);
 
     my %usage;
     while (my $line = <$pipe>) {
-        my ($size, $item) = $line =~ /^(.*?)\s+?(.*)$/;
+        my ($size, $item) = $line =~ /^(.+?) \s+? (.+)$/x;
         $usage{$item} = $size;
     }
 
@@ -66,7 +97,7 @@ __END__
 
 =head1 NAME
 
-Tie::DiskUsage - Tie disk-usage to a hash
+Tie::DiskUsage - Tie disk usage to a hash
 
 =head1 SYNOPSIS
 
@@ -78,17 +109,23 @@ Tie::DiskUsage - Tie disk-usage to a hash
 
 =head1 DESCRIPTION
 
-C<Tie::DiskUsage> ties the disk-usage, which is gathered
-from the output of C<du>, to a hash. If the path to perform
-the C<du> command on is being omitted, the current working
-directory will be examined; optional arguments to C<du> may be
-passed subsequently.
+C<Tie::DiskUsage> ties the disk usage, which is extracted from the output
+of C<du(1)>, to a hash. If the path to perform the C<du> command on is C<undef>,
+the current working directory will be examined; options to C<du> may be
+passed at the end of the C<tie> invocation with a string provided per option.
 
-By default, the location of the C<du> command is to be
-assumed in F</usr/bin/du>; if C<du> cannot be found to exist
-there, C<File::Which> will attempt to gather its former location.
+By default, the location of the C<du> command is assumed to be at F</usr/bin/du>;
+if C<du> cannot be found there, C<File::Which> will attempt to gather its real
+location.
 
-The default path to C<du> may be overriden by setting C<$Tie::DiskUsage::$DU_BIN>.
+The default path to C<du> may be overridden by setting the global
+C<$Tie::DiskUsage::DU_BIN> (usually not needed due to C<File::Which>'s
+automatic search for C<du>).
+
+=head1 BUGS & CAVEATS
+
+Processing output of C<du(1)> requires that each output line is ended
+by a newline.
 
 =head1 SEE ALSO
 
@@ -103,6 +140,6 @@ Steven Schubiger <schubiger@cpan.org>
 This program is free software; you may redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut

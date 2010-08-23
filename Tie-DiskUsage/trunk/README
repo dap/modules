@@ -1,5 +1,5 @@
 NAME
-    Tie::DiskUsage - Tie disk-usage to a hash
+    Tie::DiskUsage - Tie disk usage to a hash
 
 SYNOPSIS
      use Tie::DiskUsage;
@@ -9,20 +9,26 @@ SYNOPSIS
      untie %usage;
 
 DESCRIPTION
-    "Tie::DiskUsage" ties the disk-usage, which is gathered from the output
-    of "du", to a hash. If the path to perform the "du" command on is being
-    omitted, the current working directory will be examined; optional
-    arguments to "du" may be passed subsequently.
+    `Tie::DiskUsage' ties the disk usage, which is extracted from the output
+    of `du(1)', to a hash. If the path to perform the `du' command on is
+    `undef', the current working directory will be examined; options to `du'
+    may be passed at the end of the `tie' invocation with a string provided
+    per option.
 
-    By default, the location of the "du" command is to be assumed in
-    /usr/bin/du; if "du" cannot be found to exist there, "File::Which" will
-    attempt to gather its former location.
+    By default, the location of the `du' command is assumed to be at
+    /usr/bin/du; if `du' cannot be found there, `File::Which' will attempt
+    to gather its real location.
 
-    The default path to "du" may be overriden by setting
-    "$Tie::DiskUsage::$DU_BIN".
+    The default path to `du' may be overridden by setting the global
+    `$Tie::DiskUsage::DU_BIN' (usually not needed due to `File::Which''s
+    automatic search for `du').
+
+BUGS & CAVEATS
+    Processing output of `du(1)' requires that each output line is ended by
+    a newline.
 
 SEE ALSO
-    "tie" in perlfunc, du(1), Filesys::DiskUsage, Sys::Statistics::Linux
+    perlfunc, du(1), Filesys::DiskUsage, Sys::Statistics::Linux
 
 AUTHOR
     Steven Schubiger <schubiger@cpan.org>
@@ -31,5 +37,5 @@ LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See <http://www.perl.com/perl/misc/Artistic.html>
+    See http://dev.perl.org/licenses/
 
