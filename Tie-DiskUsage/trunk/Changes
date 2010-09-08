@@ -1,5 +1,9 @@
 Revision history for Perl extension Tie::DiskUsage.
 
+0.21  2010-09-08  <schubiger@cpan.org>
+
+ - Merged development version to stable.
+
 0.20_01  2010-08-22  <schubiger@cpan.org>
 
  - Validate arguments passed to tie().

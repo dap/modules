@@ -9,7 +9,7 @@ use Tie::Hash ();
 
 our ($VERSION, @ISA, $DU_BIN);
 
-$VERSION = '0.20_01';
+$VERSION = '0.21';
 @ISA = qw(Tie::StdHash);
 
 $DU_BIN = '/usr/bin/du';
